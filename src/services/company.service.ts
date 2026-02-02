@@ -17,7 +17,8 @@ export interface Company {
     email: string | null;
     phone: string | null;
     address: string | null;
-    title: string | null;
+    region: number | null;
+    district: number | null;
     description: string | null;
     created_at?: string;
     updated_at?: string;
@@ -43,7 +44,8 @@ export type CreateCompanyPayload = {
     email?: string;
     phone?: string;
     address?: string;
-    title?: string;
+    region?: number;
+    district?: number;
     description?: string;
 };
 
@@ -72,7 +74,8 @@ export const companyService = {
         appendIfDefined(form, 'email', data.email ?? '');
         appendIfDefined(form, 'phone', data.phone ?? '');
         appendIfDefined(form, 'address', data.address ?? '');
-        appendIfDefined(form, 'title', data.title ?? '');
+        appendIfDefined(form, 'region', data.region ?? '');
+        appendIfDefined(form, 'district', data.district ?? '');
         appendIfDefined(form, 'description', data.description ?? '');
         return api.post<Company>(API_ENDPOINTS.companies.create, form);
     },
@@ -84,7 +87,8 @@ export const companyService = {
         appendIfDefined(form, 'email', data.email);
         appendIfDefined(form, 'phone', data.phone);
         appendIfDefined(form, 'address', data.address);
-        appendIfDefined(form, 'title', data.title);
+        appendIfDefined(form, 'region', data.region);
+        appendIfDefined(form, 'district', data.district);
         appendIfDefined(form, 'description', data.description);
 
         return api.put<Company>(API_ENDPOINTS.companies.update(id.toString()), form);
