@@ -8,68 +8,15 @@
 import { api } from '@/lib/api/client';
 import { API_ENDPOINTS } from '@/lib/api/config';
 import type { PaginationMeta } from './productCategory.service';
+import type { AppUser, AppUserQueryParams, CreateAppUserPayload, UpdateAppUserPayload } from '@/types/user';
 
-export interface AppUser {
-	id: number;
-	username: string;
-	full_name: string;
-	is_active: boolean;
-	date_of_birthday: string | null;
-	gender: string | null;
-	phone_number: string | null;
-	email: string | null;
-	// password faqat create/update paytida yuboriladi (listda qaytmasligi mumkin)
-	password?: string;
-	company: number | null;
-	region: number | null;
-	district: number | null;
-	// backend multi-role qaytarishi mumkin
-	roles?: number[];
-	role?: string;
-	address: string | null;
-	avatar: string | null;
-	created_by?: number | null;
-	updated_by?: number | null;
-	created_time?: string | null;
-	updated_time?: string | null;
-	date_joined?: string | null;
-	created_at?: string;
-	updated_at?: string;
-}
+export type { AppUser, AppUserQueryParams, CreateAppUserPayload, UpdateAppUserPayload };
 
 export interface AppUserListResponse {
 	pagination: PaginationMeta;
 	results: AppUser[];
 	filters: unknown;
 }
-
-export interface AppUserQueryParams {
-	page?: number;
-	limit?: number;
-	search?: string;
-	ordering?: string;
-	is_active?: boolean;
-}
-
-// create/update payload: avatar file bo'ladi (backend avatar URL qaytarishi mumkin)
-export type CreateAppUserPayload = {
-	username: string;
-	full_name: string;
-	is_active: boolean;
-	date_of_birthday?: string;
-	gender?: string;
-	phone_number?: string;
-	email?: string;
-	password: string;
-	company?: number;
-	region?: number;
-	district?: number;
-	roles: number[];
-	address?: string;
-	avatar?: File;
-};
-
-export type UpdateAppUserPayload = Partial<CreateAppUserPayload>;
 
 const appendIfDefined = (form: FormData, key: string, value: unknown) => {
 	if (value === undefined || value === null) return;
@@ -87,7 +34,9 @@ const toUserFormData = (data: Partial<CreateAppUserPayload>) => {
 	appendIfDefined(form, 'phone_number', data.phone_number);
 	appendIfDefined(form, 'email', data.email);
 	appendIfDefined(form, 'password', data.password);
-	if (typeof data.company === 'number') form.append('company', String(data.company));
+	if (Array.isArray(data.companies)) {
+		data.companies.forEach((cid) => form.append('filials', String(cid)));
+	}
 	if (typeof data.region === 'number') form.append('region', String(data.region));
 	if (typeof data.district === 'number') form.append('district', String(data.district));
 	if (Array.isArray(data.roles)) {
