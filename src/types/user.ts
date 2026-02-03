@@ -31,7 +31,8 @@ export interface AppUser {
 	phone_number: string | null;
 	email: string | null;
 	password?: string;
-	companies: number[];
+	filials: number[];
+	filials_detail?: { id: number; name: string }[];
 	region: number | null;
 	district: number | null;
 	roles: number[];

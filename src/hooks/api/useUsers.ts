@@ -110,7 +110,7 @@ export const toUserFormDefaults = (u: AppUser) => ({
 	phone_number: u.phone_number ?? '',
 	email: u.email ?? '',
 	password: '',
-	companies: Array.isArray(u.companies) ? u.companies : [],
+	filials: Array.isArray(u.filials) ? u.filials : [],
 	region: u.region ?? 0,
 	district: u.district ?? 0,
 	roles: Array.isArray(u.roles) ? u.roles : [],

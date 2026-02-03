@@ -472,8 +472,12 @@ export default function Users() {
 												</TableCell>
 												<TableCell className='font-medium'>{u.username}</TableCell>
 												<TableCell>{u.full_name}</TableCell>
-												<TableCell className='max-w-[200px] truncate'>
-													{getCompaniesNames(u.companies)}
+												<TableCell className='flex min-w-[200px] flex-wrap'>
+													{u.filials_detail?.map((c) => (
+														<span key={c.id} className='mr-1 text-wrap'>
+															{c.name}
+														</span>
+													)) || getCompaniesNames(u.filials)}
 												</TableCell>
 												<TableCell>{getRegionName(u.region)}</TableCell>
 												<TableCell>{getDistrictName(u.district)}</TableCell>
