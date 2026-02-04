@@ -114,22 +114,22 @@ export const API_ENDPOINTS = {
 		districtById: (id: string) => `/district/${id}`,
 	},
 
-	// Product Category endpoints
+	// Product Category endpoints (Bo'limlar)
 	productCategories: {
-		list: '/product-category',
-		byId: (id: string) => `/product-category/${id}`,
-		create: '/product-category',
-		update: (id: string) => `/product-category/${id}`,
-		delete: (id: string) => `/product-category/${id}`,
+		list: '/product-branch',
+		byId: (id: string) => `/product-branch/${id}`,
+		create: '/product-branch',
+		update: (id: string) => `/product-branch/${id}`,
+		delete: (id: string) => `/product-branch/${id}`,
 	},
 
 	// Product Model endpoints
 	productModels: {
-		list: '/model',
-		byId: (id: string) => `/model/${id}`,
-		create: '/model',
-		update: (id: string) => `/model/${id}`,
-		delete: (id: string) => `/model/${id}`,
+		list: '/product-model',
+		byId: (id: string) => `/product-model/${id}`,
+		create: '/product-model',
+		update: (id: string) => `/product-model/${id}`,
+		delete: (id: string) => `/product-model/${id}`,
 	},
 
 	// Model Size endpoints
@@ -143,11 +143,11 @@ export const API_ENDPOINTS = {
 
 	// Model Type endpoints
 	modelTypes: {
-		list: '/model-type',
-		byId: (id: string) => `/model-type/${id}`,
-		create: '/model-type',
-		update: (id: string) => `/model-type/${id}`,
-		delete: (id: string) => `/model-type/${id}`,
+		list: '/product-type',
+		byId: (id: string) => `/product-type/${id}`,
+		create: '/product-type',
+		update: (id: string) => `/product-type/${id}`,
+		delete: (id: string) => `/product-type/${id}`,
 	},
 
 	// Exchange Rate endpoints
@@ -157,6 +157,60 @@ export const API_ENDPOINTS = {
 		create: '/exchange-rate',
 		update: (id: string) => `/exchange-rate/${id}`,
 		delete: (id: string) => `/exchange-rate/${id}`,
+	},
+
+	// Purchase Invoice endpoints (Tovar kirimi / Faktura)
+	purchaseInvoices: {
+		list: '/purchase-invoice',
+		byId: (id: string) => `/purchase-invoice/${id}`,
+		create: '/purchase-invoice',
+		update: (id: string) => `/purchase-invoice/${id}`,
+		delete: (id: string) => `/purchase-invoice/${id}`,
+	},
+
+	// Product History endpoints (Kirim bo'lgan mahsulotlar tarixi)
+	productHistories: {
+		list: '/product-history',
+		byId: (id: string) => `/product-history/${id}`,
+		create: '/product-history',
+		update: (id: string) => `/product-history/${id}`,
+		delete: (id: string) => `/product-history/${id}`,
+	},
+
+	// Supplier endpoints (Ta'minotchilar)
+	suppliers: {
+		list: '/supplier',
+		byId: (id: string) => `/supplier/${id}`,
+		create: '/supplier',
+		update: (id: string) => `/supplier/${id}`,
+		delete: (id: string) => `/supplier/${id}`,
+	},
+
+	// Sklad (Warehouse) endpoints
+	sklads: {
+		list: '/sklad',
+		byId: (id: string) => `/sklad/${id}`,
+		create: '/sklad',
+		update: (id: string) => `/sklad/${id}`,
+		delete: (id: string) => `/sklad/${id}`,
+	},
+
+	// Unit endpoints (O'lchov birliklari - kg, ta, dona, etc.)
+	units: {
+		list: '/unit',
+		byId: (id: string) => `/unit/${id}`,
+		create: '/unit',
+		update: (id: string) => `/unit/${id}`,
+		delete: (id: string) => `/unit/${id}`,
+	},
+
+	// Product Type Size endpoints (Mahsulot turi o'lchamlari)
+	productTypeSizes: {
+		list: '/product-type-size',
+		byId: (id: string) => `/product-type-size/${id}`,
+		create: '/product-type-size',
+		update: (id: string) => `/product-type-size/${id}`,
+		delete: (id: string) => `/product-type-size/${id}`,
 	},
 } as const;
 

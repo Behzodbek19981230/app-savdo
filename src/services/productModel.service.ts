@@ -11,6 +11,8 @@ import type { PaginationMeta, ProductCategory } from './productCategory.service'
 export interface ProductModel {
 	id: number;
 	name: string;
+	branch?: number; // ProductBranch ID
+	branch_detail?: ProductCategory; // ProductBranch detail
 	category?: number[];
 	category_detail?: ProductCategory[]; // Product Category IDs (optional in list response)
 	sorting: number | null;
@@ -31,6 +33,7 @@ export interface ProductModelQueryParams {
 	search?: string;
 	ordering?: string;
 	is_delete?: boolean;
+	branch?: number; // Filter by branch
 }
 
 export const productModelService = {

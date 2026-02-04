@@ -11,7 +11,8 @@ import type { PaginationMeta } from './productCategory.service';
 export interface ModelType {
 	id: number;
 	name: string;
-	model: number;
+	madel?: number; // ProductModel ID (note: API uses 'madel' not 'model')
+	model?: number; // alias for madel
 	sorting: number | null;
 	is_delete: boolean;
 	created_at?: string;
@@ -30,6 +31,7 @@ export interface ModelTypeQueryParams {
 	search?: string;
 	ordering?: string;
 	is_delete?: boolean;
+	madel?: number; // Filter by model
 }
 
 export const modelTypeService = {
