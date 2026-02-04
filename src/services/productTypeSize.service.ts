@@ -12,8 +12,8 @@ export interface ProductTypeSize {
 	id: number;
 	product_type?: number; // ProductType ID
 	size: number; // float
-	type?: number; // Unit ID
-	type_detail?: {
+	unit?: number; // Unit ID
+	unit_detail?: {
 		id: number;
 		code: string;
 		name: string;

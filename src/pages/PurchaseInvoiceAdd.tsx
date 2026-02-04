@@ -43,6 +43,7 @@ import { useProductTypeSizes, useCreateProductTypeSize, productTypeSizeKeys } fr
 import { useExchangeRates } from '@/hooks/api/useExchangeRate';
 import { useUsers } from '@/hooks/api/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, Loader2, Package, Star, Trash2, ArrowDownCircle, DollarSign } from 'lucide-react';
 import moment from 'moment';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,6 +94,7 @@ interface AddedProduct extends ProductFormData {
 export default function PurchaseInvoiceAdd() {
 	const navigate = useNavigate();
 	const { user } = useAuthContext();
+	const { toast } = useToast();
 	const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 	const [addedProducts, setAddedProducts] = useState<AddedProduct[]>([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -286,12 +288,20 @@ export default function PurchaseInvoiceAdd() {
 
 	// Yangi size qo'shish (tanlangan type va unit bilan)
 	const handleCreateSize = async (sizeValue: string) => {
-		if (!selectedType || !selectedUnit) return null;
+		if (!selectedType) return null;
+		if (!selectedUnit) {
+			toast({
+				title: 'Xatolik',
+				description: "Yangi o'lcham qo'shish uchun avval o'lchov birligini tanlang",
+				variant: 'destructive',
+			});
+			return null;
+		}
 		try {
 			const result = await createProductTypeSize.mutateAsync({
 				product_type: selectedType,
 				size: parseFloat(sizeValue) || 0,
-				type: selectedUnit, // O'lchov birligi (Unit ID)
+				unit: selectedUnit, // O'lchov birligi (Unit ID)
 				sorting: 0,
 				is_delete: false,
 			});
@@ -321,6 +331,16 @@ export default function PurchaseInvoiceAdd() {
 	useEffect(() => {
 		productForm.setValue('size', 0);
 	}, [selectedType]);
+
+	// ProductTypeSize tanlanganda mos unit ni default qilish
+	useEffect(() => {
+		if (selectedSize) {
+			const selectedProductTypeSize = productTypeSizes.find((s) => s.id === selectedSize);
+			if (selectedProductTypeSize?.unit) {
+				productForm.setValue('unit', selectedProductTypeSize.unit);
+			}
+		}
+	}, [selectedSize, productTypeSizes]);
 
 	const formatCurrency = (value: number) => {
 		return new Intl.NumberFormat('uz-UZ').format(value);
@@ -852,65 +872,71 @@ export default function PurchaseInvoiceAdd() {
 								<FormField
 									control={productForm.control}
 									name='size'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>O'lcham</FormLabel>
-											<div className='flex'>
-												{/* Unit select - avval tanlanadi */}
-												<Select
-													value={selectedUnit ? String(selectedUnit) : ''}
-													onValueChange={(val) => {
-														if (val === 'create_new') {
-															setIsUnitDialogOpen(true);
-														} else {
-															productForm.setValue('unit', Number(val));
-														}
-													}}
-													disabled={!!selectedSize} // Size tanlagandan keyin disabled
-												>
-													<SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
-														<SelectValue placeholder='birlik' />
-													</SelectTrigger>
-													<SelectContent>
-														{units.map((u) => (
-															<SelectItem key={u.id} value={String(u.id)}>
-																{u.code}
-															</SelectItem>
-														))}
-														<SelectItem value='create_new' className='text-primary'>
-															<Plus className='h-3 w-3 inline mr-1' />
-															Yangi
-														</SelectItem>
-													</SelectContent>
-												</Select>
-												<FormControl>
-													<div className='flex-1'>
-														<Autocomplete
-															options={sizeOptions}
-															value={field.value || undefined}
-															onValueChange={(val) => field.onChange(Number(val))}
-															placeholder={
-																!selectedType
-																	? 'Avval mahsulotni tanlang'
-																	: !selectedUnit
-																		? 'Avval birlikni tanlang'
-																		: "O'lchamni tanlang"
+									render={({ field }) => {
+										// Tanlangan ProductTypeSize da unit borligini tekshirish
+										const selectedProductTypeSize = productTypeSizes.find(
+											(s) => s.id === selectedSize,
+										);
+										const hasUnitInSize = !!selectedProductTypeSize?.unit;
+
+										return (
+											<FormItem>
+												<FormLabel>O'lcham</FormLabel>
+												<div className='flex'>
+													{/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
+													<Select
+														value={selectedUnit ? String(selectedUnit) : ''}
+														onValueChange={(val) => {
+															if (val === 'create_new') {
+																setIsUnitDialogOpen(true);
+															} else {
+																productForm.setValue('unit', Number(val));
 															}
-															searchPlaceholder="O'lcham qidirish..."
-															emptyText="O'lcham topilmadi"
-															disabled={!selectedType || !selectedUnit} // Type va Unit tanlanmasa disabled
-															isLoading={isSizesLoading}
-															allowCreate={!!selectedType && !!selectedUnit}
-															onCreateNew={handleCreateSize}
-															createText="Yangi o'lcham qo'shish"
-															className='rounded-l-none border-l-0'
-														/>
-													</div>
-												</FormControl>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
+														}}
+														disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
+													>
+														<SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
+															<SelectValue placeholder='birlik' />
+														</SelectTrigger>
+														<SelectContent>
+															{units.map((u) => (
+																<SelectItem key={u.id} value={String(u.id)}>
+																	{u.code}
+																</SelectItem>
+															))}
+															<SelectItem value='create_new' className='text-primary'>
+																<Plus className='h-3 w-3 inline mr-1' />
+																Yangi
+															</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormControl>
+														<div className='flex-1'>
+															<Autocomplete
+																options={sizeOptions}
+																value={field.value || undefined}
+																onValueChange={(val) => field.onChange(Number(val))}
+																placeholder={
+																	!selectedType
+																		? 'Avval mahsulotni tanlang'
+																		: "O'lchamni tanlang"
+																}
+																searchPlaceholder="O'lcham qidirish..."
+																emptyText="O'lcham topilmadi"
+																disabled={!selectedType} // Faqat Type tanlanmasa disabled
+																isLoading={isSizesLoading}
+																allowCreate={!!selectedType}
+																onCreateNew={handleCreateSize}
+																createText="Yangi o'lcham qo'shish"
+																className='rounded-l-none border-l-0'
+															/>
+														</div>
+													</FormControl>
+												</div>
+												<FormMessage />
+											</FormItem>
+										);
+									}}
 								/>
 							</div>
 
