@@ -26,6 +26,9 @@ import Companies from './pages/Companies';
 import ExchangeRates from './pages/ExchangeRates';
 import PurchaseInvoices from './pages/PurchaseInvoices';
 import PurchaseInvoiceAdd from './pages/PurchaseInvoiceAdd';
+import PurchaseInvoiceShow from './pages/PurchaseInvoiceShow';
+import Suppliers from './pages/Suppliers';
+import Sklad from './pages/Sklad';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -107,6 +110,18 @@ const protectedRoutes = [
 	{
 		path: '/purchase-invoices/add',
 		element: <PurchaseInvoiceAdd />,
+	},
+	{
+		path: '/purchase-invoices/:id',
+		element: <PurchaseInvoiceShow />,
+	},
+	{
+		path: '/suppliers',
+		element: <Suppliers />,
+	},
+	{
+		path: '/sklad',
+		element: <Sklad />,
 	},
 ];
 

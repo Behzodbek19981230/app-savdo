@@ -134,11 +134,11 @@ export const API_ENDPOINTS = {
 
 	// Model Size endpoints
 	modelSizes: {
-		list: '/model-size',
-		byId: (id: string) => `/model-size/${id}`,
-		create: '/model-size',
-		update: (id: string) => `/model-size/${id}`,
-		delete: (id: string) => `/model-size/${id}`,
+		list: '/product-type-size',
+		byId: (id: string) => `/product-type-size/${id}`,
+		create: '/product-type-size',
+		update: (id: string) => `/product-type-size/${id}`,
+		delete: (id: string) => `/product-type-size/${id}`,
 	},
 
 	// Model Type endpoints

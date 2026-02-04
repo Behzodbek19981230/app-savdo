@@ -22,6 +22,7 @@ import {
 	Ruler,
 	Tag,
 	Box,
+	Warehouse,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -64,6 +65,7 @@ const adminSection: NavSection[] = [
 		title: 'OMBOR',
 		items: [
 			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
+			{ icon: Warehouse, label: 'Omborlar', path: '/sklad' },
 			{ icon: BarChart3, label: 'Sklad (Qoldiq)', path: '/inventory' },
 			{ icon: ArrowUpCircle, label: 'Kirim (Qabul)', path: '/purchase-invoices' },
 			{ icon: ArrowDownCircle, label: 'Chiqim (Ombordan)', path: '/chiqim' },

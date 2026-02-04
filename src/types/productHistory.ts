@@ -6,8 +6,7 @@
  *   id int [pk, increment]
  *   date date
  *   reserve_limit int // Zaxira limiti
- *   product int [ref: > Product.id]
- *   purchase_invoice int [ref: > PurchaseInvoice.id]
+ *   filial int [ref: > Filial.id]
  *   branch int [ref: > ProductBranch.id]
  *   model int [ref: > ProductModel.id]
  *   type int [ref: > ProductType.id]
@@ -25,50 +24,83 @@ export interface ProductHistory {
 	id: number;
 	date: string;
 	reserve_limit: number;
-	product: number;
-	product_detail?: {
+	filial: number;
+	filial_detail?: {
 		id: number;
 		name: string;
-		barcode?: string;
-	};
-	purchase_invoice: number;
-	purchase_invoice_detail?: {
-		id: number;
-		date: string;
+		region?: number;
+		region_detail?: {
+			id: number;
+			code: string;
+			name: string;
+		};
+		district?: number;
+		district_detail?: {
+			id: number;
+			code: string;
+			name: string;
+			region: number;
+		};
+		address?: string;
+		phone_number?: string;
+		logo?: string | null;
+		is_active?: boolean;
+		is_delete?: boolean;
 	};
 	branch: number;
 	branch_detail?: {
 		id: number;
 		name: string;
+		sorting?: number;
+		is_delete?: boolean;
 	};
 	model: number;
 	model_detail?: {
 		id: number;
 		name: string;
+		branch?: number;
+		branch_detail?: {
+			id: number;
+			name: string;
+			sorting?: number;
+			is_delete?: boolean;
+		};
+		sorting?: number;
+		is_delete?: boolean;
 	};
 	type: number;
 	type_detail?: {
 		id: number;
 		name: string;
+		madel?: number;
+		madel_detail?: {
+			id: number;
+			name: string;
+		};
+		sorting?: number;
+		is_delete?: boolean;
 	};
 	size: number;
 	size_detail?: {
 		id: number;
-		name: string;
+		product_type: number;
+		product_type_detail?: {
+			id: number;
+			name: string;
+		};
+		size: number;
+		type?: number | null;
+		type_detail?: unknown;
+		sorting?: number;
+		is_delete?: boolean;
 	};
-	unit: number;
-	unit_detail?: {
-		id: number;
-		code: string;
-		name: string;
-	};
-	is_weight: boolean;
 	count: number;
-	real_price: number;
-	unit_price: number;
-	wholesale_price: number;
-	min_price: number;
+	real_price: number | string;
+	unit_price: number | string;
+	wholesale_price: number | string;
+	min_price: number | string;
 	note?: string;
+	is_delete?: boolean;
 	created_at?: string;
 	updated_at?: string;
 }

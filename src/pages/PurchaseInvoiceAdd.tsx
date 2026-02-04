@@ -41,6 +41,7 @@ import { useModelSizes } from '@/hooks/api/useModelSizes';
 import { useUnits, useCreateUnit, unitKeys } from '@/hooks/api/useUnit';
 import { useProductTypeSizes, useCreateProductTypeSize, productTypeSizeKeys } from '@/hooks/api/useProductTypeSize';
 import { useExchangeRates } from '@/hooks/api/useExchangeRate';
+import { useUsers } from '@/hooks/api/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { ArrowLeft, Plus, Loader2, Package, Star, Trash2, ArrowDownCircle, DollarSign } from 'lucide-react';
 import moment from 'moment';
@@ -53,6 +54,7 @@ const invoiceSchema = z.object({
 	filial: z.coerce.number().positive('Filial tanlanishi shart'),
 	sklad: z.coerce.number().positive('Ombor tanlanishi shart'),
 	date: z.string().min(1, 'Sana kiritilishi shart'),
+	employee: z.coerce.number().positive('Xodim tanlanishi shart'),
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
@@ -109,6 +111,7 @@ export default function PurchaseInvoiceAdd() {
 			filial: user?.filials_detail?.[0]?.id || 0,
 			sklad: 0,
 			date: moment().format('YYYY-MM-DD'),
+			employee: user?.id || 0,
 		},
 	});
 
@@ -137,8 +140,11 @@ export default function PurchaseInvoiceAdd() {
 	const selectedBranch = productForm.watch('branch');
 	const selectedModel = productForm.watch('model');
 	const selectedType = productForm.watch('type');
+	const selectedUnit = productForm.watch('unit');
+	const selectedSize = productForm.watch('size');
 
 	// Data fetching
+	const { data: usersData } = useUsers({ limit: 1000, is_active: true });
 	const { data: suppliersData } = useSuppliers({ perPage: 1000, is_delete: false });
 	const { data: companiesData } = useCompanies({ perPage: 1000, is_delete: false });
 	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilial || undefined, is_delete: false });
@@ -157,6 +163,7 @@ export default function PurchaseInvoiceAdd() {
 	);
 	const { data: exchangeRatesData } = useExchangeRates(selectedFilial ? { filial: selectedFilial } : undefined);
 
+	const users = usersData?.results || [];
 	const suppliers = suppliersData?.results || [];
 	const companies = companiesData?.results || [];
 	const sklads = skladsData?.results || [];
@@ -277,13 +284,14 @@ export default function PurchaseInvoiceAdd() {
 		}
 	};
 
-	// Yangi size qo'shish (tanlangan type bilan)
+	// Yangi size qo'shish (tanlangan type va unit bilan)
 	const handleCreateSize = async (sizeValue: string) => {
-		if (!selectedType) return null;
+		if (!selectedType || !selectedUnit) return null;
 		try {
 			const result = await createProductTypeSize.mutateAsync({
 				product_type: selectedType,
 				size: parseFloat(sizeValue) || 0,
+				type: selectedUnit, // O'lchov birligi (Unit ID)
 				sorting: 0,
 				is_delete: false,
 			});
@@ -399,7 +407,7 @@ export default function PurchaseInvoiceAdd() {
 				filial: values.filial,
 				sklad: values.sklad,
 				date: values.date,
-				employee: user?.id || 0,
+				employee: values.employee,
 				product_count: addedProducts.length,
 				all_product_summa: totalSum,
 			});
@@ -577,6 +585,34 @@ export default function PurchaseInvoiceAdd() {
 													{sklads.map((s) => (
 														<SelectItem key={s.id} value={String(s.id)}>
 															{s.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={invoiceForm.control}
+									name='employee'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Xodim</FormLabel>
+											<Select
+												onValueChange={(value) => field.onChange(Number(value))}
+												value={field.value ? String(field.value) : ''}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue placeholder='Xodimni tanlang' />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{users.map((u) => (
+														<SelectItem key={u.id} value={String(u.id)}>
+															{u.full_name || u.username}
 														</SelectItem>
 													))}
 												</SelectContent>
@@ -820,35 +856,9 @@ export default function PurchaseInvoiceAdd() {
 										<FormItem>
 											<FormLabel>O'lcham</FormLabel>
 											<div className='flex'>
-												<FormControl>
-													<div className='flex-1'>
-														<Autocomplete
-															options={sizeOptions}
-															value={field.value || undefined}
-															onValueChange={(val) => field.onChange(Number(val))}
-															placeholder={
-																selectedType
-																	? "O'lchamni tanlang"
-																	: 'Avval mahsulotni tanlang'
-															}
-															searchPlaceholder="O'lcham qidirish..."
-															emptyText="O'lcham topilmadi"
-															disabled={!selectedType}
-															isLoading={isSizesLoading}
-															allowCreate={!!selectedType}
-															onCreateNew={handleCreateSize}
-															createText="Yangi o'lcham qo'shish"
-															className='rounded-r-none border-r-0'
-														/>
-													</div>
-												</FormControl>
-												{/* Unit select - suffix sifatida */}
+												{/* Unit select - avval tanlanadi */}
 												<Select
-													value={
-														productForm.watch('unit')
-															? String(productForm.watch('unit'))
-															: ''
-													}
+													value={selectedUnit ? String(selectedUnit) : ''}
 													onValueChange={(val) => {
 														if (val === 'create_new') {
 															setIsUnitDialogOpen(true);
@@ -856,8 +866,9 @@ export default function PurchaseInvoiceAdd() {
 															productForm.setValue('unit', Number(val));
 														}
 													}}
+													disabled={!!selectedSize} // Size tanlagandan keyin disabled
 												>
-													<SelectTrigger className='w-[80px] rounded-l-none border-l-0'>
+													<SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
 														<SelectValue placeholder='birlik' />
 													</SelectTrigger>
 													<SelectContent>
@@ -872,6 +883,30 @@ export default function PurchaseInvoiceAdd() {
 														</SelectItem>
 													</SelectContent>
 												</Select>
+												<FormControl>
+													<div className='flex-1'>
+														<Autocomplete
+															options={sizeOptions}
+															value={field.value || undefined}
+															onValueChange={(val) => field.onChange(Number(val))}
+															placeholder={
+																!selectedType
+																	? 'Avval mahsulotni tanlang'
+																	: !selectedUnit
+																		? 'Avval birlikni tanlang'
+																		: "O'lchamni tanlang"
+															}
+															searchPlaceholder="O'lcham qidirish..."
+															emptyText="O'lcham topilmadi"
+															disabled={!selectedType || !selectedUnit} // Type va Unit tanlanmasa disabled
+															isLoading={isSizesLoading}
+															allowCreate={!!selectedType && !!selectedUnit}
+															onCreateNew={handleCreateSize}
+															createText="Yangi o'lcham qo'shish"
+															className='rounded-l-none border-l-0'
+														/>
+													</div>
+												</FormControl>
 											</div>
 											<FormMessage />
 										</FormItem>

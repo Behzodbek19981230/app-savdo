@@ -106,6 +106,10 @@ export default function PurchaseInvoices() {
 		return new Intl.NumberFormat('uz-UZ').format(value);
 	};
 
+	const formatDollar = (value: number) => {
+		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+	};
+
 	const getInvoiceTypeBadge = (type: number) => {
 		if (type === 0) {
 			return (
@@ -225,8 +229,8 @@ export default function PurchaseInvoices() {
 												<TableCell className='text-right'>
 													<Badge variant='outline'>{invoice.product_count} ta</Badge>
 												</TableCell>
-												<TableCell className='text-right font-semibold'>
-													{formatCurrency(invoice.all_product_summa)} so'm
+												<TableCell className='text-right font-semibold text-green-600'>
+													${formatDollar(invoice.all_product_summa)}
 												</TableCell>
 												<TableCell className='text-right'>
 													<div className='flex items-center justify-end gap-1'>
