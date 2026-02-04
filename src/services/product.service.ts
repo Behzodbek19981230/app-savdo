@@ -145,7 +145,7 @@ export interface Product {
 	is_delete?: boolean;
 	created_at?: string;
 	updated_at?: string;
-	attachments?: ProductAttachment[];
+	images?: ProductAttachment[];
 }
 
 export interface ProductListResponse {

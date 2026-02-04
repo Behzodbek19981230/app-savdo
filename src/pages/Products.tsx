@@ -606,7 +606,7 @@ export default function Products() {
 													<Avatar
 														className='h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity'
 														onClick={() => {
-															if (product.attachments && product.attachments.length > 0) {
+															if (product.images && product.images.length > 0) {
 																setSelectedProduct(product);
 																setCurrentImageIndex(0);
 																setIsImageGalleryOpen(true);
@@ -614,7 +614,7 @@ export default function Products() {
 														}}
 													>
 														<AvatarImage
-															src={product.attachments?.[0]?.file}
+															src={product.images?.[0]?.file}
 															alt={product.model_detail?.name || 'Product'}
 														/>
 														<AvatarFallback>
@@ -1020,7 +1020,7 @@ export default function Products() {
 							{selectedProduct?.model_detail?.name || 'Mahsulot'} - {selectedProduct?.branch_detail?.name}
 						</DialogDescription>
 					</DialogHeader>
-					{selectedProduct?.attachments && selectedProduct.attachments.length > 0 ? (
+					{selectedProduct?.images && selectedProduct.images.length > 0 ? (
 						<div className='space-y-4'>
 							{/* Main Image with Zoom */}
 							<TransformWrapper
@@ -1066,7 +1066,7 @@ export default function Products() {
 										</div>
 
 										{/* Navigation Buttons */}
-										{selectedProduct.attachments.length > 1 && (
+										{selectedProduct.images.length > 1 && (
 											<>
 												<Button
 													variant='outline'
@@ -1075,9 +1075,7 @@ export default function Products() {
 													onClick={() => {
 														resetTransform();
 														setCurrentImageIndex((prev) =>
-															prev === 0
-																? selectedProduct.attachments!.length - 1
-																: prev - 1,
+															prev === 0 ? selectedProduct.images!.length - 1 : prev - 1,
 														);
 													}}
 												>
@@ -1090,9 +1088,7 @@ export default function Products() {
 													onClick={() => {
 														resetTransform();
 														setCurrentImageIndex((prev) =>
-															prev === selectedProduct.attachments!.length - 1
-																? 0
-																: prev + 1,
+															prev === selectedProduct.images!.length - 1 ? 0 : prev + 1,
 														);
 													}}
 												>
@@ -1102,9 +1098,9 @@ export default function Products() {
 										)}
 
 										{/* Image Counter */}
-										{selectedProduct.attachments.length > 1 && (
+										{selectedProduct.images.length > 1 && (
 											<div className='absolute bottom-2 right-2 z-10 bg-background/80 px-2 py-1 rounded text-sm'>
-												{currentImageIndex + 1} / {selectedProduct.attachments.length}
+												{currentImageIndex + 1} / {selectedProduct.images.length}
 											</div>
 										)}
 
@@ -1114,7 +1110,7 @@ export default function Products() {
 											contentClass='!w-full !h-full flex items-center justify-center'
 										>
 											<img
-												src={selectedProduct.attachments[currentImageIndex]?.file}
+												src={selectedProduct.images[currentImageIndex]?.file}
 												alt={`Product ${currentImageIndex + 1}`}
 												className='max-w-full max-h-full object-contain'
 												style={{ userSelect: 'none' }}
@@ -1125,9 +1121,9 @@ export default function Products() {
 							</TransformWrapper>
 
 							{/* Thumbnail Grid */}
-							{selectedProduct.attachments.length > 1 && (
+							{selectedProduct.images.length > 1 && (
 								<div className='grid grid-cols-8 gap-2 max-h-32 overflow-y-auto'>
-									{selectedProduct.attachments.map((attachment, index) => (
+									{selectedProduct.images.map((attachment, index) => (
 										<button
 											key={attachment.id}
 											onClick={() => setCurrentImageIndex(index)}

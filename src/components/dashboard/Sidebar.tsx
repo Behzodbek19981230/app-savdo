@@ -51,24 +51,24 @@ interface NavSection {
 }
 
 const adminSection: NavSection[] = [
-	{
-		title: 'ASOSIY',
-		items: [
-			// { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-			// { icon: Package, label: 'Mahsulotlar', path: '/products' },
-			// { icon: ShoppingCart, label: "Buyurtmalar", path: "/orders", badge: "4" },
-			// { icon: TrendingUp, label: "Sotuvlar", path: "/sales" },
-			// { icon: Users, label: "Mijozlar", path: "/customers" },
-		],
-	},
+	// {
+	// 	title: 'ASOSIY',
+	// 	items: [
+	// 		{ icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+	// 		{ icon: Package, label: 'Mahsulotlar', path: '/products' },
+	// 		{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
+	// 		{ icon: TrendingUp, label: 'Sotuvlar', path: '/sales' },
+	// 		{ icon: Users, label: 'Mijozlar', path: '/customers' },
+	// 	],
+	// },
 	{
 		title: 'OMBOR',
 		items: [
 			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
 			{ icon: Warehouse, label: 'Omborlar', path: '/sklad' },
-			{ icon: BarChart3, label: 'Sklad (Qoldiq)', path: '/inventory' },
+			// { icon: BarChart3, label: 'Sklad (Qoldiq)', path: '/inventory' },
 			{ icon: ArrowUpCircle, label: 'Kirim (Qabul)', path: '/purchase-invoices' },
-			{ icon: ArrowDownCircle, label: 'Chiqim (Ombordan)', path: '/chiqim' },
+			// { icon: ArrowDownCircle, label: 'Chiqim (Ombordan)', path: '/chiqim' },
 			{ icon: Building2, label: "Ta'minotchilar", path: '/suppliers' },
 		],
 	},
