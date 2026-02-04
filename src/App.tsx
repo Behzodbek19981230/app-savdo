@@ -23,6 +23,7 @@ import NotFound from './pages/NotFound';
 import Roles from './pages/Roles';
 import Users from './pages/Users';
 import Companies from './pages/Companies';
+import ExchangeRates from './pages/ExchangeRates';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -92,6 +93,10 @@ const protectedRoutes = [
 	{
 		path: '/company',
 		element: <Companies />,
+	},
+	{
+		path: '/exchange-rates',
+		element: <ExchangeRates />,
 	},
 ];
 
