@@ -34,7 +34,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
 	const [today, setToday] = useState(new Date());
 	const [isExchangeDialogOpen, setIsExchangeDialogOpen] = useState(false);
-	const [dollarValue, setDollarValue] = useState('');
+	const [dollarValue, setDollarValue] = useState<number | undefined>(undefined);
 	const [selectedFilialId, setSelectedFilialId] = useState<number | null>(null);
 
 	const user = authService.getStoredUser();
@@ -73,13 +73,13 @@ export function Header({ onMenuClick }: HeaderProps) {
 	}, []);
 
 	const openExchangeDialog = () => {
-		setDollarValue(currentExchangeRate?.dollar?.toString() || '');
+		setDollarValue(Number(currentExchangeRate?.dollar) || 0);
 		setIsExchangeDialogOpen(true);
 	};
 
 	const handleSaveExchangeRate = async () => {
 		if (!userFilialId) return;
-		const dollar = parseFloat(dollarValue);
+		const dollar = dollarValue ? Number(dollarValue) : NaN;
 		if (isNaN(dollar) || dollar <= 0) return;
 
 		try {
@@ -270,42 +270,29 @@ export function Header({ onMenuClick }: HeaderProps) {
 					<ThemeToggle />
 
 					{/* User Profile Dropdown */}
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<div className='flex items-center gap-2 px-2 py-1 rounded-xl border border-border bg-foreground/[0.04] dark:bg-white/[0.03] hover:bg-foreground/[0.06] transition-colors'>
-								{user?.avatar ? (
-									<img
-										src={`${import.meta.env.VITE_FILE_BASE_URL}/` + user.avatar}
-										alt={user.fullname}
-										className='h-[34px] w-[34px] rounded-full object-cover border-2 border-primary/[0.22] flex-shrink-0'
-									/>
-								) : (
-									<div className='flex h-[34px] w-[34px] items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0'>
-										<span className='text-[13px] font-black text-primary'>
-											{user?.fullname?.charAt(0) || user?.username?.charAt(0) || 'U'}
-										</span>
-									</div>
-								)}
-								<div className='min-w-0 text-left hidden md:block'>
-									<p className='text-[13px] font-semibold text-sidebar-foreground truncate'>
-										{user?.fullname || user?.username || 'Foydalanuvchi'}
-									</p>
-									<p className='text-xs text-muted-foreground truncate'>
-										{user?.role_detail?.[0]?.name || user?.email || 'Manager'}
-									</p>
-								</div>
+					<div className='flex items-center gap-2 px-2 py-1 rounded-xl border border-border bg-foreground/[0.04] dark:bg-white/[0.03] hover:bg-foreground/[0.06] transition-colors'>
+						{user?.avatar ? (
+							<img
+								src={`${import.meta.env.VITE_FILE_BASE_URL}/` + user.avatar}
+								alt={user.fullname}
+								className='h-[34px] w-[34px] rounded-full object-cover border-2 border-primary/[0.22] flex-shrink-0'
+							/>
+						) : (
+							<div className='flex h-[34px] w-[34px] items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0'>
+								<span className='text-[13px] font-black text-primary'>
+									{user?.fullname?.charAt(0) || user?.username?.charAt(0) || 'U'}
+								</span>
 							</div>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' className='w-56'>
-							<DropdownMenuItem
-								className='text-destructive focus:text-destructive'
-								onClick={() => logout()}
-							>
-								<LogOut className='mr-2 h-4 w-4' />
-								<span>Chiqish</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+						)}
+						<div className='min-w-0 text-left hidden md:block'>
+							<p className='text-[13px] font-semibold text-sidebar-foreground truncate'>
+								{user?.fullname || user?.username || 'Foydalanuvchi'}
+							</p>
+							<p className='text-xs text-muted-foreground truncate'>
+								{user?.role_detail?.[0]?.name || user?.email || 'Manager'}
+							</p>
+						</div>
+					</div>
 				</div>
 			</header>
 
@@ -326,9 +313,12 @@ export function Header({ onMenuClick }: HeaderProps) {
 								type='number'
 								placeholder='Masalan: 12500'
 								value={dollarValue}
-								onChange={(e) => setDollarValue(e.target.value)}
+								onChange={(e) => {
+									const intValue = e.target.value;
+									setDollarValue(Number(intValue));
+								}}
 								min={0}
-								step={0.01}
+								step={1}
 								disabled={!isAdmin}
 								readOnly={!isAdmin}
 							/>
