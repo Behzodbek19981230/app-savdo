@@ -254,26 +254,20 @@ export default function Suppliers() {
 
 	return (
 		<div className='space-y-6'>
-			{/* Header */}
-			<div className='flex items-center justify-between'>
-				<div>
-					<h1 className='text-2xl font-bold tracking-tight'>Ta'minotchilar</h1>
-					<p className='text-muted-foreground'>Ta'minotchilar ro'yxatini boshqaring</p>
-				</div>
-				<Button onClick={() => handleOpenDialog()}>
-					<Plus className='mr-2 h-4 w-4' />
-					Yangi ta'minotchi
-				</Button>
-			</div>
-
 			{/* Main Card */}
 			<Card>
-				<CardHeader className='pb-4'>
-					<div className='flex items-center gap-2'>
-						<Truck className='h-5 w-5 text-primary' />
-						<CardTitle className='text-lg'>Ta'minotchilar</CardTitle>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<Truck className='h-5 w-5 text-primary' />
+							<CardTitle className='text-lg'>Ta'minotchilar</CardTitle>
+						</div>
+						<CardDescription>Jami {pagination?.total || suppliers.length} ta ta'minotchi</CardDescription>
 					</div>
-					<CardDescription>Jami {pagination?.total || suppliers.length} ta ta'minotchi</CardDescription>
+					<Button onClick={() => handleOpenDialog()}>
+						<Plus className='mr-2 h-4 w-4' />
+						Yangi ta'minotchi
+					</Button>
 				</CardHeader>
 				<CardContent>
 					{/* Search */}

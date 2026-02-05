@@ -1,4 +1,4 @@
-import { Bell, Calendar, Menu, Pencil, DollarSign, Loader2, Building2, ChevronDown, Check } from 'lucide-react';
+import { Bell, Calendar, Menu, Pencil, DollarSign, Loader2, Building2, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
@@ -16,12 +16,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import moment from 'moment';
+import { ChevronDown, LogOut } from 'lucide-react';
+import { useAuth, useLogout } from '@/hooks/api/useAuth';
 import { useEffect, useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useExchangeRates, useCreateExchangeRate, useUpdateExchangeRate } from '@/hooks/api/useExchangeRate';
 import type { ExchangeRate } from '@/types/exchangeRate';
+import { useCompanies, useUser } from '@/hooks/api';
+import moment from 'moment';
+import { Label } from '../ui/label';
+import { authService } from '@/services';
 
 interface HeaderProps {
 	onMenuClick?: () => void;
@@ -33,29 +37,31 @@ export function Header({ onMenuClick }: HeaderProps) {
 	const [dollarValue, setDollarValue] = useState('');
 	const [selectedFilialId, setSelectedFilialId] = useState<number | null>(null);
 
-	const { user } = useAuthContext();
+	const user = authService.getStoredUser();
+	const { mutate: logout } = useLogout();
+	console.log(user);
 
 	// Filiallar ro'yxati
-	const filials = user?.filials_detail || [];
-
-	// Tanlangan filial yoki birinchi filial (default: birinchi filial)
-	const userFilialId = selectedFilialId || filials[0]?.id || user?.companies?.[0];
-
-	// Tanlangan filial ma'lumotlari (default: birinchi filial)
-	const selectedFilial = filials.find((f) => f.id === userFilialId) || filials[0];
 
 	// Admin role borligini tekshirish
 	const isAdmin = user?.role_detail?.some((role) => role.name === 'Admin') || false;
-
-	// Tanlangan filial bo'yicha exchange rate olish
-	const { data: exchangeRatesData, isLoading: isExchangeLoading } = useExchangeRates(
-		userFilialId ? { filial: userFilialId } : undefined,
-	);
+	const isSuperAdmin = user?.role_detail?.some((role) => role.name === 'SuperAdmin') || false;
 
 	const createExchangeRate = useCreateExchangeRate();
 	const updateExchangeRate = useUpdateExchangeRate();
 	const isMutating = createExchangeRate.isPending || updateExchangeRate.isPending;
 
+	const { data: filialsData } = useCompanies();
+	const filials = !isSuperAdmin ? user?.filials_detail || [] : filialsData?.results || [];
+	// Tanlangan filial yoki birinchi filial (default: birinchi filial)
+	const userFilialId = selectedFilialId || filials[0]?.id || user?.companies?.[0];
+
+	// Tanlangan filial ma'lumotlari (default: birinchi filial)
+	const selectedFilial = filials.find((f) => f.id === userFilialId) || filials[0];
+	// Tanlangan filial bo'yicha exchange rate olish
+	const { data: exchangeRatesData, isLoading: isExchangeLoading } = useExchangeRates(
+		userFilialId ? { filial: userFilialId } : undefined,
+	);
 	// Filialga tegishli exchange rate
 	const currentExchangeRate: ExchangeRate | null = exchangeRatesData?.results?.[0] || null;
 
@@ -121,31 +127,30 @@ export function Header({ onMenuClick }: HeaderProps) {
 								<Calendar className='h-3.5 w-3.5 flex-shrink-0' />
 								<span className='truncate'>{moment(today).format('DD.MM.YYYY HH:mm:ss')}</span>
 							</p>
-
-							{/* Dollar kursi */}
-							<div className='hidden sm:flex items-center gap-1.5 text-xs'>
-								<DollarSign className='h-3.5 w-3.5 text-green-600' />
-								<span className='font-medium text-foreground'>
-									{isExchangeLoading ? (
-										<Loader2 className='h-3 w-3 animate-spin' />
-									) : currentExchangeRate ? (
-										`${formatCurrency(currentExchangeRate.dollar)} so'm`
-									) : (
-										"Kurs yo'q"
-									)}
-								</span>
-								{isAdmin && (
-									<Button
-										variant='ghost'
-										size='icon'
-										className='h-5 w-5 p-0 hover:bg-muted'
-										onClick={openExchangeDialog}
-									>
-										<Pencil className='h-3 w-3 text-muted-foreground' />
-									</Button>
-								)}
-							</div>
 						</div>
+					</div>
+					{/* Dollar kursi */}
+					<div className='hidden sm:flex items-center gap-1.5 text-lg'>
+						<DollarSign className='h-3.5 w-3.5 text-green-600' />
+						<span className='font-medium text-foreground'>
+							{isExchangeLoading ? (
+								<Loader2 className='h-3 w-3 animate-spin' />
+							) : currentExchangeRate ? (
+								`${formatCurrency(currentExchangeRate.dollar)} so'm`
+							) : (
+								"Kurs yo'q"
+							)}
+						</span>
+						{isAdmin && (
+							<Button
+								variant='ghost'
+								size='icon'
+								className='h-5 w-5 p-0 hover:bg-muted'
+								onClick={openExchangeDialog}
+							>
+								<Pencil className='h-3 w-3 text-muted-foreground' />
+							</Button>
+						)}
 					</div>
 				</div>
 
@@ -263,6 +268,44 @@ export function Header({ onMenuClick }: HeaderProps) {
 					</Button>
 
 					<ThemeToggle />
+
+					{/* User Profile Dropdown */}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<div className='flex items-center gap-2 px-2 py-1 rounded-xl border border-border bg-foreground/[0.04] dark:bg-white/[0.03] hover:bg-foreground/[0.06] transition-colors'>
+								{user?.avatar ? (
+									<img
+										src={`${import.meta.env.VITE_FILE_BASE_URL}/` + user.avatar}
+										alt={user.fullname}
+										className='h-[34px] w-[34px] rounded-full object-cover border-2 border-primary/[0.22] flex-shrink-0'
+									/>
+								) : (
+									<div className='flex h-[34px] w-[34px] items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0'>
+										<span className='text-[13px] font-black text-primary'>
+											{user?.fullname?.charAt(0) || user?.username?.charAt(0) || 'U'}
+										</span>
+									</div>
+								)}
+								<div className='min-w-0 text-left hidden md:block'>
+									<p className='text-[13px] font-semibold text-sidebar-foreground truncate'>
+										{user?.fullname || user?.username || 'Foydalanuvchi'}
+									</p>
+									<p className='text-xs text-muted-foreground truncate'>
+										{user?.role_detail?.[0]?.name || user?.email || 'Manager'}
+									</p>
+								</div>
+							</div>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end' className='w-56'>
+							<DropdownMenuItem
+								className='text-destructive focus:text-destructive'
+								onClick={() => logout()}
+							>
+								<LogOut className='mr-2 h-4 w-4' />
+								<span>Chiqish</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</header>
 

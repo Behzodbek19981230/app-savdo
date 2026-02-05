@@ -184,6 +184,7 @@ export default function ExchangeRates() {
 										<TableHead>Filial</TableHead>
 										<TableHead>Dollar kursi</TableHead>
 										<TableHead>Yangilangan</TableHead>
+										<TableHead>Yangilagan foydalanuvchi</TableHead>
 										<TableHead className='text-right w-[120px]'>Amallar</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -203,8 +204,15 @@ export default function ExchangeRates() {
 												</span>
 											</TableCell>
 											<TableCell className='text-muted-foreground'>
-												{rate.updated_at
-													? moment(rate.updated_at).format('DD.MM.YYYY HH:mm')
+												{rate.updated_time
+													? moment(rate.updated_time).format('DD.MM.YYYY HH:mm')
+													: '-'}
+											</TableCell>
+											<TableCell className='text-muted-foreground'>
+												{rate.updated_by_detail
+													? rate.updated_by_detail?.fullname ||
+														rate.updated_by_detail?.email ||
+														'-'
 													: '-'}
 											</TableCell>
 											<TableCell className='text-right'>

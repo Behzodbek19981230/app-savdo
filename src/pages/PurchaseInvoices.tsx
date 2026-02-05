@@ -124,39 +124,34 @@ export default function PurchaseInvoices() {
 	return (
 		<div className='space-y-6'>
 			{/* Header */}
-			<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-				<div>
-					<h1 className='text-2xl font-bold tracking-tight'>Tovar kirimi</h1>
-					<p className='text-muted-foreground'>Ta'minotchilardan tovar kirimi ro'yxati</p>
-				</div>
-				<div className='flex flex-col sm:flex-row items-start sm:items-center gap-3'>
-					<DateRangePicker
-						dateFrom={dateFrom}
-						dateTo={dateTo}
-						onDateFromChange={(date) => {
-							setDateFrom(date);
-							setCurrentPage(1);
-						}}
-						onDateToChange={(date) => {
-							setDateTo(date);
-							setCurrentPage(1);
-						}}
-					/>
-					<Button onClick={() => navigate('/purchase-invoices/add')} className='gap-2'>
-						<Plus className='h-4 w-4' />
-						Yangi kirim
-					</Button>
-				</div>
-			</div>
 
 			{/* Table Card */}
 			<Card>
 				<CardHeader className='pb-4'>
-					<div className='flex items-center gap-2'>
-						<ArrowDownCircle className='h-5 w-5 text-green-600' />
-						<CardTitle className='text-lg'>Fakturalar</CardTitle>
+					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+						<div>
+							<CardTitle>Tovar kirimi</CardTitle>
+							<CardDescription>Ta'minotchilardan tovar kirimi ro'yxati</CardDescription>
+						</div>
+						<div className='flex flex-col sm:flex-row items-start sm:items-center gap-3'>
+							<DateRangePicker
+								dateFrom={dateFrom}
+								dateTo={dateTo}
+								onDateFromChange={(date) => {
+									setDateFrom(date);
+									setCurrentPage(1);
+								}}
+								onDateToChange={(date) => {
+									setDateTo(date);
+									setCurrentPage(1);
+								}}
+							/>
+							<Button onClick={() => navigate('/purchase-invoices/add')} className='gap-2'>
+								<Plus className='h-4 w-4' />
+								Yangi kirim
+							</Button>
+						</div>
 					</div>
-					<CardDescription>Jami {pagination?.total || invoices.length} ta faktura</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (

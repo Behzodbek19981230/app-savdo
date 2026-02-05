@@ -248,26 +248,20 @@ export default function SkladPage() {
 
 	return (
 		<div className='space-y-6'>
-			{/* Header */}
-			<div className='flex items-center justify-between'>
-				<div>
-					<h1 className='text-2xl font-bold tracking-tight'>Omborlar</h1>
-					<p className='text-muted-foreground'>Omborlar ro'yxatini boshqaring</p>
-				</div>
-				<Button onClick={() => handleOpenDialog()}>
-					<Plus className='mr-2 h-4 w-4' />
-					Yangi ombor
-				</Button>
-			</div>
-
 			{/* Main Card */}
 			<Card>
-				<CardHeader className='pb-4'>
-					<div className='flex items-center gap-2'>
-						<Warehouse className='h-5 w-5 text-primary' />
-						<CardTitle className='text-lg'>Omborlar</CardTitle>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<Warehouse className='h-5 w-5 text-primary' />
+							<CardTitle className='text-lg'>Omborlar</CardTitle>
+						</div>
+						<CardDescription>Jami {pagination?.total || sklads.length} ta ombor</CardDescription>
 					</div>
-					<CardDescription>Jami {pagination?.total || sklads.length} ta ombor</CardDescription>
+					<Button onClick={() => handleOpenDialog()}>
+						<Plus className='mr-2 h-4 w-4' />
+						Yangi ombor
+					</Button>
 				</CardHeader>
 				<CardContent>
 					{/* Search */}

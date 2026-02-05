@@ -67,7 +67,7 @@ const Login = () => {
 				description: 'Tizimga muvaffaqiyatli kirdingiz.',
 			});
 
-			navigate('/products');
+			navigate('/');
 		} catch (error) {
 			toast({
 				title: 'Xatolik yuz berdi',

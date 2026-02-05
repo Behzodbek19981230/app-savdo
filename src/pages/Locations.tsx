@@ -111,14 +111,12 @@ export default function Locations() {
 				id: item.id,
 				code: item.code || '',
 				name: item.name || '',
-				geo_json: item.geo_json || '',
 				region: regionValue,
 			});
 		} else {
 			setEditingItem({
 				code: '',
 				name: '',
-				geo_json: '',
 			});
 		}
 		setIsDialogOpen(true);
@@ -288,7 +286,6 @@ export default function Locations() {
 												<TableHead>Kod</TableHead>
 												<TableHead>Nomi</TableHead>
 												{activeTab === 'district' && <TableHead>Viloyat</TableHead>}
-												<TableHead>GeoJSON</TableHead>
 												<TableHead className='text-right'>Amallar</TableHead>
 											</TableRow>
 										</TableHeader>
@@ -315,13 +312,7 @@ export default function Locations() {
 															})()}
 														</TableCell>
 													)}
-													<TableCell>
-														{item.geo_json ? (
-															<Badge variant='secondary'>Mavjud</Badge>
-														) : (
-															<span className='text-muted-foreground'>-</span>
-														)}
-													</TableCell>
+
 													<TableCell className='text-right'>
 														<div className='flex items-center justify-end gap-2'>
 															<Button
@@ -407,16 +398,6 @@ export default function Locations() {
 									</Select>
 								</div>
 							)}
-							<div className='grid gap-2'>
-								<Label htmlFor='geo_json'>GeoJSON</Label>
-								<Textarea
-									id='geo_json'
-									value={editingItem?.geo_json || ''}
-									onChange={(e) => setEditingItem((prev) => ({ ...prev!, geo_json: e.target.value }))}
-									rows={4}
-									placeholder='{"type": "Point", "coordinates": [...]}'
-								/>
-							</div>
 						</div>
 						<DialogFooter>
 							<Button type='button' variant='outline' onClick={handleCloseDialog}>

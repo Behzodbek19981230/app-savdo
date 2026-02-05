@@ -370,14 +370,10 @@ export default function Products() {
 		<div className='space-y-6'>
 			{/* Header */}
 			<div className='flex items-center justify-between'>
-				<div>
-					<h1 className='text-3xl font-bold tracking-tight'>Mahsulotlar</h1>
-					<p className='text-muted-foreground'>Barcha mahsulotlarni boshqaring</p>
-				</div>
-				<Button onClick={() => navigate('/products/add')}>
+				{/* <Button onClick={() => navigate('/products/add')}>
 					<Plus className='mr-2 h-4 w-4' />
 					Mahsulotlar qo'shish
-				</Button>
+				</Button> */}
 			</div>
 
 			{/* Main Card */}

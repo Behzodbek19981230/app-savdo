@@ -51,20 +51,19 @@ interface NavSection {
 }
 
 const adminSection: NavSection[] = [
-	// {
-	// 	title: 'ASOSIY',
-	// 	items: [
-	// 		{ icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-	// 		{ icon: Package, label: 'Mahsulotlar', path: '/products' },
-	// 		{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
-	// 		{ icon: TrendingUp, label: 'Sotuvlar', path: '/sales' },
-	// 		{ icon: Users, label: 'Mijozlar', path: '/customers' },
-	// 	],
-	// },
+	{
+		title: 'ASOSIY',
+		items: [
+			{ icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
+			// { icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
+			// { icon: TrendingUp, label: 'Sotuvlar', path: '/sales' },
+			// { icon: Users, label: 'Mijozlar', path: '/customers' },
+		],
+	},
 	{
 		title: 'OMBOR',
 		items: [
-			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
 			{ icon: Warehouse, label: 'Omborlar', path: '/sklad' },
 			// { icon: BarChart3, label: 'Sklad (Qoldiq)', path: '/inventory' },
 			{ icon: ArrowUpCircle, label: 'Kirim (Qabul)', path: '/purchase-invoices' },
@@ -220,47 +219,15 @@ function SidebarContent() {
 				</nav>
 			</div>
 
-			{/* User Profile */}
+			{/* Logout only */}
 			<div className='border-t border-sidebar-border p-2.5 flex-shrink-0'>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button className='w-full flex items-center justify-between gap-2.5 px-2.5 py-2.5 rounded-xl bg-foreground/[0.04] dark:bg-white/[0.03] border border-sidebar-border hover:bg-foreground/[0.06] transition-colors'>
-							<div className='flex items-center gap-2.5 min-w-0'>
-								{user?.avatar ? (
-									<img
-										src={`${import.meta.env.VITE_FILE_BASE_URL}/` + user.avatar}
-										alt={user.fullname}
-										className='h-[34px] w-[34px] rounded-full object-cover border-2 border-primary/[0.22] flex-shrink-0'
-									/>
-								) : (
-									<div className='flex h-[34px] w-[34px] items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0'>
-										<span className='text-[13px] font-black text-primary'>
-											{user?.fullname?.charAt(0) || user?.username?.charAt(0) || 'U'}
-										</span>
-									</div>
-								)}
-								<div className='min-w-0'>
-									<p className='text-[13px] font-semibold text-sidebar-foreground truncate'>
-										{user?.fullname || user?.username || 'Foydalanuvchi'}
-									</p>
-									<p className='text-xs text-muted-foreground truncate'>
-										{user?.role_detail?.[0]?.name || user?.email || 'Manager'}
-									</p>
-								</div>
-							</div>
-							<ChevronDown className='h-4 w-4 text-muted-foreground flex-shrink-0' />
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end' className='w-56'>
-						<DropdownMenuLabel>Mening hisobim</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-
-						<DropdownMenuItem className='text-destructive focus:text-destructive' onClick={() => logout()}>
-							<LogOut className='mr-2 h-4 w-4' />
-							<span>Chiqish</span>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<button
+					className='w-full flex items-center justify-center gap-2.5 px-2.5 py-2.5 rounded-xl bg-destructive/10 border border-destructive/25 text-destructive font-bold hover:bg-destructive/20 transition-colors'
+					onClick={() => logout()}
+				>
+					<LogOut className='h-5 w-5' />
+					Chiqish
+				</button>
 			</div>
 		</div>
 	);
