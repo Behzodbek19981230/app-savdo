@@ -110,11 +110,12 @@ export const toUserFormDefaults = (u: AppUser) => ({
 	phone_number: u.phone_number ?? '',
 	email: u.email ?? '',
 	password: '',
-	filials: Array.isArray(u.filials) ? u.filials : [],
+	companies: Array.isArray(u.filials) ? u.filials : [],
 	region: u.region ?? 0,
 	district: u.district ?? 0,
 	roles: Array.isArray(u.roles) ? u.roles : [],
 	address: u.address ?? '',
+	order_filial: u.order_filial ?? undefined,
 	// avatar file sifatida alohida tanlanadi, bu yerda faqat placeholder
 	avatar: undefined,
 });

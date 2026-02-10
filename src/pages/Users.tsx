@@ -54,7 +54,7 @@ import { userUpdateSchema, type UserFormData } from '@/lib/validations/user';
 import { useRoles } from '@/hooks/api/useRoles';
 import { useDistricts, useRegions } from '@/hooks/api/useLocations';
 import { useCompanies } from '@/hooks/api/useCompanies';
-import { useCreateUser, useDeleteUser, useUpdateUser, useUsers, toUserFormDefaults } from '@/hooks/api/useUsers';
+import { useCreateUser, useDeleteUser, useUpdateUser, useUsers, useUser, toUserFormDefaults } from '@/hooks/api/useUsers';
 import type { AppUser, CreateAppUserPayload, UpdateAppUserPayload } from '@/services/user.service';
 import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Loader2, Plus, Search, Trash2, Upload, UserCog } from 'lucide-react';
 
@@ -202,9 +202,27 @@ export default function Users() {
         return <ArrowDown className='h-4 w-4 ml-2' />;
     };
 
+    // Get user by ID when editing
+    const { data: userDetailData } = useUser(editingId || 0);
+
+    // Update form when user detail data is loaded
+    useEffect(() => {
+        if (editingId && userDetailData && isDialogOpen) {
+            const userData = toUserFormDefaults(userDetailData);
+            form.reset({
+                ...userData,
+                companies: userDetailData.filials || [],
+                order_filial: userDetailData.order_filial || undefined,
+            });
+            setAvatarFromFile(null, userDetailData.avatar || null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editingId, userDetailData, isDialogOpen]);
+
     const handleOpenDialog = (item?: AppUser) => {
         if (item) {
             setEditingId(item.id);
+            // Temporary reset with item data, will be updated when useUser data loads
             form.reset(toUserFormDefaults(item));
             setAvatarFromFile(null, item.avatar);
         } else {

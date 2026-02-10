@@ -38,6 +38,7 @@ export interface AppUser {
     roles: number[];
     address: string | null;
     avatar: string | null;
+    order_filial?: number | null;
     created_by?: number | null;
     updated_by?: number | null;
     created_time?: string | null;
