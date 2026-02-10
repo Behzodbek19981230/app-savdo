@@ -341,15 +341,7 @@ export default function ProductModels() {
                                                 </button>
                                             </TableHead>
                                             <TableHead>Kategoriyalar</TableHead>
-                                            <TableHead>
-                                                <button
-                                                    className='flex items-center hover:text-foreground transition-colors'
-                                                    onClick={() => handleSort('created_at')}
-                                                >
-                                                    Yaratilgan sana
-                                                    {getSortIcon('created_at')}
-                                                </button>
-                                            </TableHead>
+
                                             <TableHead className='text-right'>Amallar</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -371,11 +363,7 @@ export default function ProductModels() {
 
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>
-                                                    {model.created_at
-                                                        ? new Date(model.created_at).toLocaleDateString('uz-UZ')
-                                                        : '-'}
-                                                </TableCell>
+
                                                 <TableCell className='text-right'>
                                                     <div className='flex items-center justify-end gap-2'>
                                                         <Button

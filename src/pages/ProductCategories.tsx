@@ -340,15 +340,7 @@ export default function ProductCategories() {
                                                     {getSortIcon('name')}
                                                 </button>
                                             </TableHead>
-                                            <TableHead>
-                                                <button
-                                                    className="flex items-center hover:text-foreground transition-colors"
-                                                    onClick={() => handleSort('created_at')}
-                                                >
-                                                    Yaratilgan sana
-                                                    {getSortIcon('created_at')}
-                                                </button>
-                                            </TableHead>
+                                        
                                             <TableHead className="text-right">Amallar</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -359,11 +351,6 @@ export default function ProductCategories() {
                                                     {index + 1 + (currentPage - 1) * ITEMS_PER_PAGE}
                                                 </TableCell>
                                                 <TableCell className="font-medium">{category.name}</TableCell>
-                                                <TableCell>
-                                                    {category.created_at
-                                                        ? new Date(category.created_at).toLocaleDateString('uz-UZ')
-                                                        : '-'}
-                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Button

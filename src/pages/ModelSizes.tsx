@@ -121,14 +121,14 @@ export default function ModelSizes() {
     // Queries
     const { data, isLoading } = useModelSizes({
         page: currentPage,
-        perPage: ITEMS_PER_PAGE,
+        limit: ITEMS_PER_PAGE,
         search: searchQuery || undefined,
         ordering,
         is_delete: false,
     });
 
     const { data: modelTypesData } = useModelTypes({
-        perPage: 1000,
+        limit: 1000,
         is_delete: false,
     });
 
@@ -429,15 +429,7 @@ export default function ModelSizes() {
                                                 </button>
                                             </TableHead>
 
-                                            <TableHead>
-                                                <button
-                                                    className="flex items-center hover:text-foreground transition-colors"
-                                                    onClick={() => handleSort('created_at')}
-                                                >
-                                                    Yaratilgan sana
-                                                    {getSortIcon('created_at')}
-                                                </button>
-                                            </TableHead>
+
                                             <TableHead className="text-right">Amallar</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -456,11 +448,7 @@ export default function ModelSizes() {
                                                     </Badge>
                                                 </TableCell>
 
-                                                <TableCell>
-                                                    {modelSize.created_at
-                                                        ? new Date(modelSize.created_at).toLocaleDateString('uz-UZ')
-                                                        : '-'}
-                                                </TableCell>
+
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Button
@@ -719,6 +707,6 @@ export default function ModelSizes() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

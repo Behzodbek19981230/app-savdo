@@ -85,7 +85,7 @@ export default function ModelTypes() {
     });
 
     const { data: modelsData } = useProductModels({
-        perPage: 1000,
+        limit: 1000,
         is_delete: false,
     });
 
@@ -325,15 +325,7 @@ export default function ModelTypes() {
                                                     {getSortIcon('model')}
                                                 </button>
                                             </TableHead>
-                                            <TableHead>
-                                                <button
-                                                    className='flex items-center hover:text-foreground transition-colors'
-                                                    onClick={() => handleSort('created_at')}
-                                                >
-                                                    Yaratilgan sana
-                                                    {getSortIcon('created_at')}
-                                                </button>
-                                            </TableHead>
+
                                             <TableHead className='text-right'>Amallar</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -345,11 +337,7 @@ export default function ModelTypes() {
                                                 <TableCell>
                                                     <Badge variant='outline'>{modelType.madel_detail?.name}</Badge>
                                                 </TableCell>
-                                                <TableCell>
-                                                    {modelType.created_at
-                                                        ? new Date(modelType.created_at).toLocaleDateString('uz-UZ')
-                                                        : '-'}
-                                                </TableCell>
+
                                                 <TableCell className='text-right'>
                                                     <div className='flex items-center justify-end gap-2'>
                                                         <Button
