@@ -71,17 +71,17 @@ export default function ProductAdd() {
 	// Queries (backend-filtered)
 	const { data: categoriesData } = useProductCategories({ perPage: 1000, is_delete: false });
 	const { data: modelsData } = useProductModels({
-		perPage: 1000,
+		limit: 1000,
 		is_delete: false,
-		category: selectedCategory || undefined,
+		branch: selectedCategory || undefined,
 	});
 	const { data: modelTypesData } = useModelTypes({
-		perPage: 1000,
+		limit: 1000,
 		is_delete: false,
-		model: watchedModel || undefined,
+		madel: watchedModel || undefined,
 	});
 	const { data: modelSizesData } = useModelSizes({
-		perPage: 1000,
+		limit: 1000,
 		is_delete: false,
 		model_type: watchedModelType || undefined,
 	});
@@ -165,7 +165,7 @@ export default function ProductAdd() {
 		try {
 			for (const product of products) {
 				await createProduct.mutateAsync({
-					category: selectedCategory,
+					branch: selectedCategory,
 					model: product.model,
 					model_type: product.model_type,
 					model_size: product.model_size,

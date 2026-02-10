@@ -54,6 +54,14 @@ export interface ProductHistory {
 		sorting?: number;
 		is_delete?: boolean;
 	};
+	branch_category?: number;
+	branch_category_detail?: {
+		id: number;
+		name: string;
+		product_branch?: number;
+		sorting?: number | null;
+		is_delete?: boolean;
+	};
 	model: number;
 	model_detail?: {
 		id: number;
@@ -123,6 +131,7 @@ export interface CreateProductHistoryPayload {
 	product?: number;
 	purchase_invoice: number;
 	branch: number;
+	branch_category?: number; // Mahsulot turlari kategoriyasi (product-branch-category)
 	model: number;
 	type: number;
 	size: number;

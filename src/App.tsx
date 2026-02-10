@@ -15,6 +15,7 @@ import ProductShow from './pages/ProductShow';
 import ProductAdd from './pages/ProductAdd';
 import Locations from './pages/Locations';
 import ProductCategories from './pages/ProductCategories';
+import ProductBranchCategories from './pages/ProductBranchCategories';
 import ProductModels from './pages/ProductModels';
 import ModelSizes from './pages/ModelSizes';
 import ModelTypes from './pages/ModelTypes';
@@ -74,6 +75,10 @@ const protectedRoutes = [
 	{
 		path: '/product-categories',
 		element: <ProductCategories />,
+	},
+	{
+		path: '/product-branch-categories',
+		element: <ProductBranchCategories />,
 	},
 	{
 		path: '/product-models',

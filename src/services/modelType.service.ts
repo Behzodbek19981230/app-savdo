@@ -13,6 +13,7 @@ export interface ModelType {
     id: number;
     name: string;
     madel_detail?: ProductModel; // ProductModel ID (note: API uses 'madel' not 'model')
+    madel?: number; // API field for ProductModel ID
     model?: number; // alias for madel
     sorting: number | null;
     is_delete: boolean;

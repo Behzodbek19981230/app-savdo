@@ -19,6 +19,7 @@ import {
 	LogOut,
 	LocateIcon,
 	Layers,
+	FolderTree,
 	Ruler,
 	Tag,
 	Box,
@@ -84,6 +85,24 @@ const adminSection: NavSection[] = [
 		title: 'KATALOG',
 		items: [
 			{ icon: Layers, label: 'Mahsulot turlari', path: '/product-categories' },
+			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
+			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
+			{ icon: Ruler, label: "Model o'lchamlari", path: '/model-sizes' },
+			{ icon: Tag, label: 'Model turlari', path: '/model-types' },
+		],
+	},
+];
+const managerSection: NavSection[] = [
+	{
+		title: 'KOMPLEKT',
+		items: [{ icon: Package, label: 'Mahsulotlar', path: '/products' }],
+	},
+
+	{
+		title: 'KATALOG',
+		items: [
+			{ icon: Layers, label: 'Mahsulot turlari', path: '/product-categories' },
+			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
 			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
 			{ icon: Ruler, label: "Model o'lchamlari", path: '/model-sizes' },
 			{ icon: Tag, label: 'Model turlari', path: '/model-types' },
@@ -91,7 +110,6 @@ const adminSection: NavSection[] = [
 	},
 ];
 
-// Faqat Superadmin uchun ko'rinadigan bo'lim
 const superAdminSection: NavSection = {
 	title: 'ADMIN',
 	items: [
@@ -118,13 +136,16 @@ function SidebarContent() {
 	// Superadmin rolini tekshirish
 	const isSuperadmin = user?.role_detail?.some((role) => role.key === 'super_admin') || false;
 	const isAdmin = user?.role_detail?.some((role) => role.key === 'admin') || false;
+	const isManager = user?.role_detail?.some((role) => role.key === 'manager') || false;
 
 	// Navigatsiya bo'limlarini foydalanuvchi roliga qarab filtrlash
 	const filteredNavSections: NavSection[] = isSuperadmin
 		? [...adminSection, superAdminSection]
 		: isAdmin
 			? [...adminSection]
-			: [];
+			: isManager
+				? [...managerSection]
+				: [];
 
 	return (
 		<div className='flex h-full flex-col overflow-hidden'>

@@ -97,6 +97,14 @@ export interface Product {
         sorting?: number;
         is_delete?: boolean;
     };
+    branch_category?: number;
+    branch_category_detail?: {
+        id: number;
+        name: string;
+        product_branch?: number;
+        sorting?: number | null;
+        is_delete?: boolean;
+    };
     model: number;
     model_detail?: {
         id: number;
@@ -132,11 +140,12 @@ export interface Product {
             name: string;
         };
         size: number;
+        unit?: number;
+        unit_detail?: Unit;
         type?: number | null;
         type_detail?: unknown;
         sorting?: number;
         is_delete?: boolean;
-        unit_detail?: Unit;
     };
     count: number;
     real_price: number | string;

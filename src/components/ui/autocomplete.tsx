@@ -20,6 +20,8 @@ export interface AutocompleteOption {
 	label: string;
 }
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 interface AutocompleteProps {
 	options: AutocompleteOption[];
 	value?: string | number;
@@ -33,6 +35,12 @@ interface AutocompleteProps {
 	onCreateNew?: (name: string) => Promise<{ id: number; name: string } | null>;
 	createText?: string;
 	isLoading?: boolean;
+	/** Backendga qidiruv: berilsa client-side filter o‘chadi, qidiruv onSearchChange orqali backendga yuboriladi */
+	onSearchChange?: (search: string) => void;
+	/** Scroll oxiriga yetganda keyingi sahifa (load more) */
+	onScrollToBottom?: () => void;
+	hasMore?: boolean;
+	isLoadingMore?: boolean;
 }
 
 export function Autocomplete({
@@ -48,15 +56,32 @@ export function Autocomplete({
 	onCreateNew,
 	createText = "Yangi qo'shish",
 	isLoading = false,
+	onSearchChange,
+	onScrollToBottom,
+	hasMore = false,
+	isLoadingMore = false,
 }: AutocompleteProps) {
 	const [open, setOpen] = React.useState(false);
 	const [searchValue, setSearchValue] = React.useState('');
 	const [isCreating, setIsCreating] = React.useState(false);
+	const listRef = React.useRef<HTMLDivElement>(null);
 
 	const selectedOption = options.find((option) => option.value === value);
+	const serverSearch = typeof onSearchChange === 'function';
 
-	// Filter options based on search
-	const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()));
+	// Backend qidiruv: debounce
+	React.useEffect(() => {
+		if (!serverSearch) return;
+		const t = setTimeout(() => {
+			onSearchChange?.(searchValue.trim());
+		}, SEARCH_DEBOUNCE_MS);
+		return () => clearTimeout(t);
+	}, [searchValue, serverSearch, onSearchChange]);
+
+	// Client-side filter faqat serverSearch bo‘lmaganda
+	const filteredOptions = serverSearch
+		? options
+		: options.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()));
 
 	const handleCreateNew = async () => {
 		if (!onCreateNew) return;
@@ -77,6 +102,15 @@ export function Autocomplete({
 			}
 		} finally {
 			setIsCreating(false);
+		}
+	};
+
+	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+		const el = e.currentTarget;
+		if (!onScrollToBottom || !el) return;
+		const threshold = 60;
+		if (el.scrollHeight - el.scrollTop <= el.clientHeight + threshold) {
+			onScrollToBottom();
 		}
 	};
 
@@ -106,8 +140,10 @@ export function Autocomplete({
 			<PopoverContent className='w-[--radix-popover-trigger-width] p-0' align='start'>
 				<Command shouldFilter={false}>
 					<CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
-					<CommandList>
-						{filteredOptions.length === 0 && !allowCreate && <CommandEmpty>{emptyText}</CommandEmpty>}
+					<CommandList ref={listRef} onScroll={handleScroll}>
+						{filteredOptions.length === 0 && !allowCreate && !isLoading && (
+							<CommandEmpty>{emptyText}</CommandEmpty>
+						)}
 						<CommandGroup>
 							{filteredOptions.map((option) => (
 								<CommandItem
@@ -129,6 +165,15 @@ export function Autocomplete({
 								</CommandItem>
 							))}
 						</CommandGroup>
+						{hasMore && (
+							<div className='flex items-center justify-center py-2 border-t'>
+								{isLoadingMore ? (
+									<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
+								) : (
+									<span className='text-xs text-muted-foreground'>Yana yuklash uchun pastga scroll qiling</span>
+								)}
+							</div>
+						)}
 						{allowCreate && (
 							<>
 								{filteredOptions.length > 0 && <CommandSeparator />}

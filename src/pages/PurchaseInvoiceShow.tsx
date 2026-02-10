@@ -291,14 +291,15 @@ export default function PurchaseInvoiceShow() {
 						<>
 							<div className='rounded-md border'>
 								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead className='w-[50px]'>#</TableHead>
-											<TableHead>Bo'lim</TableHead>
-											<TableHead>Brend</TableHead>
-											<TableHead>Mahsulot</TableHead>
-											<TableHead>O'lcham</TableHead>
-											<TableHead>Filial</TableHead>
+										<TableHeader>
+											<TableRow>
+												<TableHead className='w-[50px]'>#</TableHead>
+												<TableHead>Bo'lim</TableHead>
+												<TableHead>Kategoriya turi</TableHead>
+												<TableHead>Brend</TableHead>
+												<TableHead>Mahsulot</TableHead>
+												<TableHead>O'lcham</TableHead>
+												<TableHead>Filial</TableHead>
 											<TableHead className='text-right'>Miqdori</TableHead>
 											<TableHead className='text-right'>Narxi ($)</TableHead>
 											<TableHead className='text-right'>Dona narxi ($)</TableHead>
@@ -317,6 +318,7 @@ export default function PurchaseInvoiceShow() {
 												<TableRow key={p.id}>
 													<TableCell className='text-muted-foreground'>{index + 1}</TableCell>
 													<TableCell>{p.branch_detail?.name || '-'}</TableCell>
+													<TableCell>{p.branch_category_detail?.name ?? '-'}</TableCell>
 													<TableCell>{p.model_detail?.name || '-'}</TableCell>
 													<TableCell className='font-medium'>
 														{p.type_detail?.name || '-'}

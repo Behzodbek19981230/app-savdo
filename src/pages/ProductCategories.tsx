@@ -1,6 +1,6 @@
 /**
- * Product Categories Page
- * Mahsulot turlari sahifasi
+ * Product Categories Page (Mahsulot turlari / product-branch)
+ * Bo'limlar - product-branch API
  */
 
 import { useState, useEffect } from 'react';
@@ -24,10 +24,8 @@ import {
     PaginationPrevious,
     PaginationEllipsis,
 } from '@/components/ui/pagination';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import {
     Form,
     FormControl,
@@ -90,7 +88,6 @@ export default function ProductCategories() {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    // Form
     const form = useForm<ProductCategoryFormData>({
         resolver: zodResolver(productCategorySchema),
         defaultValues: {
@@ -99,12 +96,11 @@ export default function ProductCategories() {
         },
     });
 
-    // Build ordering string for API
-    const ordering = sortField && sortDirection
-        ? `${sortDirection === 'desc' ? '-' : ''}${sortField}`
-        : undefined;
+    const ordering =
+        sortField && sortDirection
+            ? `${sortDirection === 'desc' ? '-' : ''}${sortField}`
+            : undefined;
 
-    // Queries
     const { data, isLoading } = useProductCategories({
         page: currentPage,
         perPage: ITEMS_PER_PAGE,
@@ -113,7 +109,6 @@ export default function ProductCategories() {
         is_delete: false,
     });
 
-    // Mutations
     const createCategory = useCreateProductCategory();
     const updateCategory = useUpdateProductCategory();
     const deleteCategory = useDeleteProductCategory();
@@ -193,7 +188,6 @@ export default function ProductCategories() {
         }
     };
 
-    // Close dialog after successful mutation
     useEffect(() => {
         if (createCategory.isSuccess || updateCategory.isSuccess) {
             setIsDialogOpen(false);
@@ -204,7 +198,6 @@ export default function ProductCategories() {
 
     const handleDelete = async () => {
         if (!deletingId) return;
-
         try {
             await deleteCategory.mutateAsync(deletingId);
             setIsDeleteDialogOpen(false);
@@ -278,7 +271,6 @@ export default function ProductCategories() {
 
     return (
         <div className="space-y-6">
-            {/* Main Card */}
             <Card>
                 <CardHeader className="pb-4 flex flex-row items-center justify-between">
                     <div>
@@ -287,16 +279,15 @@ export default function ProductCategories() {
                             <CardTitle className="text-lg">Mahsulot turlari</CardTitle>
                         </div>
                         <CardDescription>
-                            Jami {pagination?.total || 0} ta mahsulot turi
+                            Jami {pagination?.total || 0} ta mahsulot turi (bo&apos;lim)
                         </CardDescription>
                     </div>
                     <Button onClick={() => handleOpenDialog()}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Yangi tur qo'shish
+                        Yangi tur qo&apos;shish
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    {/* Search */}
                     <div className="mb-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -312,7 +303,6 @@ export default function ProductCategories() {
                         </div>
                     </div>
 
-                    {/* Table */}
                     {isLoading ? (
                         <div className="flex items-center justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -320,7 +310,7 @@ export default function ProductCategories() {
                     ) : categories.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-8 text-center">
                             <Package className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                            <p className="text-muted-foreground">Ma'lumot topilmadi</p>
+                            <p className="text-muted-foreground">Ma&apos;lumot topilmadi</p>
                         </div>
                     ) : (
                         <>
@@ -328,9 +318,7 @@ export default function ProductCategories() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[100px]">
-                                                #
-                                            </TableHead>
+                                            <TableHead className="w-[100px]">#</TableHead>
                                             <TableHead>
                                                 <button
                                                     className="flex items-center hover:text-foreground transition-colors"
@@ -340,7 +328,6 @@ export default function ProductCategories() {
                                                     {getSortIcon('name')}
                                                 </button>
                                             </TableHead>
-                                        
                                             <TableHead className="text-right">Amallar</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -375,7 +362,6 @@ export default function ProductCategories() {
                                 </Table>
                             </div>
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="mt-4">
                                     <Pagination>
@@ -408,17 +394,16 @@ export default function ProductCategories() {
                 </CardContent>
             </Card>
 
-            {/* Create/Edit Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[525px]">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <DialogHeader>
                                 <DialogTitle>
-                                    {editingId ? 'Tahrirlash' : 'Yangi tur qo\'shish'}
+                                    {editingId ? 'Tahrirlash' : "Yangi tur qo'shish"}
                                 </DialogTitle>
                                 <DialogDescription>
-                                    Mahsulot turi ma'lumotlarini kiriting
+                                    Mahsulot turi (bo&apos;lim) ma&apos;lumotlarini kiriting
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
@@ -452,14 +437,12 @@ export default function ProductCategories() {
                                                     value={field.value ?? ''}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
-                                                        field.onChange(value === '' ? null : parseInt(value));
+                                                        field.onChange(value === '' ? null : parseInt(value, 10));
                                                     }}
-
                                                 />
-
                                             </FormControl>
                                             <p className="text-xs text-muted-foreground">
-                                                Tartib raqami bo'yicha saralanadi
+                                                Tartib raqami bo&apos;yicha saralanadi
                                             </p>
                                             <FormMessage />
                                         </FormItem>
@@ -480,20 +463,19 @@ export default function ProductCategories() {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bu amalni qaytarib bo'lmaydi. Mahsulot turi butunlay o'chiriladi.
+                            Bu amalni qaytarib bo&apos;lmaydi. Mahsulot turi butunlay o&apos;chiriladi.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete} disabled={isMutating}>
                             {isMutating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            O'chirish
+                            O&apos;chirish
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

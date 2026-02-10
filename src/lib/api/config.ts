@@ -123,6 +123,15 @@ export const API_ENDPOINTS = {
 		delete: (id: string) => `/product-branch/${id}`,
 	},
 
+	// Product Branch Category endpoints (Mahsulot turlari kategoriyasi)
+	productBranchCategories: {
+		list: '/product-branch-category',
+		byId: (id: string) => `/product-branch-category/${id}`,
+		create: '/product-branch-category/',
+		update: (id: string) => `/product-branch-category/${id}`,
+		delete: (id: string) => `/product-branch-category/${id}`,
+	},
+
 	// Product Model endpoints
 	productModels: {
 		list: '/product-model',

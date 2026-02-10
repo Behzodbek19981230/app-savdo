@@ -34,6 +34,7 @@ import { useSklads } from '@/hooks/api/useSklad';
 import { useCompanies } from '@/hooks/api/useCompanies';
 import { useProducts } from '@/hooks/api/useProducts';
 import { useProductCategories, useCreateProductCategory } from '@/hooks/api/useProductCategories';
+import { useProductBranchCategories } from '@/hooks/api/useProductBranchCategories';
 import { useProductModels, useCreateProductModel, PRODUCT_MODEL_KEYS } from '@/hooks/api/useProductModels';
 import { useQueryClient } from '@tanstack/react-query';
 import { useModelTypes, useCreateModelType, modelTypeKeys } from '@/hooks/api/useModelTypes';
@@ -66,6 +67,7 @@ const productSchema = z.object({
 	reserve_limit: z.coerce.number().positive('Zaxira limiti kiritilishi shart'),
 	is_weight: z.boolean().default(false), // Tarozi
 	branch: z.coerce.number().positive("Bo'lim tanlanishi shart"),
+	branch_category: z.coerce.number().positive("Kategoriya turi tanlanishi shart"),
 	model: z.coerce.number().positive('Brend tanlanishi shart'),
 	type: z.coerce.number().positive('Mahsulot nomi tanlanishi shart'), // Piyola, Kosa, etc.
 	size: z.coerce.number().positive("O'lcham tanlanishi shart"), // ProductTypeSize
@@ -85,6 +87,7 @@ interface AddedProduct extends ProductFormData {
 	id: number;
 	product_name?: string; // Type name (Piyola, Kosa, etc.)
 	branch_name?: string;
+	branch_category_name?: string;
 	model_name?: string;
 	type_name?: string;
 	size_name?: string;
@@ -125,6 +128,7 @@ export default function PurchaseInvoiceAdd() {
 			reserve_limit: 100,
 			is_weight: false,
 			branch: 0,
+			branch_category: 0,
 			model: 0,
 			type: 0,
 			size: 0,
@@ -152,6 +156,9 @@ export default function PurchaseInvoiceAdd() {
 	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilial || undefined, is_delete: false });
 	const { data: productsData } = useProducts({ limit: 1000, is_delete: false });
 	const { data: categoriesData } = useProductCategories({ perPage: 1000, is_delete: false });
+	const { data: branchCategoriesData } = useProductBranchCategories(
+		selectedBranch ? { perPage: 1000, is_delete: false, product_branch: selectedBranch } : undefined,
+	);
 	const { data: modelsData, isLoading: isModelsLoading } = useProductModels(
 		selectedBranch ? { limit: 1000, is_delete: false, branch: selectedBranch } : undefined,
 	);
@@ -171,6 +178,7 @@ export default function PurchaseInvoiceAdd() {
 	const sklads = skladsData?.results || [];
 	const products = productsData?.results || [];
 	const categories = categoriesData?.results || [];
+	const branchCategories = branchCategoriesData?.results || [];
 	const models = modelsData?.results || [];
 	const types = typesData?.results || [];
 	const sizes = sizesData?.results || [];
@@ -190,6 +198,9 @@ export default function PurchaseInvoiceAdd() {
 
 	// Autocomplete uchun category options
 	const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
+
+	// Kategoriya turi (branch_category) options - tanlangan branch bo'yicha
+	const branchCategoryOptions = branchCategories.map((c) => ({ value: c.id, label: c.name }));
 
 	// Autocomplete uchun model options (branch bo'yicha filtrlangan)
 	const modelOptions = models.map((m) => ({ value: m.id, label: m.name }));
@@ -351,6 +362,13 @@ export default function PurchaseInvoiceAdd() {
 		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 	};
 
+	// Branch o'zgarganda branch_category ni tozalash
+	useEffect(() => {
+		if (isProductDialogOpen) {
+			productForm.setValue('branch_category', 0);
+		}
+	}, [selectedBranch, isProductDialogOpen]);
+
 	// Mahsulot qo'shish dialogini ochish
 	const openProductDialog = () => {
 		productForm.reset({
@@ -358,6 +376,7 @@ export default function PurchaseInvoiceAdd() {
 			reserve_limit: 100,
 			is_weight: false,
 			branch: 0,
+			branch_category: 0,
 			model: 0,
 			type: 0,
 			size: 0,
@@ -375,21 +394,24 @@ export default function PurchaseInvoiceAdd() {
 	// Mahsulotni listga qo'shish
 	const handleAddProduct = (values: ProductFormData) => {
 		const branch = categories.find((c) => c.id === values.branch);
+		const branchCategory = branchCategories.find((c) => c.id === values.branch_category);
 		const model = models.find((m) => m.id === values.model);
 		const type = types.find((t) => t.id === values.type);
 		const size = productTypeSizes.find((s) => s.id === values.size);
 		const unit = units.find((u) => u.id === values.unit);
 
-		// Product nomini branch + model + type + size orqali yasaymiz
+		// Product nomini branch + kategoriya turi + model + type + size orqali yasaymiz
 		const productName =
-			[branch?.name, model?.name, type?.name, size ? String(size.size) : undefined].filter(Boolean).join(' ') ||
-			'Mahsulot';
+			[branch?.name, branchCategory?.name, model?.name, type?.name, size ? String(size.size) : undefined]
+				.filter(Boolean)
+				.join(' ') || 'Mahsulot';
 
 		const newProduct: AddedProduct = {
 			...values,
 			id: tempProductId,
 			product_name: productName,
 			branch_name: branch?.name,
+			branch_category_name: branchCategory?.name,
 			model_name: model?.name,
 			type_name: type?.name,
 			size_name: size ? String(size.size) : undefined,
@@ -439,6 +461,7 @@ export default function PurchaseInvoiceAdd() {
 					reserve_limit: product.reserve_limit,
 					purchase_invoice: invoice.id,
 					branch: product.branch,
+					branch_category: product.branch_category,
 					model: product.model,
 					type: product.type,
 					size: product.size,
@@ -689,6 +712,7 @@ export default function PurchaseInvoiceAdd() {
 												<TableHead>#</TableHead>
 												<TableHead>Mahsulot</TableHead>
 												<TableHead>Bo'lim</TableHead>
+												<TableHead>Kategoriya turi</TableHead>
 												<TableHead>Model</TableHead>
 												<TableHead className='text-right'>Miqdori</TableHead>
 												<TableHead className='text-right'>Narxi ($)</TableHead>
@@ -702,6 +726,7 @@ export default function PurchaseInvoiceAdd() {
 													<TableCell>{index + 1}</TableCell>
 													<TableCell className='font-medium'>{p.product_name}</TableCell>
 													<TableCell>{p.branch_name}</TableCell>
+													<TableCell>{p.branch_category_name ?? '—'}</TableCell>
 													<TableCell>{p.model_name}</TableCell>
 													<TableCell className='text-right'>{p.count}</TableCell>
 													<TableCell className='text-right'>
@@ -777,7 +802,7 @@ export default function PurchaseInvoiceAdd() {
 					</DialogHeader>
 					<Form {...productForm}>
 						<form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
-							{/* Bo'lim va Brend */}
+							{/* Bo'lim va Kategoriya turi */}
 							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<FormField
 									control={productForm.control}
@@ -804,6 +829,50 @@ export default function PurchaseInvoiceAdd() {
 										</FormItem>
 									)}
 								/>
+								<FormField
+									control={productForm.control}
+									name='branch_category'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												Kategoriya turi <span className='text-destructive'>*</span>
+											</FormLabel>
+											<FormControl>
+												<Select
+													value={field.value ? String(field.value) : ''}
+													onValueChange={(val) => field.onChange(Number(val))}
+													disabled={!selectedBranch}
+												>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={
+																selectedBranch
+																	? "Kategoriya turini tanlang"
+																	: "Avval bo'limni tanlang"
+															}
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														{branchCategoryOptions.map((opt) => (
+															<SelectItem key={opt.value} value={String(opt.value)}>
+																{opt.label}
+															</SelectItem>
+														))}
+														{branchCategoryOptions.length === 0 && selectedBranch && (
+															<div className='px-2 py-4 text-center text-sm text-muted-foreground'>
+																Bu bo'limda kategoriya yo'q. &quot;Mahsulot turlari kategoriyasi&quot; sahifasida qo'shing.
+															</div>
+														)}
+													</SelectContent>
+												</Select>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							{/* Brend va Mahsulot nomi */}
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='model'
@@ -833,9 +902,6 @@ export default function PurchaseInvoiceAdd() {
 										</FormItem>
 									)}
 								/>
-							</div>
-							{/* Mahsulot nomi (Piyola, Kosa, Tarelka, Printer, Monitor) */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='type'

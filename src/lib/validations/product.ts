@@ -8,9 +8,11 @@ import { ProductType } from '@/services/product.service';
 
 export const productSchema = z.object({
     category: z.number({
-        required_error: 'Kategoriya majburiy',
-        invalid_type_error: 'Kategoriya raqam bo\'lishi kerak',
-    }).int('Kategoriya butun son bo\'lishi kerak'),
+        required_error: "Bo'lim majburiy",
+        invalid_type_error: "Bo'lim raqam bo'lishi kerak",
+    }).int("Bo'lim butun son bo'lishi kerak"),
+
+    branch_category: z.coerce.number().int().min(0).optional().default(0),
 
     model: z.number({
         required_error: 'Model majburiy',
@@ -22,47 +24,26 @@ export const productSchema = z.object({
         invalid_type_error: 'Model turi raqam bo\'lishi kerak',
     }).int('Model turi butun son bo\'lishi kerak'),
 
-    model_size: z.number({
-        required_error: 'Model o\'lchami majburiy',
-        invalid_type_error: 'Model o\'lchami raqam bo\'lishi kerak',
-    }).int('Model o\'lchami butun son bo\'lishi kerak'),
-
-    size: z.number({
-        required_error: 'O\'lcham majburiy',
-        invalid_type_error: 'O\'lcham raqam bo\'lishi kerak',
-    }).int('O\'lcham butun son bo\'lishi kerak')
-        .min(0, 'O\'lcham 0 dan kichik bo\'lmasligi kerak'),
+    size: z.number().int().min(0, "O'lcham tanlanishi shart"), // ProductTypeSize id
+    unit: z.coerce.number().int().min(0, "O'lchov birligi tanlanishi shart"),
 
     type: z.nativeEnum(ProductType, {
         required_error: 'Tur majburiy',
         invalid_type_error: 'Noto\'g\'ri tur tanlangan',
     }),
 
-    count: z.number({
-        required_error: 'Soni majburiy',
-        invalid_type_error: 'Soni raqam bo\'lishi kerak',
-    }).int('Soni butun son bo\'lishi kerak')
-        .min(0, 'Soni 0 dan kichik bo\'lmasligi kerak'),
+    count: z.number().int().min(0, 'Miqdor 0 dan kichik bo\'lmasligi kerak'),
+    reserve_limit: z.coerce.number().positive('Zaxira limiti kiritilishi shart'),
 
-    real_price: z.number({
-        required_error: 'Haqiqiy narx majburiy',
-        invalid_type_error: 'Haqiqiy narx raqam bo\'lishi kerak',
-    }).min(0, 'Haqiqiy narx 0 dan kichik bo\'lmasligi kerak'),
+    real_price: z.number().min(0, 'Xaqiqiy narx 0 dan kichik bo\'lmasligi kerak'),
+    price: z.number().min(0, 'Dona narxi 0 dan kichik bo\'lmasligi kerak'),
+    wholesale_price: z.number().min(0, 'Optom narx 0 dan kichik bo\'lmasligi kerak'),
+    min_price: z.number().min(0, 'Minimal narx 0 dan kichik bo\'lmasligi kerak'),
 
-    price: z.number({
-        required_error: 'Narx majburiy',
-        invalid_type_error: 'Narx raqam bo\'lishi kerak',
-    }).min(0, 'Narx 0 dan kichik bo\'lmasligi kerak'),
+    note: z.string().max(5000).optional(),
+    discription: z.string().max(5000).optional(),
 
-    discription: z.string()
-        .max(5000, 'Tavsif 5000 belgidan oshmasligi kerak')
-        .optional(),
-
-    sorting: z.number({
-        invalid_type_error: 'Tartib raqami raqam bo\'lishi kerak',
-    }).int('Tartib raqami butun son bo\'lishi kerak')
-        .nullable()
-        .optional(),
+    sorting: z.number().int().nullable().optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
