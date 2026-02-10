@@ -10,6 +10,7 @@ import type { PaginationMeta } from './productCategory.service';
 export interface Role {
   id: number;
   name: string;
+  key: string;
   description: string;
   sorting?: number | null;
   is_delete?: boolean;

@@ -116,8 +116,8 @@ function SidebarContent() {
 	const user = authService.getStoredUser();
 
 	// Superadmin rolini tekshirish
-	const isSuperadmin = user?.role_detail?.some((role) => role.name === 'Superadmin') || false;
-	const isAdmin = user?.role_detail?.some((role) => role.name === 'Admin') || false;
+	const isSuperadmin = user?.role_detail?.some((role) => role.key === 'super_admin') || false;
+	const isAdmin = user?.role_detail?.some((role) => role.key === 'admin') || false;
 
 	// Navigatsiya bo'limlarini foydalanuvchi roliga qarab filtrlash
 	const filteredNavSections: NavSection[] = isSuperadmin

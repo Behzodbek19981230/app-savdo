@@ -44,8 +44,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 	// Filiallar ro'yxati
 
 	// Admin role borligini tekshirish
-	const isAdmin = user?.role_detail?.some((role) => role.name === 'Admin') || false;
-	const isSuperAdmin = user?.role_detail?.some((role) => role.name === 'SuperAdmin') || false;
+	const isAdmin = user?.role_detail?.some((role) => role.key === 'admin') || false;
+	const isSuperAdmin = user?.role_detail?.some((role) => role.key === 'super_admin') || false;
 
 	const createExchangeRate = useCreateExchangeRate();
 	const updateExchangeRate = useUpdateExchangeRate();
