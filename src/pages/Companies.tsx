@@ -314,26 +314,19 @@ export default function Companies() {
 
 	return (
 		<div className='space-y-6'>
-			<div className='flex items-center justify-between'>
-				<div>
-					<h1 className='text-3xl font-bold tracking-tight'>Filiallar</h1>
-					<p className='text-muted-foreground'>Filial ma'lumotlarini boshqaring</p>
-				</div>
-				<Button onClick={() => handleOpenDialog()}>
-					<Plus className='mr-2 h-4 w-4' />
-					Yangi filial qo'shish
-				</Button>
-			</div>
-
 			<Card>
-				<CardHeader>
-					<div className='flex items-center gap-3'>
-						<Building2 className='h-6 w-6 text-primary' />
-						<div>
-							<CardTitle>Barcha filiallar</CardTitle>
-							<CardDescription>{headerSubtitle}</CardDescription>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<Building2 className='h-5 w-5 text-primary' />
+							<CardTitle className='text-lg'>Filiallar</CardTitle>
 						</div>
+						<CardDescription>{headerSubtitle}</CardDescription>
 					</div>
+					<Button onClick={() => handleOpenDialog()}>
+						<Plus className='mr-2 h-4 w-4' />
+						Yangi filial qo'shish
+					</Button>
 				</CardHeader>
 				<CardContent>
 					<div className='mb-4'>

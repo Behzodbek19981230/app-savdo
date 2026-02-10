@@ -82,6 +82,9 @@ import {
 import { useModelTypes } from '@/hooks/api/useModelTypes';
 import { ModelSizeType, ModelSizeTypeLabels, type ModelSize } from '@/services/modelSize.service';
 import { modelSizeSchema, type ModelSizeFormData } from '@/lib/validations/modelSize';
+import { useUnits, useCreateUnit, unitKeys } from '@/hooks/api/useUnit';
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -104,6 +107,8 @@ export default function ModelSizes() {
         defaultValues: {
             model_type: 0,
             size: 0,
+            type: ModelSizeType.DONA,
+            unit: 0,
             sorting: null,
         },
     });
@@ -126,6 +131,19 @@ export default function ModelSizes() {
         perPage: 1000,
         is_delete: false,
     });
+
+    // Unit hooks
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+    const { data: unitsData, isLoading: isUnitsLoading } = useUnits({ limit: 1000, is_active: true });
+    const createUnit = useCreateUnit();
+    const units = unitsData?.results || [];
+
+    // Unit dialog state
+    const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
+    const [newUnitName, setNewUnitName] = useState('');
+    const [newUnitCode, setNewUnitCode] = useState('');
+    const [isCreatingUnit, setIsCreatingUnit] = useState(false);
 
     // Mutations
     const createModelSize = useCreateModelSize();
@@ -167,12 +185,40 @@ export default function ModelSizes() {
         return <ArrowDown className="h-4 w-4 ml-2" />;
     };
 
+    // Yangi unit qo'shish (dialog orqali)
+    const handleCreateUnitSubmit = async () => {
+        if (!newUnitName || !newUnitCode) return;
+        setIsCreatingUnit(true);
+        try {
+            const result = await createUnit.mutateAsync({
+                name: newUnitName,
+                code: newUnitCode.toLowerCase(),
+                is_active: true,
+            });
+            // Listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: unitKeys.list({ limit: 1000, is_active: true }),
+            });
+            // Yangi yaratilgan unitni tanlash
+            form.setValue('unit', result.id);
+            setIsUnitDialogOpen(false);
+            setNewUnitName('');
+            setNewUnitCode('');
+        } catch {
+            // error handled in hook
+        } finally {
+            setIsCreatingUnit(false);
+        }
+    };
+
     const handleOpenDialog = (item?: ModelSize) => {
         if (item) {
             setEditingId(item.id);
             form.reset({
                 model_type: item.model_type || 0,
                 size: item.size || 0,
+                type: item.type || ModelSizeType.DONA,
+                unit: item.unit || 0,
                 sorting: item.sorting,
             });
         } else {
@@ -180,6 +226,8 @@ export default function ModelSizes() {
             form.reset({
                 model_type: 0,
                 size: 0,
+                type: ModelSizeType.DONA,
+                unit: 0,
                 sorting: null,
             });
         }
@@ -193,10 +241,21 @@ export default function ModelSizes() {
     };
 
     const onSubmit = async (data: ModelSizeFormData) => {
+        if (!data.unit) {
+            toast({
+                title: 'Xatolik',
+                description: "Yangi o'lcham qo'shish uchun avval o'lchov birligini tanlang",
+                variant: 'destructive',
+            });
+            return; // Don't close dialog
+        }
+
         try {
             const submitData = {
-                model_type: data.model_type,
+                product_type: data.model_type,
                 size: data.size,
+                type: data.type || ModelSizeType.DONA,
+                unit: data.unit,
                 sorting: data.sorting,
             };
 
@@ -294,39 +353,26 @@ export default function ModelSizes() {
         return items;
     };
 
-    const getModelTypeName = (modelTypeId: number) => {
-        const modelType = modelTypes.find((m) => m.id === modelTypeId);
-        return modelType?.name || '-';
-    };
+
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Model o'lchamlari</h1>
-                    <p className="text-muted-foreground">Mahsulot model o'lchamlarini boshqaring</p>
-                </div>
-                <Button onClick={() => handleOpenDialog()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Yangi o'lcham qo'shish
-                </Button>
-            </div>
-
             {/* Main Card */}
             <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Ruler className="h-6 w-6 text-primary" />
-                            <div>
-                                <CardTitle>Barcha o'lchamlar</CardTitle>
-                                <CardDescription>
-                                    Jami {pagination?.total || 0} ta model o'lchami
-                                </CardDescription>
-                            </div>
+                <CardHeader className="pb-4 flex flex-row items-center justify-between">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <Ruler className="h-5 w-5 text-primary" />
+                            <CardTitle className="text-lg">Model o'lchamlari</CardTitle>
                         </div>
+                        <CardDescription>
+                            Jami {pagination?.total || 0} ta model o'lchami
+                        </CardDescription>
                     </div>
+                    <Button onClick={() => handleOpenDialog()}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Yangi o'lcham qo'shish
+                    </Button>
                 </CardHeader>
                 <CardContent>
                     {/* Search */}
@@ -362,13 +408,7 @@ export default function ModelSizes() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[100px]">
-                                                <button
-                                                    className="flex items-center hover:text-foreground transition-colors"
-                                                    onClick={() => handleSort('sorting')}
-                                                >
-                                                    Tartib
-                                                    {getSortIcon('sorting')}
-                                                </button>
+                                                #
                                             </TableHead>
                                             <TableHead>
                                                 <button
@@ -402,20 +442,18 @@ export default function ModelSizes() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {modelSizes.map((modelSize) => (
+                                        {modelSizes.map((modelSize, index) => (
                                             <TableRow key={modelSize.id}>
                                                 <TableCell>
-                                                    {modelSize.sorting !== null ? (
-                                                        <Badge variant="secondary">{modelSize.sorting}</Badge>
-                                                    ) : (
-                                                        <span className="text-muted-foreground">-</span>
-                                                    )}
+                                                    {index + 1 + (currentPage - 1) * ITEMS_PER_PAGE}
                                                 </TableCell>
                                                 <TableCell className="font-medium">
-                                                    {getModelTypeName(modelSize.model_type)}
+                                                    {modelSize.product_type_detail?.name}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="secondary">{modelSize.size}</Badge>
+                                                    <Badge variant="secondary">
+                                                        {modelSize.size} {modelSize.unit ? `(${units.find(u => u.id === modelSize.unit)?.code || ''})` : ''}
+                                                    </Badge>
                                                 </TableCell>
 
                                                 <TableCell>
@@ -527,17 +565,53 @@ export default function ModelSizes() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>O'lcham *</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="Masalan: 64"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                        const value = e.target.value;
-                                                        field.onChange(value === '' ? 0 : parseInt(value));
-                                                    }}
+                                            <div className="flex">
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Masalan: 64"
+                                                        {...field}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            field.onChange(value === '' ? 0 : parseInt(value));
+                                                        }}
+                                                        className="rounded-r-none"
+                                                    />
+                                                </FormControl>
+                                                <FormField
+                                                    control={form.control}
+                                                    name="unit"
+                                                    render={({ field: unitField }) => (
+                                                        <Select
+                                                            value={unitField.value ? String(unitField.value) : ''}
+                                                            onValueChange={(val) => {
+                                                                if (val === 'create_new') {
+                                                                    setIsUnitDialogOpen(true);
+                                                                } else {
+                                                                    unitField.onChange(Number(val));
+                                                                }
+                                                            }}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger className="w-[100px] rounded-l-none border-l-0">
+                                                                    <SelectValue placeholder="birlik" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {units.map((u) => (
+                                                                    <SelectItem key={u.id} value={String(u.id)}>
+                                                                        {u.code}
+                                                                    </SelectItem>
+                                                                ))}
+                                                                <SelectItem value="create_new" className="text-primary">
+                                                                    <Plus className="h-3 w-3 inline mr-1" />
+                                                                    Yangi
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
                                                 />
-                                            </FormControl>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -601,6 +675,50 @@ export default function ModelSizes() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Yangi o'lchov birligi qo'shish dialog */}
+            <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle>Yangi o'lchov birligi</DialogTitle>
+                        <DialogDescription>Yangi o'lchov birligini qo'shing</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Nomi</label>
+                            <Input
+                                placeholder="Masalan: Kilogram"
+                                value={newUnitName}
+                                onChange={(e) => setNewUnitName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Kodi</label>
+                            <Input
+                                placeholder="Masalan: kg"
+                                value={newUnitCode}
+                                onChange={(e) => setNewUnitCode(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => {
+                            setIsUnitDialogOpen(false);
+                            setNewUnitName('');
+                            setNewUnitCode('');
+                        }}>
+                            Bekor qilish
+                        </Button>
+                        <Button
+                            onClick={handleCreateUnitSubmit}
+                            disabled={!newUnitName || !newUnitCode || isCreatingUnit}
+                        >
+                            {isCreatingUnit && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Qo'shish
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

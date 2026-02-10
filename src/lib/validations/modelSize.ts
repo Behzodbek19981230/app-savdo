@@ -23,6 +23,12 @@ export const modelSizeSchema = z.object({
     invalid_type_error: 'Noto\'g\'ri tur tanlangan',
   }),
   
+  unit: z.number({
+    required_error: 'O\'lchov birligi majburiy',
+    invalid_type_error: 'O\'lchov birligi raqam bo\'lishi kerak',
+  }).int('O\'lchov birligi butun son bo\'lishi kerak')
+    .positive('O\'lchov birligi tanlanishi shart'),
+  
   sorting: z.number({
     invalid_type_error: 'Tartib raqami raqam bo\'lishi kerak',
   }).int('Tartib raqami butun son bo\'lishi kerak')

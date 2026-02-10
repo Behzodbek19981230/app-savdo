@@ -278,32 +278,22 @@ export default function ProductCategories() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Mahsulot turlari</h1>
-                    <p className="text-muted-foreground">Mahsulot turlarini boshqaring</p>
-                </div>
-                <Button onClick={() => handleOpenDialog()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Yangi tur qo'shish
-                </Button>
-            </div>
-
             {/* Main Card */}
             <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Package className="h-6 w-6 text-primary" />
-                            <div>
-                                <CardTitle>Barcha turlar</CardTitle>
-                                <CardDescription>
-                                    Jami {pagination?.total || 0} ta mahsulot turi
-                                </CardDescription>
-                            </div>
+                <CardHeader className="pb-4 flex flex-row items-center justify-between">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <Package className="h-5 w-5 text-primary" />
+                            <CardTitle className="text-lg">Mahsulot turlari</CardTitle>
                         </div>
+                        <CardDescription>
+                            Jami {pagination?.total || 0} ta mahsulot turi
+                        </CardDescription>
                     </div>
+                    <Button onClick={() => handleOpenDialog()}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Yangi tur qo'shish
+                    </Button>
                 </CardHeader>
                 <CardContent>
                     {/* Search */}
@@ -339,13 +329,7 @@ export default function ProductCategories() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[100px]">
-                                                <button
-                                                    className="flex items-center hover:text-foreground transition-colors"
-                                                    onClick={() => handleSort('sorting')}
-                                                >
-                                                    Tartib
-                                                    {getSortIcon('sorting')}
-                                                </button>
+                                                #
                                             </TableHead>
                                             <TableHead>
                                                 <button
@@ -369,14 +353,10 @@ export default function ProductCategories() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {categories.map((category) => (
+                                        {categories.map((category, index) => (
                                             <TableRow key={category.id}>
                                                 <TableCell>
-                                                    {category.sorting !== null ? (
-                                                        <Badge variant="secondary">{category.sorting}</Badge>
-                                                    ) : (
-                                                        <span className="text-muted-foreground">-</span>
-                                                    )}
+                                                    {index + 1 + (currentPage - 1) * ITEMS_PER_PAGE}
                                                 </TableCell>
                                                 <TableCell className="font-medium">{category.name}</TableCell>
                                                 <TableCell>

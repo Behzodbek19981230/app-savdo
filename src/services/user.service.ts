@@ -43,6 +43,7 @@ const toUserFormData = (data: Partial<CreateAppUserPayload>) => {
 		data.roles.forEach((rid) => form.append('roles', String(rid)));
 	}
 	appendIfDefined(form, 'address', data.address);
+	if (typeof data.order_filial === 'number') form.append('order_filial', String(data.order_filial));
 	if (data.avatar) form.append('avatar', data.avatar);
 	return form;
 };

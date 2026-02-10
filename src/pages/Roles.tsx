@@ -215,26 +215,19 @@ export default function Roles() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Rollar</h1>
-          <p className="text-muted-foreground">Rollarni boshqaring</p>
-        </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Yangi role qo'shish
-        </Button>
-      </div>
-
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <Shield className="h-6 w-6 text-primary" />
-            <div>
-              <CardTitle>Barcha rollar</CardTitle>
-              <CardDescription>Jami {pagination?.total || 0} ta</CardDescription>
+        <CardHeader className="pb-4 flex flex-row items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">Rollar</CardTitle>
             </div>
+            <CardDescription>Jami {pagination?.total || 0} ta</CardDescription>
           </div>
+          <Button onClick={() => handleOpenDialog()}>
+            <Plus className="mr-2 h-4 w-4" />
+            Yangi role qo'shish
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="mb-4">

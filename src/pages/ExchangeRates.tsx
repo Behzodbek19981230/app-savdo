@@ -140,26 +140,20 @@ export default function ExchangeRates() {
 
 	return (
 		<div className='space-y-6'>
-			{/* Header */}
-			<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-				<div>
-					<h1 className='text-2xl font-bold tracking-tight'>Dollar kurslari</h1>
-					<p className='text-muted-foreground'>Barcha filiallar uchun dollar kurslari</p>
-				</div>
-				<Button onClick={() => handleOpenDialog()} className='gap-2'>
-					<Plus className='h-4 w-4' />
-					Yangi kurs
-				</Button>
-			</div>
-
 			{/* Table Card */}
 			<Card>
-				<CardHeader className='pb-4'>
-					<div className='flex items-center gap-2'>
-						<DollarSign className='h-5 w-5 text-green-600' />
-						<CardTitle className='text-lg'>Kurslar ro'yxati</CardTitle>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<DollarSign className='h-5 w-5 text-green-600' />
+							<CardTitle className='text-lg'>Dollar kurslari</CardTitle>
+						</div>
+						<CardDescription>Jami {exchangeRates.length} ta kurs</CardDescription>
 					</div>
-					<CardDescription>Jami {exchangeRates.length} ta kurs</CardDescription>
+					<Button onClick={() => handleOpenDialog()} className='gap-2'>
+						<Plus className='h-4 w-4' />
+						Yangi kurs
+					</Button>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
