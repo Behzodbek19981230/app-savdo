@@ -71,6 +71,7 @@ import { useCreateProductCategory } from '@/hooks/api/useProductCategories';
 import { useCreateProductModel } from '@/hooks/api/useProductModels';
 import { useCreateModelType } from '@/hooks/api/useModelTypes';
 import { useCreateProductTypeSize } from '@/hooks/api/useProductTypeSize';
+import { useCreateUnit, useUnits, unitKeys } from '@/hooks/api/useUnit';
 import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { type Product, ProductType, ProductTypeLabels } from '@/services/product.service';
@@ -110,6 +111,10 @@ export default function Products() {
     const [modelTypeSearch, setModelTypeSearch] = useState('');
     const [sizeSearch, setSizeSearch] = useState('');
     const [unitSearch, setUnitSearch] = useState('');
+    const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
+    const [newUnitName, setNewUnitName] = useState('');
+    const [newUnitCode, setNewUnitCode] = useState('');
+    const [isCreatingUnit, setIsCreatingUnit] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -288,6 +293,7 @@ export default function Products() {
     const createModel = useCreateProductModel();
     const createModelType = useCreateModelType();
     const createProductTypeSize = useCreateProductTypeSize();
+    const createUnit = useCreateUnit();
 
     const products = data?.results || [];
     const pagination = data?.pagination;
@@ -487,6 +493,32 @@ export default function Products() {
             return result ? { id: result.id, name: String(result.size) } : null;
         } catch {
             return null;
+        }
+    };
+
+    // Yangi unit qo'shish (dialog orqali)
+    const handleCreateUnitSubmit = async () => {
+        if (!newUnitName || !newUnitCode) return;
+        setIsCreatingUnit(true);
+        try {
+            const result = await createUnit.mutateAsync({
+                name: newUnitName,
+                code: newUnitCode.toLowerCase(),
+                is_active: true,
+            });
+            // Listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: unitKeys.list({ limit: AUTOCOMPLETE_PAGE_SIZE, is_active: true }),
+            });
+            // Yangi yaratilgan unitni tanlash
+            form.setValue('unit', result.id);
+            setIsUnitDialogOpen(false);
+            setNewUnitName('');
+            setNewUnitCode('');
+        } catch {
+            // error handled in hook
+        } finally {
+            setIsCreatingUnit(false);
         }
     };
 
@@ -1134,17 +1166,18 @@ export default function Products() {
                                     control={form.control}
                                     name='size'
                                     render={({ field }) => {
+                                        // Tanlangan ProductTypeSize da unit borligini tekshirish
                                         const selectedProductTypeSize = productTypeSizes.find(
                                             (s) => s.id === selectedSize,
                                         );
                                         const hasUnitInSize = !!selectedProductTypeSize?.unit;
+
                                         return (
                                             <FormItem>
                                                 <FormLabel>O'lcham</FormLabel>
                                                 <div className='flex'>
-
                                                     <FormControl>
-                                                        <div className='flex-1'>
+                                                        <div className='flex w-[200px]'>
                                                             <Autocomplete
                                                                 options={sizeOptions}
                                                                 value={field.value || undefined}
@@ -1156,12 +1189,12 @@ export default function Products() {
                                                                 }
                                                                 searchPlaceholder="O'lcham qidirish..."
                                                                 emptyText="O'lcham topilmadi"
-                                                                disabled={!selectedModelType}
+                                                                disabled={!selectedModelType} // Faqat Type tanlanmasa disabled
                                                                 isLoading={productTypeSizesInfinite.isLoading}
                                                                 allowCreate={!!selectedModelType}
                                                                 onCreateNew={handleCreateSize}
                                                                 createText="Yangi o'lcham qo'shish"
-                                                                className='rounded-l-none border-l-0'
+                                                                className='rounded-r-none border-r-0'
                                                                 onSearchChange={setSizeSearch}
                                                                 onScrollToBottom={() => productTypeSizesInfinite.fetchNextPage()}
                                                                 hasMore={!!productTypeSizesInfinite.hasNextPage}
@@ -1169,21 +1202,33 @@ export default function Products() {
                                                             />
                                                         </div>
                                                     </FormControl>
-                                                    <Autocomplete
-                                                        options={unitOptions}
-                                                        value={selectedUnit || undefined}
-                                                        onValueChange={(val) => form.setValue('unit', Number(val))}
-                                                        placeholder='birlik'
-                                                        searchPlaceholder="Birlik qidirish..."
-                                                        emptyText="Birlik topilmadi"
-                                                        disabled={hasUnitInSize}
-                                                        className='w-[100px] rounded-r-none border-r-0'
-                                                        onSearchChange={setUnitSearch}
-                                                        onScrollToBottom={() => unitsInfinite.fetchNextPage()}
-                                                        hasMore={!!unitsInfinite.hasNextPage}
-                                                        isLoadingMore={unitsInfinite.isFetchingNextPage}
-                                                        isLoading={unitsInfinite.isLoading}
-                                                    />
+                                                    {/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
+                                                    <Select
+                                                        value={selectedUnit ? String(selectedUnit) : ''}
+                                                        onValueChange={(val) => {
+                                                            if (val === 'create_new') {
+                                                                setIsUnitDialogOpen(true);
+                                                            } else {
+                                                                form.setValue('unit', Number(val));
+                                                            }
+                                                        }}
+                                                        disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
+                                                    >
+                                                        <SelectTrigger className='w-[100px] rounded-l-none border-l-0'>
+                                                            <SelectValue placeholder='birlik' />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {units.map((u) => (
+                                                                <SelectItem key={u.id} value={String(u.id)}>
+                                                                    {u.code}
+                                                                </SelectItem>
+                                                            ))}
+                                                            <SelectItem value='create_new' className='text-primary'>
+                                                                <Plus className='h-3 w-3 inline mr-1' />
+                                                                Yangi
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
                                                 <FormMessage />
                                             </FormItem>
@@ -1592,6 +1637,46 @@ export default function Products() {
                             <p>Rasm mavjud emas</p>
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Yangi o'lchov birligi qo'shish dialog */}
+            <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
+                <DialogContent className='sm:max-w-[400px]'>
+                    <DialogHeader>
+                        <DialogTitle>Yangi o'lchov birligi</DialogTitle>
+                        <DialogDescription>Yangi o'lchov birligini qo'shing</DialogDescription>
+                    </DialogHeader>
+                    <div className='space-y-4 py-4'>
+                        <div className='space-y-2'>
+                            <label className='text-sm font-medium'>Nomi</label>
+                            <Input
+                                placeholder='Masalan: Kilogram'
+                                value={newUnitName}
+                                onChange={(e) => setNewUnitName(e.target.value)}
+                            />
+                        </div>
+                        <div className='space-y-2'>
+                            <label className='text-sm font-medium'>Kodi</label>
+                            <Input
+                                placeholder='Masalan: kg'
+                                value={newUnitCode}
+                                onChange={(e) => setNewUnitCode(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant='outline' onClick={() => setIsUnitDialogOpen(false)}>
+                            Bekor qilish
+                        </Button>
+                        <Button
+                            onClick={handleCreateUnitSubmit}
+                            disabled={!newUnitName || !newUnitCode || isCreatingUnit}
+                        >
+                            {isCreatingUnit && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                            Qo'shish
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

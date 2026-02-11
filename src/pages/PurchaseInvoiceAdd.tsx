@@ -1169,10 +1169,8 @@ export default function PurchaseInvoiceAdd() {
                                             <FormItem>
                                                 <FormLabel>O'lcham</FormLabel>
                                                 <div className='flex'>
-                                                    {/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
-
                                                     <FormControl>
-                                                        <div className='flex-1'>
+                                                        <div className='flex w-[200px]'>
                                                             <Autocomplete
                                                                 options={sizeOptions}
                                                                 value={field.value || undefined}
@@ -1189,7 +1187,7 @@ export default function PurchaseInvoiceAdd() {
                                                                 allowCreate={!!selectedType}
                                                                 onCreateNew={handleCreateSize}
                                                                 createText="Yangi o'lcham qo'shish"
-                                                                className='rounded-l-none border-l-0'
+                                                                className='rounded-r-none border-r-0'
                                                                 onSearchChange={(search) => setSizeSearch(search)}
                                                                 onScrollToBottom={() => {
                                                                     if (
@@ -1208,6 +1206,7 @@ export default function PurchaseInvoiceAdd() {
                                                             />
                                                         </div>
                                                     </FormControl>
+                                                    {/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
                                                     <Select
                                                         value={selectedUnit ? String(selectedUnit) : ''}
                                                         onValueChange={(val) => {
@@ -1219,7 +1218,7 @@ export default function PurchaseInvoiceAdd() {
                                                         }}
                                                         disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
                                                     >
-                                                        <SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
+                                                        <SelectTrigger className='w-[100px] rounded-l-none border-l-0'>
                                                             <SelectValue placeholder='birlik' />
                                                         </SelectTrigger>
                                                         <SelectContent>
