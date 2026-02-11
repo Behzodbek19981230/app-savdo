@@ -49,7 +49,7 @@ const publicRoutes = [
 ];
 const protectedRoutes = [
 	{
-		path: '/',
+		path: '/dashboard',
 		element: <Index />,
 	},
 	{

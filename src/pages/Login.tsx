@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/dashboard/ThemeToggle';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { authService } from '@/services';
+import { useAuth, useUser } from '@/hooks/api';
 
 // Validation schema
 const loginSchema = z.object({
@@ -60,14 +61,19 @@ const Login = () => {
 			});
 
 			localStorage.setItem('isAuthenticated', 'true');
-			await authService.getCurrentUser();
+			const user = await authService.getCurrentUser();
 
 			toast({
 				title: 'Xush kelibsiz!',
 				description: 'Tizimga muvaffaqiyatli kirdingiz.',
 			});
+			if (user?.role_detail.some((role) => role.key === 'admin' || role.key === 'super_admin')) {
+				console.log(user);
 
-			navigate('/');
+				navigate('/dashboard');
+			} else {
+				navigate('/products');
+			}
 		} catch (error) {
 			toast({
 				title: 'Xatolik yuz berdi',

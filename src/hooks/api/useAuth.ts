@@ -31,11 +31,6 @@ export function useLogin() {
 				title: 'Xush kelibsiz!',
 				description: 'Tizimga muvaffaqiyatli kirdingiz.',
 			});
-			if (data.user.role_detail.some((role) => role.key === 'manager')) {
-				navigate('/products');
-			} else {
-				navigate('/');
-			}
 		},
 		onError: (error: any) => {
 			toast({
@@ -65,12 +60,6 @@ export function useRegister() {
 				title: "Ro'yxatdan o'tdingiz!",
 				description: 'Hisobingiz muvaffaqiyatli yaratildi.',
 			});
-
-			if (data.user.role_detail.some((role) => role.key === 'manager')) {
-				navigate('/products');
-			} else {
-				navigate('/');
-			}
 		},
 		onError: (error: any) => {
 			toast({

@@ -245,7 +245,7 @@ export function useDeleteRegion() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id: string) => locationService.deleteRegion(id),
+    mutationFn: (id: number) => locationService.deleteRegion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LOCATION_KEYS.regions });
       toast({
@@ -348,7 +348,7 @@ export function useDeleteDistrict() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id: string) => locationService.deleteDistrict(id),
+    mutationFn: (id: number) => locationService.deleteDistrict(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LOCATION_KEYS.districts });
       toast({

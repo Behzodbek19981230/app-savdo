@@ -52,6 +52,7 @@ export interface LocationListResponse<T> {
 export interface LocationQueryParams {
 	page?: number;
 	perPage?: number;
+	limit?: number;
 	search?: string;
 	ordering?: string;
 	region?: number;

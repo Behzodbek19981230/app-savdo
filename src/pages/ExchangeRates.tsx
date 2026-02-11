@@ -65,7 +65,7 @@ export default function ExchangeRates() {
 
 	// Barcha exchange ratelarni olish (filter yo'q - barchasi)
 	const { data, isLoading } = useExchangeRates();
-	const { data: companiesData } = useCompanies({ perPage: 1000, is_delete: false });
+	const { data: companiesData } = useCompanies({ limit: 1000, is_delete: false });
 
 	const createExchangeRate = useCreateExchangeRate();
 	const updateExchangeRate = useUpdateExchangeRate();
@@ -143,17 +143,13 @@ export default function ExchangeRates() {
 			{/* Table Card */}
 			<Card>
 				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
-				<div>
+					<div>
 						<div className='flex items-center gap-2'>
 							<DollarSign className='h-5 w-5 text-green-600' />
 							<CardTitle className='text-lg'>Dollar kurslari</CardTitle>
 						</div>
 						<CardDescription>Jami {exchangeRates.length} ta kurs</CardDescription>
-				</div>
-				<Button onClick={() => handleOpenDialog()} className='gap-2'>
-					<Plus className='h-4 w-4' />
-					Yangi kurs
-				</Button>
+					</div>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
@@ -164,10 +160,6 @@ export default function ExchangeRates() {
 						<div className='flex flex-col items-center justify-center py-10 text-center'>
 							<DollarSign className='h-12 w-12 text-muted-foreground/50 mb-4' />
 							<p className='text-muted-foreground'>Hozircha kurslar mavjud emas</p>
-							<Button variant='outline' className='mt-4' onClick={() => handleOpenDialog()}>
-								<Plus className='h-4 w-4 mr-2' />
-								Birinchi kursni qo'shing
-							</Button>
 						</div>
 					) : (
 						<div className='rounded-md border'>

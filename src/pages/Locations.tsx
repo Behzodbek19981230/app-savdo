@@ -51,31 +51,33 @@ import type { Country, Region, District } from '@/services/location.service';
 type LocationType = 'region' | 'district';
 
 interface FormData {
-    id?: string;
+    id?: number;
     code: string;
     name: string;
     geo_json?: string;
-    region?: string;
+    region?: number;
 }
 
 export default function Locations() {
     const [activeTab, setActiveTab] = useState<LocationType>('region');
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<FormData | null>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const { data: regionsData, isLoading: regionsLoading } = useRegions({
         search: activeTab === 'region' ? searchTerm : undefined,
     });
     const { data: districtsData, isLoading: districtsLoading } = useDistricts({
         search: activeTab === 'district' ? searchTerm : undefined,
+        region: activeTab === 'district' && selectedRegionFilter && selectedRegionFilter !== 'all' ? Number(selectedRegionFilter) : undefined,
     });
 
     // Viloyatlar ro'yxati (tuman uchun select)
     const { data: allRegionsData } = useRegions({
-        page_size: 1000, // Barcha viloyatlarni olish
+        limit: 1000, // Barcha viloyatlarni olish
     });
 
     // Mutations
@@ -104,8 +106,10 @@ export default function Locations() {
 
     const handleOpenDialog = (item?: Region | District) => {
         if (item) {
-            const regionValue =
-                'region' in item ? (typeof item.region === 'string' ? item.region : item.region_detail?.id) : undefined;
+            const regionValue: number | undefined =
+                'region' in item
+                    ? (typeof item.region === 'number' ? item.region : item.region_detail?.id)
+                    : undefined;
 
             setEditingItem({
                 id: item.id,
@@ -184,7 +188,7 @@ export default function Locations() {
         }
     };
 
-    const openDeleteDialog = (id: string) => {
+    const openDeleteDialog = (id: number) => {
         setDeletingId(id);
         setIsDeleteDialogOpen(true);
     };
@@ -220,7 +224,7 @@ export default function Locations() {
 
             {/* Main Content */}
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as LocationType)}>
-                <TabsList className='grid w-full grid-cols-3'>
+                <TabsList className='grid w-full grid-cols-2'>
                     <TabsTrigger value='region' className='flex items-center gap-2'>
                         <Map className='h-4 w-4' />
                         Viloyatlar
@@ -250,8 +254,8 @@ export default function Locations() {
                         </CardHeader>
                         <CardContent>
                             {/* Search */}
-                            <div className='mb-4'>
-                                <div className='relative'>
+                            <div className='mb-4 flex gap-3'>
+                                <div className='relative flex-1'>
                                     <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
                                     <Input
                                         placeholder='Qidirish...'
@@ -260,6 +264,24 @@ export default function Locations() {
                                         className='pl-9'
                                     />
                                 </div>
+                                {activeTab === 'district' && (
+                                    <Select
+                                        value={selectedRegionFilter}
+                                        onValueChange={(value) => setSelectedRegionFilter(value)}
+                                    >
+                                        <SelectTrigger className='w-[220px]'>
+                                            <SelectValue placeholder="Viloyat bo'yicha filter" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='all'>Barcha viloyatlar</SelectItem>
+                                            {allRegions.map((region) => (
+                                                <SelectItem key={region.id} value={region.id.toString()}>
+                                                    {region.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             </div>
 
                             {/* Table */}
@@ -370,7 +392,7 @@ export default function Locations() {
                                     <Select
                                         value={editingItem?.region?.toString() || ''}
                                         onValueChange={(value) =>
-                                            setEditingItem((prev) => ({ ...prev!, region: value }))
+                                            setEditingItem((prev) => ({ ...prev!, region: Number(value) }))
                                         }
                                     >
                                         <SelectTrigger>

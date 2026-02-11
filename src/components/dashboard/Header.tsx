@@ -45,6 +45,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
 	// Admin role borligini tekshirish
 	const isAdmin = user?.role_detail?.some((role) => role.key === 'admin') || false;
+	const isManager = user?.role_detail?.some((role) => role.key === 'manager') || false;
 	const isSuperAdmin = user?.role_detail?.some((role) => role.key === 'super_admin') || false;
 
 	const createExchangeRate = useCreateExchangeRate();
@@ -141,7 +142,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 								"Kurs yo'q"
 							)}
 						</span>
-						{isAdmin && (
+						{(isAdmin || isManager) && (
 							<Button
 								variant='ghost'
 								size='icon'
@@ -155,8 +156,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 				</div>
 
 				<div className='flex items-center gap-2 lg:gap-2.5 flex-shrink-0'>
-					{/* Mobile dollar kursi button - faqat Admin uchun tahrirlash */}
-					{isAdmin && (
+					{/* Mobile dollar kursi button - faqat Admin va Manager uchun tahrirlash */}
+					{(isAdmin || isManager) && (
 						<Button
 							variant='outline'
 							size='icon'
@@ -302,7 +303,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 					<DialogHeader>
 						<DialogTitle>Dollar kursi</DialogTitle>
 						<DialogDescription>
-							{isAdmin ? 'Bugungi dollar kursini kiriting' : 'Joriy dollar kursi'}
+							{isAdmin || isManager ? 'Bugungi dollar kursini kiriting' : 'Joriy dollar kursi'}
 						</DialogDescription>
 					</DialogHeader>
 					<div className='grid gap-4 py-4'>
@@ -319,16 +320,16 @@ export function Header({ onMenuClick }: HeaderProps) {
 								}}
 								min={0}
 								step={1}
-								disabled={!isAdmin}
-								readOnly={!isAdmin}
+								disabled={!(isAdmin || isManager)}
+								readOnly={!(isAdmin || isManager)}
 							/>
 						</div>
 					</div>
 					<DialogFooter>
 						<Button variant='outline' onClick={() => setIsExchangeDialogOpen(false)}>
-							{isAdmin ? 'Bekor qilish' : 'Yopish'}
+							{isAdmin || isManager ? 'Bekor qilish' : 'Yopish'}
 						</Button>
-						{isAdmin && (
+						{(isAdmin || isManager) && (
 							<Button onClick={handleSaveExchangeRate} disabled={isMutating || !dollarValue}>
 								{isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
 								Saqlash

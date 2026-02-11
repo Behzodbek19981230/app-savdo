@@ -34,6 +34,7 @@ export interface ProductModelQueryParams {
 	ordering?: string;
 	is_delete?: boolean;
 	branch?: number; // Filter by branch
+	branch_category?: number; // Filter by branch
 }
 
 export const productModelService = {

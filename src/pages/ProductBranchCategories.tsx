@@ -83,7 +83,7 @@ export default function ProductBranchCategories() {
 
 	const { data, isLoading } = useProductBranchCategories({
 		page: currentPage,
-		perPage: ITEMS_PER_PAGE,
+		limit: ITEMS_PER_PAGE,
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
@@ -91,7 +91,7 @@ export default function ProductBranchCategories() {
 	});
 
 	const { data: branchesData } = useProductCategories({
-		perPage: 500,
+		limit: 500,
 		is_delete: false,
 	});
 
@@ -275,7 +275,7 @@ export default function ProductBranchCategories() {
 				</CardHeader>
 				<CardContent>
 					<div className='mb-4 flex flex-col sm:flex-row gap-3'>
-						<div className='relative flex-1'>
+						<div className='relative'>
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 							<Input
 								placeholder='Qidirish...'
@@ -298,7 +298,7 @@ export default function ProductBranchCategories() {
 								<SelectValue placeholder="Bo'lim bo'yicha filtrlash" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value='all'>Barcha bo'limlar</SelectItem>
+								<SelectItem value='all'>Barcha turlar</SelectItem>
 								{branches.map((b) => (
 									<SelectItem key={b.id} value={String(b.id)}>
 										{b.name}

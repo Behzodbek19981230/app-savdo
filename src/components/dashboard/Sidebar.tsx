@@ -30,14 +30,6 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Link, useLocation } from 'react-router-dom';
 import { useLogout } from '@/hooks/api/useAuth';
 import { authService } from '@/services';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface NavItem {
 	icon: React.ElementType;
@@ -55,7 +47,7 @@ const adminSection: NavSection[] = [
 	{
 		title: 'ASOSIY',
 		items: [
-			{ icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+			{ icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
 			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
 			// { icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
 			// { icon: TrendingUp, label: 'Sotuvlar', path: '/sales' },
@@ -97,6 +89,14 @@ const managerSection: NavSection[] = [
 		title: 'KOMPLEKT',
 		items: [{ icon: Package, label: 'Mahsulotlar', path: '/products' }],
 	},
+	{
+		title: 'OMBOR',
+		items: [
+			{ icon: Warehouse, label: 'Omborlar', path: '/sklad' },
+			{ icon: ArrowUpCircle, label: 'Kirim (Qabul)', path: '/purchase-invoices' },
+			{ icon: Building2, label: "Ta'minotchilar", path: '/suppliers' },
+		],
+	},
 
 	{
 		title: 'KATALOG',
@@ -115,7 +115,7 @@ const superAdminSection: NavSection = {
 	items: [
 		{ icon: LocateIcon, label: 'Hududlar', path: '/locations' },
 		{ icon: DollarSign, label: 'Dollar kurslari', path: '/exchange-rates' },
-		{ icon: Shield, label: 'Rollar', path: '/role' },
+		// { icon: Shield, label: 'Rollar', path: '/role' },
 		{ icon: Users, label: 'Foydalanuvchilar', path: '/user' },
 		{ icon: Building2, label: 'Filialar', path: '/company' },
 	],
