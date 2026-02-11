@@ -36,6 +36,19 @@ export interface ModelTypeQueryParams {
     madel?: number; // Filter by model
 }
 
+/** POST /product-type/create body: bitta yoki bir nechta model turi + o'lchamlari */
+export interface ProductTypeSizeItem {
+    size: string | number;
+    unit: string | number;
+}
+
+export interface ProductTypeCreateItem {
+    madel: number;
+    name: string;
+    sorting: number;
+    product_type_size: ProductTypeSizeItem[];
+}
+
 export const modelTypeService = {
     // Get all model types
     getModelTypes: async (params?: ModelTypeQueryParams) => {
@@ -52,6 +65,11 @@ export const modelTypeService = {
     // Create model type
     createModelType: async (data: Partial<ModelType>) => {
         return api.post<ModelType>(API_ENDPOINTS.modelTypes.create, data);
+    },
+
+    /** Bulk: model turi + product_type_size ro'yxati. POST /product-type/create */
+    createProductTypesBulk: async (data: ProductTypeCreateItem[]) => {
+        return api.post<ModelType[]>(API_ENDPOINTS.modelTypes.createBulk, data);
     },
 
     // Update model type

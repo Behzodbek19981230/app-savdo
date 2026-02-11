@@ -155,6 +155,7 @@ export const API_ENDPOINTS = {
 		list: '/product-type',
 		byId: (id: string) => `/product-type/${id}`,
 		create: '/product-type',
+		createBulk: '/product-type/create',
 		update: (id: string) => `/product-type/${id}`,
 		delete: (id: string) => `/product-type/${id}`,
 	},

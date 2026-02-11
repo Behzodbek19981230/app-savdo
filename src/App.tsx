@@ -18,7 +18,7 @@ import ProductCategories from './pages/ProductCategories';
 import ProductBranchCategories from './pages/ProductBranchCategories';
 import ProductModels from './pages/ProductModels';
 import ModelSizes from './pages/ModelSizes';
-import ModelTypes from './pages/ModelTypes';
+import ModelTypeAndSize from './pages/ModelTypeAndSize';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Roles from './pages/Roles';
@@ -86,11 +86,11 @@ const protectedRoutes = [
 	},
 	{
 		path: '/model-sizes',
-		element: <ModelSizes />,
+		element: <ModelTypeAndSize defaultTab="model-size" />,
 	},
 	{
 		path: '/model-types',
-		element: <ModelTypes />,
+		element: <ModelTypeAndSize defaultTab="model-type" />,
 	},
 	{
 		path: '/role',

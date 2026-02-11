@@ -78,55 +78,64 @@ export function Autocomplete({
         return () => clearTimeout(t);
     }, [searchValue, serverSearch, onSearchChange]);
 
-    // PopoverContent'ga wheel event listener qo'shish
+    // Ro'yxat (CommandList) ichida scroll ishlashi: Dialog/modal ichida ham wheel ro'yxatda qolsin, boshqa handler'lar ishlamasin
     React.useEffect(() => {
         if (!open || !listRef.current) return;
 
         const listEl = listRef.current;
         const popoverEl = listEl.closest('[role="dialog"]') || listEl.closest('[data-radix-portal]')?.parentElement;
 
-        if (!popoverEl) return;
-
-        const handleWheelEvent = (e: WheelEvent) => {
-            // Agar event CommandList ichida bo'lsa, tabiiy scroll ishlaydi
+        // 1) Document da capture fazada: ro'yxat ustidagi wheel boshqa (masalan Dialog) ga yetmasin, default scroll saqlansin
+        const onDocCapture = (e: WheelEvent) => {
             if (listEl.contains(e.target as Node)) {
-                // Faqat scroll oxiriga yetganda keyingi sahifani yuklash
-                if (onScrollToBottom) {
-                    const threshold = 60;
-                    const checkScroll = () => {
-                        if (listEl.scrollHeight - listEl.scrollTop <= listEl.clientHeight + threshold) {
-                            onScrollToBottom();
-                        }
-                    };
-                    setTimeout(checkScroll, 50);
-                }
-                return;
+                e.stopImmediatePropagation();
             }
+        };
+        document.addEventListener('wheel', onDocCapture, { capture: true, passive: true });
 
-            // Agar event PopoverContent ichida bo'lsa, CommandList'ga scroll qilish
+        // 2) Ro'yxatning o'zida bubble listener — scroll tabiiy ishlaydi, event yuqoriga (dialogga) ketmaydi
+        const onListWheel = (e: WheelEvent) => {
+            e.stopPropagation();
+            if (onScrollToBottom) {
+                const threshold = 60;
+                setTimeout(() => {
+                    if (listEl.scrollHeight - listEl.scrollTop <= listEl.clientHeight + threshold) {
+                        onScrollToBottom();
+                    }
+                }, 50);
+            }
+        };
+        listEl.addEventListener('wheel', onListWheel, { passive: true });
+
+        if (!popoverEl) {
+            return () => {
+                document.removeEventListener('wheel', onDocCapture, { capture: true });
+                listEl.removeEventListener('wheel', onListWheel);
+            };
+        }
+
+        // 3) Qidiruv inputi va boshqa joyda wheel — scroll ni ro'yxatga yo'naltiramiz
+        const handlePopoverWheel = (e: WheelEvent) => {
+            if (listEl.contains(e.target as Node)) return;
             if (popoverEl.contains(e.target as Node)) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                // CommandList'ga scroll qilish
                 listEl.scrollTop += e.deltaY;
-
-                // Scroll oxiriga yetganda keyingi sahifani yuklash
                 if (onScrollToBottom) {
                     const threshold = 60;
-                    const checkScroll = () => {
+                    setTimeout(() => {
                         if (listEl.scrollHeight - listEl.scrollTop <= listEl.clientHeight + threshold) {
                             onScrollToBottom();
                         }
-                    };
-                    setTimeout(checkScroll, 50);
+                    }, 50);
                 }
             }
         };
-
-        popoverEl.addEventListener('wheel', handleWheelEvent, { passive: false });
+        popoverEl.addEventListener('wheel', handlePopoverWheel, { passive: false });
         return () => {
-            popoverEl.removeEventListener('wheel', handleWheelEvent);
+            document.removeEventListener('wheel', onDocCapture, { capture: true });
+            listEl.removeEventListener('wheel', onListWheel);
+            popoverEl.removeEventListener('wheel', handlePopoverWheel);
         };
     }, [open, onScrollToBottom]);
 

@@ -79,8 +79,7 @@ const adminSection: NavSection[] = [
 			{ icon: Layers, label: 'Mahsulot turlari', path: '/product-categories' },
 			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
 			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
-			{ icon: Ruler, label: "Model o'lchamlari", path: '/model-sizes' },
-			{ icon: Tag, label: 'Model turlari', path: '/model-types' },
+			{ icon: Tag, label: "Model turlari va o'lchamlari", path: '/model-types' },
 		],
 	},
 ];
@@ -104,8 +103,7 @@ const managerSection: NavSection[] = [
 			{ icon: Layers, label: 'Mahsulot turlari', path: '/product-categories' },
 			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
 			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
-			{ icon: Ruler, label: "Model o'lchamlari", path: '/model-sizes' },
-			{ icon: Tag, label: 'Model turlari', path: '/model-types' },
+			{ icon: Tag, label: "Model turlari va o'lchamlari", path: '/model-types' },
 		],
 	},
 ];
