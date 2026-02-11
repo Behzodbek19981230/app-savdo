@@ -25,7 +25,7 @@ export interface ProductBranchCategoryListResponse {
 
 export interface ProductBranchCategoryQueryParams {
   page?: number;
-  perPage?: number;
+  limit?: number;
   search?: string;
   ordering?: string;
   is_delete?: boolean;

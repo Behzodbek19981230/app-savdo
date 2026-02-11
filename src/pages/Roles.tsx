@@ -217,17 +217,17 @@ export default function Roles() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-4 flex flex-row items-center justify-between">
-          <div>
+        <div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Rollar</CardTitle>
             </div>
             <CardDescription>Jami {pagination?.total || 0} ta</CardDescription>
-          </div>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="mr-2 h-4 w-4" />
-            Yangi role qo'shish
-          </Button>
+        </div>
+        <Button onClick={() => handleOpenDialog()}>
+          <Plus className="mr-2 h-4 w-4" />
+          Yangi role qo'shish
+        </Button>
         </CardHeader>
         <CardContent>
           <div className="mb-4">

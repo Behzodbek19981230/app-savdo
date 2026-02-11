@@ -16,12 +16,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -51,1192 +51,1427 @@ import { Textarea } from '@/components/ui/textarea';
 
 // Faktura form schema
 const invoiceSchema = z.object({
-	type: z.coerce.number().min(0),
-	supplier: z.coerce.number().positive("Ta'minotchi tanlanishi shart"),
-	filial: z.coerce.number().positive('Filial tanlanishi shart'),
-	sklad: z.coerce.number().positive('Ombor tanlanishi shart'),
-	date: z.string().min(1, 'Sana kiritilishi shart'),
-	employee: z.coerce.number().positive('Xodim tanlanishi shart'),
+    type: z.coerce.number().min(0),
+    supplier: z.coerce.number().positive("Ta'minotchi tanlanishi shart"),
+    filial: z.coerce.number().positive('Filial tanlanishi shart'),
+    sklad: z.coerce.number().positive('Ombor tanlanishi shart'),
+    date: z.string().min(1, 'Sana kiritilishi shart'),
+    employee: z.coerce.number().positive('Xodim tanlanishi shart'),
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
 // Mahsulot form schema
 const productSchema = z.object({
-	product: z.coerce.number().optional(), // Endi ishlatilmaydi
-	reserve_limit: z.coerce.number().positive('Zaxira limiti kiritilishi shart'),
-	is_weight: z.boolean().default(false), // Tarozi
-	branch: z.coerce.number().positive("Bo'lim tanlanishi shart"),
-	branch_category: z.coerce.number().positive("Kategoriya turi tanlanishi shart"),
-	model: z.coerce.number().positive('Brend tanlanishi shart'),
-	type: z.coerce.number().positive('Mahsulot nomi tanlanishi shart'), // Piyola, Kosa, etc.
-	size: z.coerce.number().positive("O'lcham tanlanishi shart"), // ProductTypeSize
-	unit: z.coerce.number().positive("O'lchov birligi tanlanishi shart"), // O'lchov birligi (Unit)
-	count: z.coerce.number().int().positive('Miqdor kiritilishi shart'), // int
-	real_price: z.coerce.number().positive('Xaqiqiy narx kiritilishi shart'), // float - Dollar
-	unit_price: z.coerce.number().positive('Dona narx kiritilishi shart'), // float - Dollar
-	wholesale_price: z.coerce.number().positive('Optom narx kiritilishi shart'), // float - Dollar
-	min_price: z.coerce.number().positive('Minimal narx kiritilishi shart'), // float - Dollar
-	note: z.string().optional(), // Izoh
+    product: z.coerce.number().optional(), // Endi ishlatilmaydi
+    reserve_limit: z.coerce.number().positive('Zaxira limiti kiritilishi shart'),
+    is_weight: z.boolean().default(false), // Tarozi
+    branch: z.coerce.number().positive("Bo'lim tanlanishi shart"),
+    branch_category: z.coerce.number().positive("Kategoriya turi tanlanishi shart"),
+    model: z.coerce.number().positive('Brend tanlanishi shart'),
+    type: z.coerce.number().positive('Mahsulot nomi tanlanishi shart'), // Piyola, Kosa, etc.
+    size: z.coerce.number().positive("O'lcham tanlanishi shart"), // ProductTypeSize
+    unit: z.coerce.number().positive("O'lchov birligi tanlanishi shart"), // O'lchov birligi (Unit)
+    count: z.coerce.number().int().positive('Miqdor kiritilishi shart'), // int
+    real_price: z.coerce.number().positive('Xaqiqiy narx kiritilishi shart'), // float - Dollar
+    unit_price: z.coerce.number().positive('Dona narx kiritilishi shart'), // float - Dollar
+    wholesale_price: z.coerce.number().positive('Optom narx kiritilishi shart'), // float - Dollar
+    min_price: z.coerce.number().positive('Minimal narx kiritilishi shart'), // float - Dollar
+    note: z.string().optional(), // Izoh
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
 
 // Qo'shilgan mahsulot turi
 interface AddedProduct extends ProductFormData {
-	id: number;
-	product_name?: string; // Type name (Piyola, Kosa, etc.)
-	branch_name?: string;
-	branch_category_name?: string;
-	model_name?: string;
-	type_name?: string;
-	size_name?: string;
-	unit_name?: string;
+    id: number;
+    product_name?: string; // Type name (Piyola, Kosa, etc.)
+    branch_name?: string;
+    branch_category_name?: string;
+    model_name?: string;
+    type_name?: string;
+    size_name?: string;
+    unit_name?: string;
 }
 
 export default function PurchaseInvoiceAdd() {
-	const navigate = useNavigate();
-	const { user } = useAuthContext();
-	const { toast } = useToast();
-	const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
-	const [addedProducts, setAddedProducts] = useState<AddedProduct[]>([]);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [tempProductId, setTempProductId] = useState(1);
-	const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
-	const [newUnitName, setNewUnitName] = useState('');
-	const [newUnitCode, setNewUnitCode] = useState('');
-	const [isCreatingUnit, setIsCreatingUnit] = useState(false);
+    const navigate = useNavigate();
+    const { user } = useAuthContext();
+    const { toast } = useToast();
+    const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+    const [addedProducts, setAddedProducts] = useState<AddedProduct[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [tempProductId, setTempProductId] = useState(1);
+    const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
+    const [newUnitName, setNewUnitName] = useState('');
+    const [newUnitCode, setNewUnitCode] = useState('');
+    const [isCreatingUnit, setIsCreatingUnit] = useState(false);
 
-	// Faktura form
-	const invoiceForm = useForm<InvoiceFormData>({
-		resolver: zodResolver(invoiceSchema),
-		defaultValues: {
-			type: 0,
-			supplier: 0,
-			filial: user?.filials_detail?.[0]?.id || 0,
-			sklad: 0,
-			date: moment().format('YYYY-MM-DD'),
-			employee: user?.id || 0,
-		},
-	});
+    // Autocomplete pagination va search state'lar
+    const [categoryPage, setCategoryPage] = useState(1);
+    const [categorySearch, setCategorySearch] = useState('');
+    const [allCategories, setAllCategories] = useState<Array<{ value: number; label: string }>>([]);
 
-	// Mahsulot form
-	const productForm = useForm<ProductFormData>({
-		resolver: zodResolver(productSchema),
-		defaultValues: {
-			product: 0,
-			reserve_limit: 100,
-			is_weight: false,
-			branch: 0,
-			branch_category: 0,
-			model: 0,
-			type: 0,
-			size: 0,
-			unit: 0,
-			count: 0,
-			real_price: 0,
-			unit_price: 0,
-			wholesale_price: 0,
-			min_price: 0,
-			note: '',
-		},
-	});
+    const [modelPage, setModelPage] = useState(1);
+    const [modelSearch, setModelSearch] = useState('');
+    const [allModels, setAllModels] = useState<Array<{ value: number; label: string }>>([]);
 
-	const selectedFilial = invoiceForm.watch('filial');
-	const selectedBranch = productForm.watch('branch');
-	const selectedModel = productForm.watch('model');
-	const selectedType = productForm.watch('type');
-	const selectedUnit = productForm.watch('unit');
-	const selectedSize = productForm.watch('size');
+    const [typePage, setTypePage] = useState(1);
+    const [typeSearch, setTypeSearch] = useState('');
+    const [allTypes, setAllTypes] = useState<Array<{ value: number; label: string }>>([]);
 
-	// Data fetching
-	const { data: usersData } = useUsers({ limit: 1000, is_active: true });
-	const { data: suppliersData } = useSuppliers({ perPage: 1000, is_delete: false });
-	const { data: companiesData } = useCompanies({ perPage: 1000, is_delete: false });
-	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilial || undefined, is_delete: false });
-	const { data: productsData } = useProducts({ limit: 1000, is_delete: false });
-	const { data: categoriesData } = useProductCategories({ perPage: 1000, is_delete: false });
-	const { data: branchCategoriesData } = useProductBranchCategories(
-		selectedBranch ? { perPage: 1000, is_delete: false, product_branch: selectedBranch } : undefined,
-	);
-	const { data: modelsData, isLoading: isModelsLoading } = useProductModels(
-		selectedBranch ? { limit: 1000, is_delete: false, branch: selectedBranch } : undefined,
-	);
-	const { data: typesData, isLoading: isTypesLoading } = useModelTypes(
-		selectedModel ? { limit: 1000, is_delete: false, madel: selectedModel } : undefined,
-	);
-	const { data: sizesData } = useModelSizes({ perPage: 1000, is_delete: false });
-	const { data: unitsData, isLoading: isUnitsLoading } = useUnits({ limit: 1000, is_active: true });
-	const { data: productTypeSizesData, isLoading: isSizesLoading } = useProductTypeSizes(
-		selectedType ? { limit: 1000, is_delete: false, product_type: selectedType } : undefined,
-	);
-	const { data: exchangeRatesData } = useExchangeRates(selectedFilial ? { filial: selectedFilial } : undefined);
+    const [sizePage, setSizePage] = useState(1);
+    const [sizeSearch, setSizeSearch] = useState('');
+    const [allSizes, setAllSizes] = useState<Array<{ value: number; label: string }>>([]);
 
-	const users = usersData?.results || [];
-	const suppliers = suppliersData?.results || [];
-	const companies = companiesData?.results || [];
-	const sklads = skladsData?.results || [];
-	const products = productsData?.results || [];
-	const categories = categoriesData?.results || [];
-	const branchCategories = branchCategoriesData?.results || [];
-	const models = modelsData?.results || [];
-	const types = typesData?.results || [];
-	const sizes = sizesData?.results || [];
-	const units = unitsData?.results || [];
-	const productTypeSizes = productTypeSizesData?.results || [];
-	const dollarRate = exchangeRatesData?.results?.[0]?.dollar || 12500;
+    // Faktura form
+    const invoiceForm = useForm<InvoiceFormData>({
+        resolver: zodResolver(invoiceSchema),
+        defaultValues: {
+            type: 0,
+            supplier: 0,
+            filial: user?.filials_detail?.[0]?.id || 0,
+            sklad: 0,
+            date: moment().format('YYYY-MM-DD'),
+            employee: user?.id || 0,
+        },
+    });
 
-	// Mutations
-	const createPurchaseInvoice = useCreatePurchaseInvoice();
-	const createProductHistory = useCreateProductHistory();
-	const createSupplier = useCreateSupplier();
-	const createModel = useCreateProductModel();
-	const createProductCategory = useCreateProductCategory();
-	const createType = useCreateModelType();
-	const createUnit = useCreateUnit();
-	const createProductTypeSize = useCreateProductTypeSize();
+    // Mahsulot form
+    const productForm = useForm<ProductFormData>({
+        resolver: zodResolver(productSchema),
+        defaultValues: {
+            product: 0,
+            reserve_limit: 100,
+            is_weight: false,
+            branch: 0,
+            branch_category: 0,
+            model: 0,
+            type: 0,
+            size: 0,
+            unit: 0,
+            count: 0,
+            real_price: 0,
+            unit_price: 0,
+            wholesale_price: 0,
+            min_price: 0,
+            note: '',
+        },
+    });
 
-	// Autocomplete uchun category options
-	const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
+    const selectedFilial = invoiceForm.watch('filial');
+    const selectedBranch = productForm.watch('branch');
+    const selectedModel = productForm.watch('model');
+    const selectedType = productForm.watch('type');
+    const selectedUnit = productForm.watch('unit');
+    const selectedSize = productForm.watch('size');
 
-	// Kategoriya turi (branch_category) options - tanlangan branch bo'yicha
-	const branchCategoryOptions = branchCategories.map((c) => ({ value: c.id, label: c.name }));
+    // Data fetching
+    const { data: usersData } = useUsers({ limit: 20, is_active: true });
+    const { data: suppliersData } = useSuppliers({ limit: 20, is_delete: false });
+    const { data: companiesData } = useCompanies({ limit: 20, is_delete: false });
+    const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilial || undefined, is_delete: false });
+    const { data: productsData } = useProducts({ limit: 20, is_delete: false });
 
-	// Autocomplete uchun model options (branch bo'yicha filtrlangan)
-	const modelOptions = models.map((m) => ({ value: m.id, label: m.name }));
+    // Categories with pagination and search
+    const { data: categoriesData, isLoading: isCategoriesLoading } = useProductCategories({
+        page: categoryPage,
+        limit: 20,
+        search: categorySearch || undefined,
+        is_delete: false,
+    });
 
-	// Autocomplete uchun type options (model bo'yicha filtrlangan)
-	const typeOptions = types.map((t) => ({ value: t.id, label: t.name }));
+    const { data: branchCategoriesData } = useProductBranchCategories(
+        selectedBranch ? { limit: 20, is_delete: false, product_branch: selectedBranch } : undefined,
+    );
 
-	// Autocomplete uchun unit options
-	const unitOptions = units.map((u) => ({ value: u.id, label: `${u.name} (${u.code})` }));
+    // Models with pagination and search
+    const { data: modelsData, isLoading: isModelsLoading } = useProductModels(
+        selectedBranch
+            ? {
+                page: modelPage,
+                limit: 20,
+                search: modelSearch || undefined,
+                is_delete: false,
+                branch: selectedBranch,
+            }
+            : undefined,
+    );
 
-	// Autocomplete uchun size options (type bo'yicha filtrlangan)
-	const sizeOptions = productTypeSizes.map((s) => ({ value: s.id, label: String(s.size) }));
+    // Types with pagination and search
+    const { data: typesData, isLoading: isTypesLoading } = useModelTypes(
+        selectedModel
+            ? {
+                page: typePage,
+                limit: 20,
+                search: typeSearch || undefined,
+                is_delete: false,
+                madel: selectedModel,
+            }
+            : undefined,
+    );
 
-	// Yangi bo'lim (category) qo'shish
-	const handleCreateCategory = async (name: string) => {
-		try {
-			const result = await createProductCategory.mutateAsync({
-				name,
-				sorting: 0,
-				is_delete: false,
-			});
-			return { id: result.id, name: result.name };
-		} catch {
-			return null;
-		}
-	};
+    const { data: sizesData } = useModelSizes({ limit: 20, is_delete: false });
+    const { data: unitsData, isLoading: isUnitsLoading } = useUnits({ limit: 20, is_active: true });
 
-	// Query client
-	const queryClient = useQueryClient();
+    // ProductTypeSizes with pagination and search
+    const { data: productTypeSizesData, isLoading: isSizesLoading } = useProductTypeSizes(
+        selectedType
+            ? {
+                page: sizePage,
+                limit: 20,
+                search: sizeSearch || undefined,
+                is_delete: false,
+                product_type: selectedType,
+            }
+            : undefined,
+    );
 
-	// Yangi model qo'shish (tanlangan branch bilan)
-	const handleCreateModel = async (name: string) => {
-		if (!selectedBranch) return null;
-		try {
-			const result = await createModel.mutateAsync({
-				name,
-				branch: selectedBranch,
-				sorting: 0,
-				is_delete: false,
-			});
-			// Mos branch bo'yicha listni qayta yuklash
-			await queryClient.invalidateQueries({
-				queryKey: PRODUCT_MODEL_KEYS.list({ limit: 1000, is_delete: false, branch: selectedBranch }),
-			});
-			return { id: result.id, name: result.name };
-		} catch {
-			return null;
-		}
-	};
+    const { data: exchangeRatesData } = useExchangeRates(selectedFilial ? { filial: selectedFilial } : undefined);
 
-	// Yangi type qo'shish (tanlangan model bilan)
-	const handleCreateType = async (name: string) => {
-		if (!selectedModel) return null;
-		try {
-			const result = await createType.mutateAsync({
-				name,
-				madel: selectedModel,
-				sorting: 0,
-				is_delete: false,
-			});
-			// Mos model bo'yicha listni qayta yuklash
-			await queryClient.invalidateQueries({
-				queryKey: modelTypeKeys.list({ limit: 1000, is_delete: false, madel: selectedModel }),
-			});
-			return { id: result.id, name: result.name };
-		} catch {
-			return null;
-		}
-	};
+    const users = usersData?.results || [];
+    const suppliers = suppliersData?.results || [];
+    const companies = companiesData?.results || [];
+    const sklads = skladsData?.results || [];
+    const products = productsData?.results || [];
+    const categories = categoriesData?.results || [];
+    const branchCategories = branchCategoriesData?.results || [];
+    const models = modelsData?.results || [];
+    const types = typesData?.results || [];
+    const sizes = sizesData?.results || [];
+    const units = unitsData?.results || [];
+    const productTypeSizes = productTypeSizesData?.results || [];
+    const dollarRate = exchangeRatesData?.results?.[0]?.dollar || 12500;
 
-	// Yangi unit qo'shish (dialog orqali)
-	const handleCreateUnitSubmit = async () => {
-		if (!newUnitName || !newUnitCode) return;
-		setIsCreatingUnit(true);
-		try {
-			const result = await createUnit.mutateAsync({
-				name: newUnitName,
-				code: newUnitCode.toLowerCase(),
-				is_active: true,
-			});
-			// Listni qayta yuklash
-			await queryClient.invalidateQueries({
-				queryKey: unitKeys.list({ limit: 1000, is_active: true }),
-			});
-			// Yangi yaratilgan unitni tanlash
-			productForm.setValue('unit', result.id);
-			setIsUnitDialogOpen(false);
-			setNewUnitName('');
-			setNewUnitCode('');
-		} catch {
-			// error handled in hook
-		} finally {
-			setIsCreatingUnit(false);
-		}
-	};
+    // Categories pagination va search uchun effect
+    useEffect(() => {
+        if (categoriesData?.results) {
+            if (categoryPage === 1) {
+                setAllCategories(categoriesData.results.map((c) => ({ value: c.id, label: c.name })));
+            } else {
+                setAllCategories((prev) => {
+                    const existingIds = new Set(prev.map((p) => p.value));
+                    const newItems = categoriesData.results
+                        .filter((c) => !existingIds.has(c.id))
+                        .map((c) => ({ value: c.id, label: c.name }));
+                    return [...prev, ...newItems];
+                });
+            }
+        }
+    }, [categoriesData, categoryPage]);
 
-	// Yangi size qo'shish (tanlangan type va unit bilan)
-	const handleCreateSize = async (sizeValue: string) => {
-		if (!selectedType) return null;
-		if (!selectedUnit) {
-			toast({
-				title: 'Xatolik',
-				description: "Yangi o'lcham qo'shish uchun avval o'lchov birligini tanlang",
-				variant: 'destructive',
-			});
-			return null;
-		}
-		try {
-			const result = await createProductTypeSize.mutateAsync({
-				product_type: selectedType,
-				size: parseFloat(sizeValue) || 0,
-				unit: selectedUnit, // O'lchov birligi (Unit ID)
-				sorting: 0,
-				is_delete: false,
-			});
-			// Mos type bo'yicha listni qayta yuklash
-			await queryClient.invalidateQueries({
-				queryKey: productTypeSizeKeys.list({ limit: 1000, is_delete: false, product_type: selectedType }),
-			});
-			return { id: result.id, name: String(result.size) };
-		} catch {
-			return null;
-		}
-	};
+    // Category search o'zgarganda page ni reset qilish
+    useEffect(() => {
+        setCategoryPage(1);
+        setAllCategories([]);
+    }, [categorySearch]);
 
-	// Branch o'zgarganda model va type ni tozalash
-	useEffect(() => {
-		productForm.setValue('model', 0);
-		productForm.setValue('type', 0);
-	}, [selectedBranch]);
+    // Models pagination va search uchun effect
+    useEffect(() => {
+        if (modelsData?.results && selectedBranch) {
+            if (modelPage === 1) {
+                setAllModels(modelsData.results.map((m) => ({ value: m.id, label: m.name })));
+            } else {
+                setAllModels((prev) => {
+                    const existingIds = new Set(prev.map((p) => p.value));
+                    const newItems = modelsData.results
+                        .filter((m) => !existingIds.has(m.id))
+                        .map((m) => ({ value: m.id, label: m.name }));
+                    return [...prev, ...newItems];
+                });
+            }
+        }
+    }, [modelsData, modelPage, selectedBranch]);
 
-	// Model o'zgarganda type va size ni tozalash
-	useEffect(() => {
-		productForm.setValue('type', 0);
-		productForm.setValue('size', 0);
-	}, [selectedModel]);
+    // Model search o'zgarganda page ni reset qilish
+    useEffect(() => {
+        setModelPage(1);
+        setAllModels([]);
+    }, [modelSearch]);
 
-	// Type o'zgarganda size ni tozalash
-	useEffect(() => {
-		productForm.setValue('size', 0);
-	}, [selectedType]);
+    // Branch o'zgarganda model listni tozalash
+    useEffect(() => {
+        setModelPage(1);
+        setModelSearch('');
+        setAllModels([]);
+    }, [selectedBranch]);
 
-	// ProductTypeSize tanlanganda mos unit ni default qilish
-	useEffect(() => {
-		if (selectedSize) {
-			const selectedProductTypeSize = productTypeSizes.find((s) => s.id === selectedSize);
-			if (selectedProductTypeSize?.unit) {
-				productForm.setValue('unit', selectedProductTypeSize.unit);
-			}
-		}
-	}, [selectedSize, productTypeSizes]);
+    // Types pagination va search uchun effect
+    useEffect(() => {
+        if (typesData?.results && selectedModel) {
+            if (typePage === 1) {
+                setAllTypes(typesData.results.map((t) => ({ value: t.id, label: t.name })));
+            } else {
+                setAllTypes((prev) => {
+                    const existingIds = new Set(prev.map((p) => p.value));
+                    const newItems = typesData.results
+                        .filter((t) => !existingIds.has(t.id))
+                        .map((t) => ({ value: t.id, label: t.name }));
+                    return [...prev, ...newItems];
+                });
+            }
+        }
+    }, [typesData, typePage, selectedModel]);
 
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('uz-UZ').format(value);
-	};
+    // Type search o'zgarganda page ni reset qilish
+    useEffect(() => {
+        setTypePage(1);
+        setAllTypes([]);
+    }, [typeSearch]);
 
-	// Dollar formatlagich
-	const formatDollar = (value: number) => {
-		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-	};
+    // Model o'zgarganda type listni tozalash
+    useEffect(() => {
+        setTypePage(1);
+        setTypeSearch('');
+        setAllTypes([]);
+    }, [selectedModel]);
 
-	// Branch o'zgarganda branch_category ni tozalash
-	useEffect(() => {
-		if (isProductDialogOpen) {
-			productForm.setValue('branch_category', 0);
-		}
-	}, [selectedBranch, isProductDialogOpen]);
+    // Sizes pagination va search uchun effect
+    useEffect(() => {
+        if (productTypeSizesData?.results && selectedType) {
+            if (sizePage === 1) {
+                setAllSizes(productTypeSizesData.results.map((s) => ({ value: s.id, label: String(s.size) })));
+            } else {
+                setAllSizes((prev) => {
+                    const existingIds = new Set(prev.map((p) => p.value));
+                    const newItems = productTypeSizesData.results
+                        .filter((s) => !existingIds.has(s.id))
+                        .map((s) => ({ value: s.id, label: String(s.size) }));
+                    return [...prev, ...newItems];
+                });
+            }
+        }
+    }, [productTypeSizesData, sizePage, selectedType]);
 
-	// Mahsulot qo'shish dialogini ochish
-	const openProductDialog = () => {
-		productForm.reset({
-			product: 0,
-			reserve_limit: 100,
-			is_weight: false,
-			branch: 0,
-			branch_category: 0,
-			model: 0,
-			type: 0,
-			size: 0,
-			unit: 0,
-			count: 0,
-			real_price: 0,
-			unit_price: 0,
-			wholesale_price: 0,
-			min_price: 0,
-			note: '',
-		});
-		setIsProductDialogOpen(true);
-	};
+    // Size search o'zgarganda page ni reset qilish
+    useEffect(() => {
+        setSizePage(1);
+        setAllSizes([]);
+    }, [sizeSearch]);
 
-	// Mahsulotni listga qo'shish
-	const handleAddProduct = (values: ProductFormData) => {
-		const branch = categories.find((c) => c.id === values.branch);
-		const branchCategory = branchCategories.find((c) => c.id === values.branch_category);
-		const model = models.find((m) => m.id === values.model);
-		const type = types.find((t) => t.id === values.type);
-		const size = productTypeSizes.find((s) => s.id === values.size);
-		const unit = units.find((u) => u.id === values.unit);
+    // Type o'zgarganda size listni tozalash
+    useEffect(() => {
+        setSizePage(1);
+        setSizeSearch('');
+        setAllSizes([]);
+    }, [selectedType]);
 
-		// Product nomini branch + kategoriya turi + model + type + size orqali yasaymiz
-		const productName =
-			[branch?.name, branchCategory?.name, model?.name, type?.name, size ? String(size.size) : undefined]
-				.filter(Boolean)
-				.join(' ') || 'Mahsulot';
+    // Mutations
+    const createPurchaseInvoice = useCreatePurchaseInvoice();
+    const createProductHistory = useCreateProductHistory();
+    const createSupplier = useCreateSupplier();
+    const createModel = useCreateProductModel();
+    const createProductCategory = useCreateProductCategory();
+    const createType = useCreateModelType();
+    const createUnit = useCreateUnit();
+    const createProductTypeSize = useCreateProductTypeSize();
 
-		const newProduct: AddedProduct = {
-			...values,
-			id: tempProductId,
-			product_name: productName,
-			branch_name: branch?.name,
-			branch_category_name: branchCategory?.name,
-			model_name: model?.name,
-			type_name: type?.name,
-			size_name: size ? String(size.size) : undefined,
-			unit_name: unit?.name,
-		};
+    // Autocomplete uchun category options (dynamic)
+    const categoryOptions = allCategories;
 
-		setAddedProducts([...addedProducts, newProduct]);
-		setTempProductId(tempProductId + 1);
-		setIsProductDialogOpen(false);
-	};
+    // Kategoriya turi (branch_category) options - tanlangan branch bo'yicha
+    const branchCategoryOptions = branchCategories.map((c) => ({ value: c.id, label: c.name }));
 
-	// Mahsulotni listdan o'chirish
-	const handleRemoveProduct = (id: number) => {
-		setAddedProducts(addedProducts.filter((p) => p.id !== id));
-	};
+    // Autocomplete uchun model options (dynamic)
+    const modelOptions = allModels;
 
-	// Jami summani hisoblash
-	const totalSum = addedProducts.reduce((sum, p) => sum + p.count * p.real_price, 0);
+    // Autocomplete uchun type options (dynamic)
+    const typeOptions = allTypes;
 
-	// Fakturani saqlash
-	const handleSubmit = async (values: InvoiceFormData) => {
-		console.log(464);
+    // Autocomplete uchun unit options
+    const unitOptions = units.map((u) => ({ value: u.id, label: `${u.name} (${u.code})` }));
 
-		if (addedProducts.length === 0) {
-			return;
-		}
+    // Autocomplete uchun size options (dynamic)
+    const sizeOptions = allSizes;
 
-		setIsSubmitting(true);
+    // Yangi bo'lim (category) qo'shish
+    const handleCreateCategory = async (name: string) => {
+        try {
+            const result = await createProductCategory.mutateAsync({
+                name,
+                sorting: 0,
+                is_delete: false,
+            });
+            return { id: result.id, name: result.name };
+        } catch {
+            return null;
+        }
+    };
 
-		try {
-			// 1. Fakturani yaratish
-			const invoice = await createPurchaseInvoice.mutateAsync({
-				type: values.type ?? 0,
-				supplier: values.supplier,
-				filial: values.filial,
-				sklad: values.sklad,
-				date: values.date,
-				employee: values.employee,
-				product_count: addedProducts.length,
-				all_product_summa: totalSum,
-			});
+    // Query client
+    const queryClient = useQueryClient();
 
-			// 2. Har bir mahsulotni ProductHistory ga qo'shish
-			for (const product of addedProducts) {
-				await createProductHistory.mutateAsync({
-					date: values.date,
-					reserve_limit: product.reserve_limit,
-					purchase_invoice: invoice.id,
-					branch: product.branch,
-					branch_category: product.branch_category,
-					model: product.model,
-					type: product.type,
-					size: product.size,
-					unit: product.unit,
-					is_weight: product.is_weight,
-					count: product.count,
-					real_price: product.real_price,
-					unit_price: product.unit_price,
-					wholesale_price: product.wholesale_price,
-					min_price: product.min_price,
-					note: product.note,
-					filial_id: values.filial,
-				});
-			}
+    // Yangi model qo'shish (tanlangan branch bilan)
+    const handleCreateModel = async (name: string) => {
+        if (!selectedBranch) return null;
+        try {
+            const result = await createModel.mutateAsync({
+                name,
+                branch: selectedBranch,
+                sorting: 0,
+                is_delete: false,
+            });
+            // Mos branch bo'yicha listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: PRODUCT_MODEL_KEYS.list({ limit: 20, is_delete: false, branch: selectedBranch }),
+            });
+            return { id: result.id, name: result.name };
+        } catch {
+            return null;
+        }
+    };
 
-			navigate('/purchase-invoices');
-		} catch {
-			// handled in hooks
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
+    // Yangi type qo'shish (tanlangan model bilan)
+    const handleCreateType = async (name: string) => {
+        if (!selectedModel) return null;
+        try {
+            const result = await createType.mutateAsync({
+                name,
+                madel: selectedModel,
+                sorting: 0,
+                is_delete: false,
+            });
+            // Mos model bo'yicha listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: modelTypeKeys.list({ limit: 20, is_delete: false, madel: selectedModel }),
+            });
+            return { id: result.id, name: result.name };
+        } catch {
+            return null;
+        }
+    };
 
-	return (
-		<div className='space-y-6'>
-			{/* Header */}
-			<div className='flex items-center gap-4'>
-				<Button variant='ghost' size='icon' onClick={() => navigate('/purchase-invoices')}>
-					<ArrowLeft className='h-5 w-5' />
-				</Button>
-				<div>
-					<h1 className='text-xl font-bold tracking-tight'>Yangi tovar kirimi</h1>
-				</div>
-			</div>
+    // Yangi unit qo'shish (dialog orqali)
+    const handleCreateUnitSubmit = async () => {
+        if (!newUnitName || !newUnitCode) return;
+        setIsCreatingUnit(true);
+        try {
+            const result = await createUnit.mutateAsync({
+                name: newUnitName,
+                code: newUnitCode.toLowerCase(),
+                is_active: true,
+            });
+            // Listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: unitKeys.list({ limit: 20, is_active: true }),
+            });
+            // Yangi yaratilgan unitni tanlash
+            productForm.setValue('unit', result.id);
+            setIsUnitDialogOpen(false);
+            setNewUnitName('');
+            setNewUnitCode('');
+        } catch {
+            // error handled in hook
+        } finally {
+            setIsCreatingUnit(false);
+        }
+    };
 
-			<div className='space-y-6'>
-				{/* Faktura ma'lumotlari - yuqorida bir qatorda */}
-				<Card>
-					<CardHeader className='pb-4'>
-						<CardTitle className='flex items-center gap-2 text-xl'>
-							<ArrowDownCircle className='h-5 w-5 text-green-600' />
-							Faktura ma'lumotlari
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<Form {...invoiceForm}>
-							<form className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end'>
-								<FormField
-									control={invoiceForm.control}
-									name='date'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Sana</FormLabel>
-											<FormControl>
-												<DatePicker
-													date={field.value ? new Date(field.value) : undefined}
-													onDateChange={(date) =>
-														field.onChange(date ? moment(date).format('YYYY-MM-DD') : '')
-													}
-													placeholder='Sanani tanlang'
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={invoiceForm.control}
-									name='filial'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Filial</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Filialni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{user?.filials_detail?.map((c) => (
-														<SelectItem key={c.id} value={String(c.id)}>
-															{c.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // Yangi size qo'shish (tanlangan type va unit bilan)
+    const handleCreateSize = async (sizeValue: string) => {
+        if (!selectedType) return null;
+        if (!selectedUnit) {
+            toast({
+                title: 'Xatolik',
+                description: "Yangi o'lcham qo'shish uchun avval o'lchov birligini tanlang",
+                variant: 'destructive',
+            });
+            return null;
+        }
+        try {
+            const result = await createProductTypeSize.mutateAsync({
+                product_type: selectedType,
+                size: parseFloat(sizeValue) || 0,
+                unit: selectedUnit, // O'lchov birligi (Unit ID)
+                sorting: 0,
+                is_delete: false,
+            });
+            // Mos type bo'yicha listni qayta yuklash
+            await queryClient.invalidateQueries({
+                queryKey: productTypeSizeKeys.list({ limit: 20, is_delete: false, product_type: selectedType }),
+            });
+            return { id: result.id, name: String(result.size) };
+        } catch {
+            return null;
+        }
+    };
 
-								<FormField
-									control={invoiceForm.control}
-									name='type'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Turi</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={String(field.value)}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Turini tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													<SelectItem value='0'>Tovar kirimi</SelectItem>
-													<SelectItem value='1'>Vozvrat</SelectItem>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // Branch o'zgarganda model va type ni tozalash
+    useEffect(() => {
+        productForm.setValue('model', 0);
+        productForm.setValue('type', 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBranch]);
 
-								<FormField
-									control={invoiceForm.control}
-									name='supplier'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Ta'minotchi</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Ta'minotchini tanlang" />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{suppliers.map((s) => (
-														<SelectItem key={s.id} value={String(s.id)}>
-															{s.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // Model o'zgarganda type va size ni tozalash
+    useEffect(() => {
+        productForm.setValue('type', 0);
+        productForm.setValue('size', 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedModel]);
 
-								<FormField
-									control={invoiceForm.control}
-									name='sklad'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Ombor</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Omborni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{sklads.map((s) => (
-														<SelectItem key={s.id} value={String(s.id)}>
-															{s.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // Type o'zgarganda size ni tozalash
+    useEffect(() => {
+        productForm.setValue('size', 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedType]);
 
-								<FormField
-									control={invoiceForm.control}
-									name='employee'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Xodim</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Xodimni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{users.map((u) => (
-														<SelectItem key={u.id} value={String(u.id)}>
-															{u.full_name || u.username}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // ProductTypeSize tanlanganda mos unit ni default qilish
+    useEffect(() => {
+        if (selectedSize) {
+            const selectedProductTypeSize = productTypeSizes.find((s) => s.id === selectedSize);
+            if (selectedProductTypeSize?.unit) {
+                productForm.setValue('unit', selectedProductTypeSize.unit);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedSize, productTypeSizes]);
 
-								{/* Dollar kursi */}
-								<div className='flex items-center gap-2 p-3 bg-muted rounded-lg h-10'>
-									<DollarSign className='h-4 w-4 text-green-600' />
-									<span className='text-sm'>Kurs:</span>
-									<span className='font-semibold'>{formatCurrency(dollarRate)}</span>
-								</div>
-							</form>
-						</Form>
-					</CardContent>
-				</Card>
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('uz-UZ').format(value);
+    };
 
-				{/* Mahsulotlar - pastda full width */}
-				<Card>
-					<CardHeader>
-						<div className='flex items-center justify-between'>
-							<div>
-								<CardTitle className='flex items-center gap-2'>
-									<Package className='h-5 w-5' />
-									Mahsulotlar
-								</CardTitle>
-								<CardDescription>Kiritilgan mahsulotlar ro'yxati</CardDescription>
-							</div>
-							<Button onClick={openProductDialog} className='gap-2'>
-								<Plus className='h-4 w-4' />
-								Mahsulot qo'shish
-							</Button>
-						</div>
-					</CardHeader>
-					<CardContent>
-						{addedProducts.length === 0 ? (
-							<div className='flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-lg'>
-								<Package className='h-12 w-12 text-muted-foreground/50 mb-4' />
-								<p className='text-muted-foreground'>Mahsulotlar qo'shilmagan</p>
-								<Button variant='outline' className='mt-4' onClick={openProductDialog}>
-									<Plus className='h-4 w-4 mr-2' />
-									Mahsulot qo'shish
-								</Button>
-							</div>
-						) : (
-							<>
-								<div className='rounded-md border'>
-									<Table>
-										<TableHeader>
-											<TableRow>
-												<TableHead>#</TableHead>
-												<TableHead>Mahsulot</TableHead>
-												<TableHead>Bo'lim</TableHead>
-												<TableHead>Kategoriya turi</TableHead>
-												<TableHead>Model</TableHead>
-												<TableHead className='text-right'>Miqdori</TableHead>
-												<TableHead className='text-right'>Narxi ($)</TableHead>
-												<TableHead className='text-right'>Jami ($)</TableHead>
-												<TableHead className='w-[50px]'></TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{addedProducts.map((p, index) => (
-												<TableRow key={p.id}>
-													<TableCell>{index + 1}</TableCell>
-													<TableCell className='font-medium'>{p.product_name}</TableCell>
-													<TableCell>{p.branch_name}</TableCell>
-													<TableCell>{p.branch_category_name ?? '—'}</TableCell>
-													<TableCell>{p.model_name}</TableCell>
-													<TableCell className='text-right'>{p.count}</TableCell>
-													<TableCell className='text-right'>
-														${formatDollar(p.real_price)}
-													</TableCell>
-													<TableCell className='text-right font-semibold'>
-														${formatDollar(p.count * p.real_price)}
-													</TableCell>
-													<TableCell>
-														<Button
-															variant='ghost'
-															size='icon'
-															className='h-8 w-8 text-destructive'
-															onClick={() => handleRemoveProduct(p.id)}
-														>
-															<Trash2 className='h-4 w-4' />
-														</Button>
-													</TableCell>
-												</TableRow>
-											))}
-										</TableBody>
-									</Table>
-								</div>
+    // Dollar formatlagich
+    const formatDollar = (value: number) => {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    };
 
-								{/* Jami */}
-								<div className='mt-4 flex justify-end'>
-									<div className='bg-muted p-4 rounded-lg'>
-										<div className='flex items-center gap-4'>
-											<span className='text-muted-foreground'>Mahsulotlar:</span>
-											<Badge variant='outline'>{addedProducts.length} ta</Badge>
-										</div>
-										<div className='flex items-center gap-4 mt-2'>
-											<span className='text-muted-foreground'>Jami summa:</span>
-											<span className='text-xl font-bold text-green-600'>
-												${formatDollar(totalSum)}
-											</span>
-										</div>
-									</div>
-								</div>
-							</>
-						)}
+    // Branch o'zgarganda branch_category ni tozalash
+    useEffect(() => {
+        if (isProductDialogOpen) {
+            productForm.setValue('branch_category', 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBranch, isProductDialogOpen]);
 
-						{/* Saqlash tugmasi */}
-						<div className='mt-6 flex justify-end'>
-							<Button
-								size='lg'
-								disabled={addedProducts.length === 0 || isSubmitting}
-								onClick={invoiceForm.handleSubmit(handleSubmit, (errors) => {
-									console.log('Validation errors:', errors);
-									// Xatolarni ko'rsatish
-									const errorMessages = Object.entries(errors)
-										.map(([key, value]) => `${key}: ${value?.message}`)
-										.join('\n');
-									if (errorMessages) {
-										alert(`Iltimos, quyidagi maydonlarni to'ldiring:\n${errorMessages}`);
-									}
-								})}
-							>
-								{isSubmitting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-								Saqlash
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+    // Mahsulot qo'shish dialogini ochish
+    const openProductDialog = () => {
+        productForm.reset({
+            product: 0,
+            reserve_limit: 100,
+            is_weight: false,
+            branch: 0,
+            branch_category: 0,
+            model: 0,
+            type: 0,
+            size: 0,
+            unit: 0,
+            count: 0,
+            real_price: 0,
+            unit_price: 0,
+            wholesale_price: 0,
+            min_price: 0,
+            note: '',
+        });
+        setIsProductDialogOpen(true);
+    };
 
-			{/* Mahsulot qo'shish modal */}
-			<Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-				<DialogContent className='w-[95vw] max-w-[800px] max-h-[90vh] overflow-y-auto'>
-					<DialogHeader>
-						<DialogTitle className='text-xl'>Yangi mahsulot qo'shish</DialogTitle>
-						<DialogDescription>Mahsulot ma'lumotlarini kiriting</DialogDescription>
-					</DialogHeader>
-					<Form {...productForm}>
-						<form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
-							{/* Bo'lim va Kategoriya turi */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								<FormField
-									control={productForm.control}
-									name='branch'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Bo'lim <span className='text-destructive'>*</span>
-											</FormLabel>
-											<FormControl>
-												<Autocomplete
-													options={categoryOptions}
-													value={field.value || undefined}
-													onValueChange={(val) => field.onChange(Number(val))}
-													placeholder="Bo'limni tanlang"
-													searchPlaceholder="Bo'lim qidirish..."
-													emptyText="Bo'lim topilmadi"
-													allowCreate
-													onCreateNew={handleCreateCategory}
-													createText="Yangi bo'lim qo'shish"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={productForm.control}
-									name='branch_category'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Kategoriya turi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<FormControl>
-												<Select
-													value={field.value ? String(field.value) : ''}
-													onValueChange={(val) => field.onChange(Number(val))}
-													disabled={!selectedBranch}
-												>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={
-																selectedBranch
-																	? "Kategoriya turini tanlang"
-																	: "Avval bo'limni tanlang"
-															}
-														/>
-													</SelectTrigger>
-													<SelectContent>
-														{branchCategoryOptions.map((opt) => (
-															<SelectItem key={opt.value} value={String(opt.value)}>
-																{opt.label}
-															</SelectItem>
-														))}
-														{branchCategoryOptions.length === 0 && selectedBranch && (
-															<div className='px-2 py-4 text-center text-sm text-muted-foreground'>
-																Bu bo'limda kategoriya yo'q. &quot;Mahsulot turlari kategoriyasi&quot; sahifasida qo'shing.
-															</div>
-														)}
-													</SelectContent>
-												</Select>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							{/* Brend va Mahsulot nomi */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								<FormField
-									control={productForm.control}
-									name='model'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Brend <span className='text-destructive'>*</span>
-											</FormLabel>
-											<FormControl>
-												<Autocomplete
-													options={modelOptions}
-													value={field.value || undefined}
-													onValueChange={(val) => field.onChange(Number(val))}
-													placeholder={
-														selectedBranch ? 'Brendni tanlang' : "Avval bo'limni tanlang"
-													}
-													searchPlaceholder='Brend qidirish...'
-													emptyText='Brend topilmadi'
-													disabled={!selectedBranch}
-													isLoading={isModelsLoading}
-													allowCreate={!!selectedBranch}
-													onCreateNew={handleCreateModel}
-													createText="Yangi brend qo'shish"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={productForm.control}
-									name='type'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Mahsulot nomi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<FormControl>
-												<Autocomplete
-													options={typeOptions}
-													value={field.value || undefined}
-													onValueChange={(val) => field.onChange(Number(val))}
-													placeholder={
-														selectedModel
-															? 'Mahsulot nomini tanlang'
-															: 'Avval brendni tanlang'
-													}
-													searchPlaceholder='Mahsulot qidirish...'
-													emptyText='Mahsulot topilmadi'
-													disabled={!selectedModel}
-													isLoading={isTypesLoading}
-													allowCreate={!!selectedModel}
-													onCreateNew={handleCreateType}
-													createText="Yangi mahsulot qo'shish"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+    // Mahsulotni listga qo'shish
+    const handleAddProduct = (values: ProductFormData) => {
+        const branch = categories.find((c) => c.id === values.branch);
+        const branchCategory = branchCategories.find((c) => c.id === values.branch_category);
+        const model = models.find((m) => m.id === values.model);
+        const type = types.find((t) => t.id === values.type);
+        const size = productTypeSizes.find((s) => s.id === values.size);
+        const unit = units.find((u) => u.id === values.unit);
 
-								{/* O'lcham va O'lchov birligi - yopishgan */}
-								<FormField
-									control={productForm.control}
-									name='size'
-									render={({ field }) => {
-										// Tanlangan ProductTypeSize da unit borligini tekshirish
-										const selectedProductTypeSize = productTypeSizes.find(
-											(s) => s.id === selectedSize,
-										);
-										const hasUnitInSize = !!selectedProductTypeSize?.unit;
+        // Product nomini branch + kategoriya turi + model + type + size orqali yasaymiz
+        const productName =
+            [branch?.name, branchCategory?.name, model?.name, type?.name, size ? String(size.size) : undefined]
+                .filter(Boolean)
+                .join(' ') || 'Mahsulot';
 
-										return (
-											<FormItem>
-												<FormLabel>O'lcham</FormLabel>
-												<div className='flex'>
-													{/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
-													<Select
-														value={selectedUnit ? String(selectedUnit) : ''}
-														onValueChange={(val) => {
-															if (val === 'create_new') {
-																setIsUnitDialogOpen(true);
-															} else {
-																productForm.setValue('unit', Number(val));
-															}
-														}}
-														disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
-													>
-														<SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
-															<SelectValue placeholder='birlik' />
-														</SelectTrigger>
-														<SelectContent>
-															{units.map((u) => (
-																<SelectItem key={u.id} value={String(u.id)}>
-																	{u.code}
-																</SelectItem>
-															))}
-															<SelectItem value='create_new' className='text-primary'>
-																<Plus className='h-3 w-3 inline mr-1' />
-																Yangi
-															</SelectItem>
-														</SelectContent>
-													</Select>
-													<FormControl>
-														<div className='flex-1'>
-															<Autocomplete
-																options={sizeOptions}
-																value={field.value || undefined}
-																onValueChange={(val) => field.onChange(Number(val))}
-																placeholder={
-																	!selectedType
-																		? 'Avval mahsulotni tanlang'
-																		: "O'lchamni tanlang"
-																}
-																searchPlaceholder="O'lcham qidirish..."
-																emptyText="O'lcham topilmadi"
-																disabled={!selectedType} // Faqat Type tanlanmasa disabled
-																isLoading={isSizesLoading}
-																allowCreate={!!selectedType}
-																onCreateNew={handleCreateSize}
-																createText="Yangi o'lcham qo'shish"
-																className='rounded-l-none border-l-0'
-															/>
-														</div>
-													</FormControl>
-												</div>
-												<FormMessage />
-											</FormItem>
-										);
-									}}
-								/>
-							</div>
+        const newProduct: AddedProduct = {
+            ...values,
+            id: tempProductId,
+            product_name: productName,
+            branch_name: branch?.name,
+            branch_category_name: branchCategory?.name,
+            model_name: model?.name,
+            type_name: type?.name,
+            size_name: size ? String(size.size) : undefined,
+            unit_name: unit?.name,
+        };
 
-							{/* Zaxira limiti va Miqdori */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4 items-end'>
-								<FormField
-									control={productForm.control}
-									name='count'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Miqdori <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														placeholder='0'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-3 bg-muted border border-l-0 rounded-r-md text-sm text-muted-foreground'>
-													{units.find((u) => u.id === productForm.watch('unit'))?.code ||
-														'birlik'}
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={productForm.control}
-									name='reserve_limit'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Zaxira limiti{' '}
-												<span className='text-destructive'>*(Xabar berish uchun)</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input type='number' {...field} className='rounded-r-none' />
-												</FormControl>
-												<span className='inline-flex items-center px-3 bg-muted border border-l-0 rounded-r-md text-sm text-muted-foreground'>
-													{units.find((u) => u.id === productForm.watch('unit'))?.code ||
-														'birlik'}
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+        setAddedProducts([...addedProducts, newProduct]);
+        setTempProductId(tempProductId + 1);
+        setIsProductDialogOpen(false);
+    };
 
-							{/* Hidden product field - endi ishlatilmaydi */}
-							<input type='hidden' {...productForm.register('product')} value={1} />
+    // Mahsulotni listdan o'chirish
+    const handleRemoveProduct = (id: number) => {
+        setAddedProducts(addedProducts.filter((p) => p.id !== id));
+    };
 
-							{/* Narxlar - Dollar */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								<FormField
-									control={productForm.control}
-									name='real_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Xaqiqiy narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={productForm.control}
-									name='unit_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Dona narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+    // Jami summani hisoblash
+    const totalSum = addedProducts.reduce((sum, p) => sum + p.count * p.real_price, 0);
 
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								<FormField
-									control={productForm.control}
-									name='wholesale_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Optom narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={productForm.control}
-									name='min_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Minimal narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+    // Fakturani saqlash
+    const handleSubmit = async (values: InvoiceFormData) => {
 
-							{/* Izoh */}
-							<FormField
-								control={productForm.control}
-								name='note'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Izoh</FormLabel>
-										<FormControl>
-											<Textarea placeholder='Izoh yozing...' {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+        if (addedProducts.length === 0) {
+            return;
+        }
 
-							<DialogFooter className='pt-4'>
-								<Button type='submit' size='lg' className='gap-2'>
-									<Plus className='h-5 w-5' />
-									Kiritish
-								</Button>
-							</DialogFooter>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
+        setIsSubmitting(true);
 
-			{/* Yangi o'lchov birligi qo'shish dialog */}
-			<Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
-				<DialogContent className='sm:max-w-[400px]'>
-					<DialogHeader>
-						<DialogTitle>Yangi o'lchov birligi</DialogTitle>
-						<DialogDescription>Yangi o'lchov birligini qo'shing</DialogDescription>
-					</DialogHeader>
-					<div className='space-y-4 py-4'>
-						<div className='space-y-2'>
-							<label className='text-sm font-medium'>Nomi</label>
-							<Input
-								placeholder='Masalan: Kilogram'
-								value={newUnitName}
-								onChange={(e) => setNewUnitName(e.target.value)}
-							/>
-						</div>
-						<div className='space-y-2'>
-							<label className='text-sm font-medium'>Kodi</label>
-							<Input
-								placeholder='Masalan: kg'
-								value={newUnitCode}
-								onChange={(e) => setNewUnitCode(e.target.value)}
-							/>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button variant='outline' onClick={() => setIsUnitDialogOpen(false)}>
-							Bekor qilish
-						</Button>
-						<Button
-							onClick={handleCreateUnitSubmit}
-							disabled={!newUnitName || !newUnitCode || isCreatingUnit}
-						>
-							{isCreatingUnit && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-							Qo'shish
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
-	);
+        try {
+            // 1. Fakturani yaratish
+            const invoice = await createPurchaseInvoice.mutateAsync({
+                type: values.type ?? 0,
+                supplier: values.supplier,
+                filial: values.filial,
+                sklad: values.sklad,
+                date: values.date,
+                employee: values.employee,
+                product_count: addedProducts.length,
+                all_product_summa: totalSum,
+            });
+
+            // 2. Har bir mahsulotni ProductHistory ga qo'shish
+            for (const product of addedProducts) {
+                await createProductHistory.mutateAsync({
+                    date: values.date,
+                    reserve_limit: product.reserve_limit,
+                    purchase_invoice: invoice.id,
+                    branch: product.branch,
+                    branch_category: product.branch_category,
+                    model: product.model,
+                    type: product.type,
+                    size: product.size,
+                    unit: product.unit,
+                    is_weight: product.is_weight,
+                    count: product.count,
+                    real_price: product.real_price,
+                    unit_price: product.unit_price,
+                    wholesale_price: product.wholesale_price,
+                    min_price: product.min_price,
+                    note: product.note,
+                    filial_id: values.filial,
+                });
+            }
+
+            navigate('/purchase-invoices');
+        } catch {
+            // handled in hooks
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className='space-y-6'>
+            {/* Header */}
+            <div className='flex items-center gap-4'>
+                <Button variant='ghost' size='icon' onClick={() => navigate('/purchase-invoices')}>
+                    <ArrowLeft className='h-5 w-5' />
+                </Button>
+                <div>
+                    <h1 className='text-xl font-bold tracking-tight'>Yangi tovar kirimi</h1>
+                </div>
+            </div>
+
+            <div className='space-y-6'>
+                {/* Faktura ma'lumotlari - yuqorida bir qatorda */}
+                <Card>
+                    <CardHeader className='pb-4'>
+                        <CardTitle className='flex items-center gap-2 text-xl'>
+                            <ArrowDownCircle className='h-5 w-5 text-green-600' />
+                            Faktura ma'lumotlari
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...invoiceForm}>
+                            <form className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end'>
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='date'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Sana</FormLabel>
+                                            <FormControl>
+                                                <DatePicker
+                                                    date={field.value ? new Date(field.value) : undefined}
+                                                    onDateChange={(date) =>
+                                                        field.onChange(date ? moment(date).format('YYYY-MM-DD') : '')
+                                                    }
+                                                    placeholder='Sanani tanlang'
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='filial'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Filial</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value ? String(field.value) : ''}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder='Filialni tanlang' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {user?.filials_detail?.map((c) => (
+                                                        <SelectItem key={c.id} value={String(c.id)}>
+                                                            {c.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='type'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Turi</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={String(field.value)}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder='Turini tanlang' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value='0'>Tovar kirimi</SelectItem>
+                                                    <SelectItem value='1'>Vozvrat</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='supplier'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Ta'minotchi</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value ? String(field.value) : ''}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Ta'minotchini tanlang" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {suppliers.map((s) => (
+                                                        <SelectItem key={s.id} value={String(s.id)}>
+                                                            {s.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='sklad'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Ombor</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value ? String(field.value) : ''}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder='Omborni tanlang' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {sklads.map((s) => (
+                                                        <SelectItem key={s.id} value={String(s.id)}>
+                                                            {s.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={invoiceForm.control}
+                                    name='employee'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Xodim</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value ? String(field.value) : ''}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder='Xodimni tanlang' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {users.map((u) => (
+                                                        <SelectItem key={u.id} value={String(u.id)}>
+                                                            {u.full_name || u.username}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Dollar kursi */}
+                                <div className='flex items-center gap-2 p-3 bg-muted rounded-lg h-10'>
+                                    <DollarSign className='h-4 w-4 text-green-600' />
+                                    <span className='text-sm'>Kurs:</span>
+                                    <span className='font-semibold'>{formatCurrency(dollarRate)}</span>
+                                </div>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+
+                {/* Mahsulotlar - pastda full width */}
+                <Card>
+                    <CardHeader>
+                        <div className='flex items-center justify-between'>
+                            <div>
+                                <CardTitle className='flex items-center gap-2'>
+                                    <Package className='h-5 w-5' />
+                                    Mahsulotlar
+                                </CardTitle>
+                                <CardDescription>Kiritilgan mahsulotlar ro'yxati</CardDescription>
+                            </div>
+                            <Button onClick={openProductDialog} className='gap-2'>
+                                <Plus className='h-4 w-4' />
+                                Mahsulot qo'shish
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {addedProducts.length === 0 ? (
+                            <div className='flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-lg'>
+                                <Package className='h-12 w-12 text-muted-foreground/50 mb-4' />
+                                <p className='text-muted-foreground'>Mahsulotlar qo'shilmagan</p>
+                                <Button variant='outline' className='mt-4' onClick={openProductDialog}>
+                                    <Plus className='h-4 w-4 mr-2' />
+                                    Mahsulot qo'shish
+                                </Button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className='rounded-md border'>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>#</TableHead>
+                                                <TableHead>Mahsulot</TableHead>
+                                                <TableHead>Bo'lim</TableHead>
+                                                <TableHead>Kategoriya turi</TableHead>
+                                                <TableHead>Model</TableHead>
+                                                <TableHead className='text-right'>Miqdori</TableHead>
+                                                <TableHead className='text-right'>Narxi ($)</TableHead>
+                                                <TableHead className='text-right'>Jami ($)</TableHead>
+                                                <TableHead className='w-[50px]'></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {addedProducts.map((p, index) => (
+                                                <TableRow key={p.id}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell className='font-medium'>{p.product_name}</TableCell>
+                                                    <TableCell>{p.branch_name}</TableCell>
+                                                    <TableCell>{p.branch_category_name ?? '—'}</TableCell>
+                                                    <TableCell>{p.model_name}</TableCell>
+                                                    <TableCell className='text-right'>{p.count}</TableCell>
+                                                    <TableCell className='text-right'>
+                                                        ${formatDollar(p.real_price)}
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-semibold'>
+                                                        ${formatDollar(p.count * p.real_price)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant='ghost'
+                                                            size='icon'
+                                                            className='h-8 w-8 text-destructive'
+                                                            onClick={() => handleRemoveProduct(p.id)}
+                                                        >
+                                                            <Trash2 className='h-4 w-4' />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                {/* Jami */}
+                                <div className='mt-4 flex justify-end'>
+                                    <div className='bg-muted p-4 rounded-lg'>
+                                        <div className='flex items-center gap-4'>
+                                            <span className='text-muted-foreground'>Mahsulotlar:</span>
+                                            <Badge variant='outline'>{addedProducts.length} ta</Badge>
+                                        </div>
+                                        <div className='flex items-center gap-4 mt-2'>
+                                            <span className='text-muted-foreground'>Jami summa:</span>
+                                            <span className='text-xl font-bold text-green-600'>
+                                                ${formatDollar(totalSum)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Saqlash tugmasi */}
+                        <div className='mt-6 flex justify-end'>
+                            <Button
+                                size='lg'
+                                disabled={addedProducts.length === 0 || isSubmitting}
+                                onClick={invoiceForm.handleSubmit(handleSubmit, (errors) => {
+                                    console.log('Validation errors:', errors);
+                                    // Xatolarni ko'rsatish
+                                    const errorMessages = Object.entries(errors)
+                                        .map(([key, value]) => `${key}: ${value?.message}`)
+                                        .join('\n');
+                                    if (errorMessages) {
+                                        alert(`Iltimos, quyidagi maydonlarni to'ldiring:\n${errorMessages}`);
+                                    }
+                                })}
+                            >
+                                {isSubmitting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                                Saqlash
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Mahsulot qo'shish modal */}
+            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+                <DialogContent className='w-[95vw] max-w-[800px] max-h-[90vh] overflow-y-auto'>
+                    <DialogHeader>
+                        <DialogTitle className='text-xl'>Yangi mahsulot qo'shish</DialogTitle>
+                        <DialogDescription>Mahsulot ma'lumotlarini kiriting</DialogDescription>
+                    </DialogHeader>
+                    <Form {...productForm}>
+                        <form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
+                            {/* Bo'lim va Kategoriya turi */}
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <FormField
+                                    control={productForm.control}
+                                    name='branch'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Bo'lim <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Autocomplete
+                                                    options={categoryOptions}
+                                                    value={field.value || undefined}
+                                                    onValueChange={(val) => field.onChange(Number(val))}
+                                                    placeholder="Bo'limni tanlang"
+                                                    searchPlaceholder="Bo'lim qidirish..."
+                                                    emptyText="Bo'lim topilmadi"
+                                                    allowCreate
+                                                    onCreateNew={handleCreateCategory}
+                                                    createText="Yangi bo'lim qo'shish"
+                                                    isLoading={isCategoriesLoading}
+                                                    onSearchChange={(search) => setCategorySearch(search)}
+                                                    onScrollToBottom={() => {
+                                                        if (
+                                                            categoriesData?.pagination &&
+                                                            categoryPage < categoriesData.pagination.lastPage
+                                                        ) {
+                                                            setCategoryPage((prev) => prev + 1);
+                                                        }
+                                                    }}
+                                                    hasMore={
+                                                        categoriesData?.pagination
+                                                            ? categoryPage < categoriesData.pagination.lastPage
+                                                            : false
+                                                    }
+                                                    isLoadingMore={isCategoriesLoading && categoryPage > 1}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={productForm.control}
+                                    name='branch_category'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Kategoriya turi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Select
+                                                    value={field.value ? String(field.value) : ''}
+                                                    onValueChange={(val) => field.onChange(Number(val))}
+                                                    disabled={!selectedBranch}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue
+                                                            placeholder={
+                                                                selectedBranch
+                                                                    ? "Kategoriya turini tanlang"
+                                                                    : "Avval bo'limni tanlang"
+                                                            }
+                                                        />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {branchCategoryOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={String(opt.value)}>
+                                                                {opt.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                        {branchCategoryOptions.length === 0 && selectedBranch && (
+                                                            <div className='px-2 py-4 text-center text-sm text-muted-foreground'>
+                                                                Bu bo'limda kategoriya yo'q. &quot;Mahsulot turlari kategoriyasi&quot; sahifasida qo'shing.
+                                                            </div>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            {/* Brend va Mahsulot nomi */}
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <FormField
+                                    control={productForm.control}
+                                    name='model'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Brend <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Autocomplete
+                                                    options={modelOptions}
+                                                    value={field.value || undefined}
+                                                    onValueChange={(val) => field.onChange(Number(val))}
+                                                    placeholder={
+                                                        selectedBranch ? 'Brendni tanlang' : "Avval bo'limni tanlang"
+                                                    }
+                                                    searchPlaceholder='Brend qidirish...'
+                                                    emptyText='Brend topilmadi'
+                                                    disabled={!selectedBranch}
+                                                    isLoading={isModelsLoading}
+                                                    allowCreate={!!selectedBranch}
+                                                    onCreateNew={handleCreateModel}
+                                                    createText="Yangi brend qo'shish"
+                                                    onSearchChange={(search) => setModelSearch(search)}
+                                                    onScrollToBottom={() => {
+                                                        if (
+                                                            modelsData?.pagination &&
+                                                            modelPage < modelsData.pagination.lastPage
+                                                        ) {
+                                                            setModelPage((prev) => prev + 1);
+                                                        }
+                                                    }}
+                                                    hasMore={
+                                                        modelsData?.pagination
+                                                            ? modelPage < modelsData.pagination.lastPage
+                                                            : false
+                                                    }
+                                                    isLoadingMore={isModelsLoading && modelPage > 1}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={productForm.control}
+                                    name='type'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Mahsulot nomi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Autocomplete
+                                                    options={typeOptions}
+                                                    value={field.value || undefined}
+                                                    onValueChange={(val) => field.onChange(Number(val))}
+                                                    placeholder={
+                                                        selectedModel
+                                                            ? 'Mahsulot nomini tanlang'
+                                                            : 'Avval brendni tanlang'
+                                                    }
+                                                    searchPlaceholder='Mahsulot qidirish...'
+                                                    emptyText='Mahsulot topilmadi'
+                                                    disabled={!selectedModel}
+                                                    isLoading={isTypesLoading}
+                                                    allowCreate={!!selectedModel}
+                                                    onCreateNew={handleCreateType}
+                                                    createText="Yangi mahsulot qo'shish"
+                                                    onSearchChange={(search) => setTypeSearch(search)}
+                                                    onScrollToBottom={() => {
+                                                        if (
+                                                            typesData?.pagination &&
+                                                            typePage < typesData.pagination.lastPage
+                                                        ) {
+                                                            setTypePage((prev) => prev + 1);
+                                                        }
+                                                    }}
+                                                    hasMore={
+                                                        typesData?.pagination
+                                                            ? typePage < typesData.pagination.lastPage
+                                                            : false
+                                                    }
+                                                    isLoadingMore={isTypesLoading && typePage > 1}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* O'lcham va O'lchov birligi - yopishgan */}
+                                <FormField
+                                    control={productForm.control}
+                                    name='size'
+                                    render={({ field }) => {
+                                        // Tanlangan ProductTypeSize da unit borligini tekshirish
+                                        const selectedProductTypeSize = productTypeSizes.find(
+                                            (s) => s.id === selectedSize,
+                                        );
+                                        const hasUnitInSize = !!selectedProductTypeSize?.unit;
+
+                                        return (
+                                            <FormItem>
+                                                <FormLabel>O'lcham</FormLabel>
+                                                <div className='flex'>
+                                                    {/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
+                                                    <Select
+                                                        value={selectedUnit ? String(selectedUnit) : ''}
+                                                        onValueChange={(val) => {
+                                                            if (val === 'create_new') {
+                                                                setIsUnitDialogOpen(true);
+                                                            } else {
+                                                                productForm.setValue('unit', Number(val));
+                                                            }
+                                                        }}
+                                                        disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
+                                                    >
+                                                        <SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
+                                                            <SelectValue placeholder='birlik' />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {units.map((u) => (
+                                                                <SelectItem key={u.id} value={String(u.id)}>
+                                                                    {u.code}
+                                                                </SelectItem>
+                                                            ))}
+                                                            <SelectItem value='create_new' className='text-primary'>
+                                                                <Plus className='h-3 w-3 inline mr-1' />
+                                                                Yangi
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormControl>
+                                                        <div className='flex-1'>
+                                                            <Autocomplete
+                                                                options={sizeOptions}
+                                                                value={field.value || undefined}
+                                                                onValueChange={(val) => field.onChange(Number(val))}
+                                                                placeholder={
+                                                                    !selectedType
+                                                                        ? 'Avval mahsulotni tanlang'
+                                                                        : "O'lchamni tanlang"
+                                                                }
+                                                                searchPlaceholder="O'lcham qidirish..."
+                                                                emptyText="O'lcham topilmadi"
+                                                                disabled={!selectedType} // Faqat Type tanlanmasa disabled
+                                                                isLoading={isSizesLoading}
+                                                                allowCreate={!!selectedType}
+                                                                onCreateNew={handleCreateSize}
+                                                                createText="Yangi o'lcham qo'shish"
+                                                                className='rounded-l-none border-l-0'
+                                                                onSearchChange={(search) => setSizeSearch(search)}
+                                                                onScrollToBottom={() => {
+                                                                    if (
+                                                                        productTypeSizesData?.pagination &&
+                                                                        sizePage < productTypeSizesData.pagination.lastPage
+                                                                    ) {
+                                                                        setSizePage((prev) => prev + 1);
+                                                                    }
+                                                                }}
+                                                                hasMore={
+                                                                    productTypeSizesData?.pagination
+                                                                        ? sizePage < productTypeSizesData.pagination.lastPage
+                                                                        : false
+                                                                }
+                                                                isLoadingMore={isSizesLoading && sizePage > 1}
+                                                            />
+                                                        </div>
+                                                    </FormControl>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                            </div>
+
+                            {/* Zaxira limiti va Miqdori */}
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 items-end'>
+                                <FormField
+                                    control={productForm.control}
+                                    name='count'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Miqdori <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input
+                                                        type='number'
+                                                        placeholder='0'
+                                                        {...field}
+                                                        className='rounded-r-none'
+                                                    />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-3 bg-muted border border-l-0 rounded-r-md text-sm text-muted-foreground'>
+                                                    {units.find((u) => u.id === productForm.watch('unit'))?.code ||
+                                                        'birlik'}
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={productForm.control}
+                                    name='reserve_limit'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Zaxira limiti{' '}
+                                                <span className='text-destructive'>*(Xabar berish uchun)</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input type='number' {...field} className='rounded-r-none' />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-3 bg-muted border border-l-0 rounded-r-md text-sm text-muted-foreground'>
+                                                    {units.find((u) => u.id === productForm.watch('unit'))?.code ||
+                                                        'birlik'}
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Hidden product field - endi ishlatilmaydi */}
+                            <input type='hidden' {...productForm.register('product')} value={1} />
+
+                            {/* Narxlar - Dollar */}
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <FormField
+                                    control={productForm.control}
+                                    name='real_price'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Xaqiqiy narxi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input
+                                                        type='number'
+                                                        step='0.01'
+                                                        placeholder='0.00'
+                                                        {...field}
+                                                        className='rounded-r-none'
+                                                    />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
+                                                    $
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={productForm.control}
+                                    name='unit_price'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Dona narxi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input
+                                                        type='number'
+                                                        step='0.01'
+                                                        placeholder='0.00'
+                                                        {...field}
+                                                        className='rounded-r-none'
+                                                    />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
+                                                    $
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <FormField
+                                    control={productForm.control}
+                                    name='wholesale_price'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Optom narxi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input
+                                                        type='number'
+                                                        step='0.01'
+                                                        placeholder='0.00'
+                                                        {...field}
+                                                        className='rounded-r-none'
+                                                    />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
+                                                    $
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={productForm.control}
+                                    name='min_price'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Minimal narxi <span className='text-destructive'>*</span>
+                                            </FormLabel>
+                                            <div className='flex'>
+                                                <FormControl>
+                                                    <Input
+                                                        type='number'
+                                                        step='0.01'
+                                                        placeholder='0.00'
+                                                        {...field}
+                                                        className='rounded-r-none'
+                                                    />
+                                                </FormControl>
+                                                <span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
+                                                    $
+                                                </span>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Izoh */}
+                            <FormField
+                                control={productForm.control}
+                                name='note'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Izoh</FormLabel>
+                                        <FormControl>
+                                            <Textarea placeholder='Izoh yozing...' {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <DialogFooter className='pt-4'>
+                                <Button type='submit' size='lg' className='gap-2'>
+                                    <Plus className='h-5 w-5' />
+                                    Kiritish
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Yangi o'lchov birligi qo'shish dialog */}
+            <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
+                <DialogContent className='sm:max-w-[400px]'>
+                    <DialogHeader>
+                        <DialogTitle>Yangi o'lchov birligi</DialogTitle>
+                        <DialogDescription>Yangi o'lchov birligini qo'shing</DialogDescription>
+                    </DialogHeader>
+                    <div className='space-y-4 py-4'>
+                        <div className='space-y-2'>
+                            <label className='text-sm font-medium'>Nomi</label>
+                            <Input
+                                placeholder='Masalan: Kilogram'
+                                value={newUnitName}
+                                onChange={(e) => setNewUnitName(e.target.value)}
+                            />
+                        </div>
+                        <div className='space-y-2'>
+                            <label className='text-sm font-medium'>Kodi</label>
+                            <Input
+                                placeholder='Masalan: kg'
+                                value={newUnitCode}
+                                onChange={(e) => setNewUnitCode(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant='outline' onClick={() => setIsUnitDialogOpen(false)}>
+                            Bekor qilish
+                        </Button>
+                        <Button
+                            onClick={handleCreateUnitSubmit}
+                            disabled={!newUnitName || !newUnitCode || isCreatingUnit}
+                        >
+                            {isCreatingUnit && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                            Qo'shish
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }

@@ -15,37 +15,37 @@
  */
 
 export interface Company {
-	id: number;
-	name: string;
-	region: number | null;
-	district: number | null;
-	address: string | null;
-	phone_number: string | null;
-	logo: string | null;
-	is_active: boolean;
-	is_delete: boolean;
-	created_at?: string;
-	updated_at?: string;
+    id: number;
+    name: string;
+    region: number | null;
+    district: number | null;
+    address: string | null;
+    phone_number: string | null;
+    logo: string | null;
+    is_active: boolean;
+    is_delete: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface CreateCompanyPayload {
-	name: string;
-	region?: number;
-	district?: number;
-	address?: string;
-	phone_number?: string;
-	logo?: File;
-	is_active?: boolean;
-	is_delete?: boolean;
+    name: string;
+    region?: number;
+    district?: number;
+    address?: string;
+    phone_number?: string;
+    logo?: File;
+    is_active?: boolean;
+    is_delete?: boolean;
 }
 
 export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
 
 export interface CompanyQueryParams {
-	page?: number;
-	perPage?: number;
-	search?: string;
-	ordering?: string;
-	is_delete?: boolean;
-	is_active?: boolean;
+    page?: number;
+    limit?: number;
+    search?: string;
+    ordering?: string;
+    is_delete?: boolean;
+    is_active?: boolean;
 }
