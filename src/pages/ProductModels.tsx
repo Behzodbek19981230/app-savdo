@@ -91,7 +91,7 @@ export default function ProductModels() {
 		resolver: zodResolver(productModelSchema),
 		defaultValues: {
 			name: '',
-			category: [],
+			branch_category: 0,
 			sorting: null,
 		},
 	});
@@ -164,15 +164,15 @@ export default function ProductModels() {
 			setEditingId(item.id);
 			form.reset({
 				name: item.name || '',
-				category: item.category || [],
+				branch_category: item.branch_category || 0,
 				sorting: item.sorting,
 			});
 		} else {
 			setEditingId(null);
 			form.reset({
 				name: '',
-				category: [],
 				sorting: null,
+				branch_category: 0,
 			});
 		}
 		setIsDialogOpen(true);
@@ -188,7 +188,7 @@ export default function ProductModels() {
 		try {
 			const submitData = {
 				name: data.name,
-				categories: data.category,
+				branch_category: data.branch_category,
 				sorting: data.sorting === '' ? null : data.sorting,
 			};
 
@@ -373,9 +373,9 @@ export default function ProductModels() {
 												<TableCell className='font-medium'>{model.name}</TableCell>
 												<TableCell>
 													<div className='flex flex-wrap gap-1'>
-														{model.branch_detail && (
+														{model.branch_category_detail && (
 															<Badge variant='secondary'>
-																{model.branch_detail?.name}
+																{model.branch_category_detail?.name}
 															</Badge>
 														)}
 													</div>
@@ -461,109 +461,29 @@ export default function ProductModels() {
 										</FormItem>
 									)}
 								/>
+
 								<FormField
 									control={form.control}
-									name='category'
+									name='branch_category'
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Kategoriyalar *</FormLabel>
-											<Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
-												<PopoverTrigger asChild>
-													<FormControl>
-														<Button
-															variant='outline'
-															role='combobox'
-															className={cn(
-																'w-full justify-between',
-																!field.value?.length && 'text-muted-foreground',
-															)}
-														>
-															{field.value?.length > 0
-																? `${field.value.length} ta kategoriya tanlangan`
-																: 'Kategoriyalarni tanlang'}
-															<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-														</Button>
-													</FormControl>
-												</PopoverTrigger>
-												<PopoverContent className='w-[400px] p-0'>
-													<Command>
-														<CommandInput placeholder='Kategoriyalarni qidiring...' />
-														<CommandEmpty>Kategoriya topilmadi</CommandEmpty>
-														<CommandGroup className='max-h-64 overflow-auto'>
-															{categories.map((category) => (
-																<CommandItem
-																	key={category.id}
-																	value={category.name}
-																	onSelect={() => {
-																		const currentValue = field.value || [];
-																		const newValue = currentValue.includes(
-																			category.id,
-																		)
-																			? currentValue.filter(
-																					(id) => id !== category.id,
-																				)
-																			: [...currentValue, category.id];
-																		field.onChange(newValue);
-																	}}
-																>
-																	<Checkbox
-																		checked={field.value?.includes(category.id)}
-																		className='mr-2'
-																	/>
-																	{category.name}
-																</CommandItem>
-															))}
-														</CommandGroup>
-													</Command>
-												</PopoverContent>
-											</Popover>
-											{field.value && field.value.length > 0 && (
-												<div className='flex flex-wrap gap-2 mt-2'>
-													{field.value.map((catId) => {
-														const category = categories.find((c) => c.id === catId);
-														return category ? (
-															<Badge key={catId} variant='secondary' className='gap-1'>
-																{category.name}
-																<button
-																	type='button'
-																	className='ml-1 rounded-full hover:bg-muted'
-																	onClick={() => {
-																		field.onChange(
-																			field.value?.filter((id) => id !== catId),
-																		);
-																	}}
-																>
-																	<X className='h-3 w-3' />
-																</button>
-															</Badge>
-														) : null;
-													})}
-												</div>
-											)}
-											<FormDescription>Bir nechta kategoriya tanlashingiz mumkin</FormDescription>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name='sorting'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Tartib raqami</FormLabel>
-											<FormControl>
-												<Input
-													type='number'
-													placeholder='Masalan: 1'
-													{...field}
-													value={field.value ?? ''}
-													onChange={(e) => {
-														const value = e.target.value;
-														field.onChange(value === '' ? null : parseInt(value));
-													}}
-												/>
-											</FormControl>
-											<FormDescription>Tartib raqami bo'yicha saralanadi</FormDescription>
+											<FormLabel>Kategoriya turi *</FormLabel>
+											<Select
+												value={field.value?.toString() ?? '0'}
+												onValueChange={(v) => field.onChange(Number(v))}
+											>
+												<SelectTrigger className='w-full sm:w-[220px]'>
+													<SelectValue placeholder='Kategoriya turini tanlang' />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value='0'>Kategoriya turini tanlang</SelectItem>
+													{branchCategories.map((cat) => (
+														<SelectItem key={cat.id} value={String(cat.id)}>
+															{cat.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
 											<FormMessage />
 										</FormItem>
 									)}

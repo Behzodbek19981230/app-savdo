@@ -79,11 +79,15 @@ export function useCreateProductModel() {
 	return useMutation({
 		mutationFn: (data: Partial<ProductModel>) => productModelService.createModel(data),
 		onSuccess: async (createdModel, variables) => {
-			// Mos branch bo'yicha listni yangilash
-			const branch = variables.branch || createdModel.branch;
-			if (branch) {
+			// Mos branch category bo'yicha listni yangilash
+			const branchCategory = variables.branch_category || createdModel.branch_category;
+			if (branchCategory) {
 				await queryClient.invalidateQueries({
-					queryKey: PRODUCT_MODEL_KEYS.list({ branch, is_delete: false, limit: 1000 }),
+					queryKey: PRODUCT_MODEL_KEYS.list({
+						branch_category: branchCategory,
+						is_delete: false,
+						limit: 1000,
+					}),
 				});
 			}
 			// Barcha list query'larni ham invalidate qilish

@@ -11,8 +11,9 @@ import type { PaginationMeta, ProductCategory } from './productCategory.service'
 export interface ProductModel {
 	id: number;
 	name: string;
-	branch?: number; // ProductBranch ID
-	branch_detail?: ProductCategory; // ProductBranch detail
+	branch_category?: number; // ProductBranchCategory ID
+	branch_category_detail?: ProductCategory; // ProductBranchCategory detail
+
 	category?: number[];
 	category_detail?: ProductCategory[]; // Product Category IDs (optional in list response)
 	sorting: number | null;
