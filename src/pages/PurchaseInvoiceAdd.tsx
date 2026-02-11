@@ -1170,32 +1170,7 @@ export default function PurchaseInvoiceAdd() {
                                                 <FormLabel>O'lcham</FormLabel>
                                                 <div className='flex'>
                                                     {/* Unit select - faqat tanlangan size da unit bo'lsa disabled */}
-                                                    <Select
-                                                        value={selectedUnit ? String(selectedUnit) : ''}
-                                                        onValueChange={(val) => {
-                                                            if (val === 'create_new') {
-                                                                setIsUnitDialogOpen(true);
-                                                            } else {
-                                                                productForm.setValue('unit', Number(val));
-                                                            }
-                                                        }}
-                                                        disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
-                                                    >
-                                                        <SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
-                                                            <SelectValue placeholder='birlik' />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {units.map((u) => (
-                                                                <SelectItem key={u.id} value={String(u.id)}>
-                                                                    {u.code}
-                                                                </SelectItem>
-                                                            ))}
-                                                            <SelectItem value='create_new' className='text-primary'>
-                                                                <Plus className='h-3 w-3 inline mr-1' />
-                                                                Yangi
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
+
                                                     <FormControl>
                                                         <div className='flex-1'>
                                                             <Autocomplete
@@ -1233,6 +1208,32 @@ export default function PurchaseInvoiceAdd() {
                                                             />
                                                         </div>
                                                     </FormControl>
+                                                    <Select
+                                                        value={selectedUnit ? String(selectedUnit) : ''}
+                                                        onValueChange={(val) => {
+                                                            if (val === 'create_new') {
+                                                                setIsUnitDialogOpen(true);
+                                                            } else {
+                                                                productForm.setValue('unit', Number(val));
+                                                            }
+                                                        }}
+                                                        disabled={hasUnitInSize} // Faqat size da unit bo'lsa disabled
+                                                    >
+                                                        <SelectTrigger className='w-[80px] rounded-r-none border-r-0'>
+                                                            <SelectValue placeholder='birlik' />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {units.map((u) => (
+                                                                <SelectItem key={u.id} value={String(u.id)}>
+                                                                    {u.code}
+                                                                </SelectItem>
+                                                            ))}
+                                                            <SelectItem value='create_new' className='text-primary'>
+                                                                <Plus className='h-3 w-3 inline mr-1' />
+                                                                Yangi
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
                                                 <FormMessage />
                                             </FormItem>
