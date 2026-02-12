@@ -30,6 +30,7 @@ import PurchaseInvoiceAdd from './pages/PurchaseInvoiceAdd';
 import PurchaseInvoiceShow from './pages/PurchaseInvoiceShow';
 import Suppliers from './pages/Suppliers';
 import Sklad from './pages/Sklad';
+import Units from './pages/Units';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -127,6 +128,10 @@ const protectedRoutes = [
 	{
 		path: '/sklad',
 		element: <Sklad />,
+	},
+	{
+		path: '/units',
+		element: <Units />,
 	},
 ];
 

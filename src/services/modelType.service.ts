@@ -38,6 +38,7 @@ export interface ModelTypeQueryParams {
 
 /** POST /product-type/create body: bitta yoki bir nechta model turi + o'lchamlari */
 export interface ProductTypeSizeItem {
+    id?: number; // Edit uchun kerak
     size: string | number;
     unit: string | number;
 }
@@ -75,6 +76,11 @@ export const modelTypeService = {
     // Update model type
     updateModelType: async (id: number, data: Partial<ModelType>) => {
         return api.patch<ModelType>(API_ENDPOINTS.modelTypes.update(id.toString()), data);
+    },
+
+    /** PUT /product-type/{id} - model turi + product_type_size ro'yxati bilan yangilash */
+    updateProductTypeWithSizes: async (id: number, data: ProductTypeCreateItem) => {
+        return api.put<ModelType>(API_ENDPOINTS.modelTypes.update(id.toString()), data);
     },
 
     // Delete model type

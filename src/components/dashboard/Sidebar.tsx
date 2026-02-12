@@ -80,6 +80,7 @@ const adminSection: NavSection[] = [
 			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
 			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
 			{ icon: Tag, label: "Model turlari va o'lchamlari", path: '/model-types' },
+			{ icon: Ruler, label: "O'lchov birliklari", path: '/units' },
 		],
 	},
 ];
@@ -104,6 +105,7 @@ const managerSection: NavSection[] = [
 			{ icon: FolderTree, label: 'Mahsulot turlari kategoriyasi', path: '/product-branch-categories' },
 			{ icon: Box, label: 'Mahsulot modellari', path: '/product-models' },
 			{ icon: Tag, label: "Model turlari va o'lchamlari", path: '/model-types' },
+			{ icon: Ruler, label: "O'lchov birliklari", path: '/units' },
 		],
 	},
 ];
