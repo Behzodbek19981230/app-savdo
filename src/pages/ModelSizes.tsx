@@ -96,6 +96,7 @@ export default function ModelSizes() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<SortField>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const [filterProductTypeId, setFilterProductTypeId] = useState<number | undefined>(undefined);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -125,6 +126,7 @@ export default function ModelSizes() {
         search: searchQuery || undefined,
         ordering,
         is_delete: false,
+        product_type: filterProductTypeId,
     });
 
     const { data: modelTypesData } = useModelTypes({
@@ -375,9 +377,9 @@ export default function ModelSizes() {
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    {/* Search */}
-                    <div className="mb-4">
-                        <div className="relative">
+                    {/* Search and Filter */}
+                    <div className="mb-4 flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Qidirish..."
@@ -389,6 +391,25 @@ export default function ModelSizes() {
                                 className="pl-9"
                             />
                         </div>
+                        <Select
+                            value={filterProductTypeId?.toString() ?? 'all'}
+                            onValueChange={(v) => {
+                                setFilterProductTypeId(v === 'all' ? undefined : Number(v));
+                                setCurrentPage(1);
+                            }}
+                        >
+                            <SelectTrigger className="w-full sm:w-[220px]">
+                                <SelectValue placeholder="Model turi bo'yicha filtrlash" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Barcha model turlari</SelectItem>
+                                {modelTypes.map((modelType) => (
+                                    <SelectItem key={modelType.id} value={String(modelType.id)}>
+                                        {modelType.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Table */}

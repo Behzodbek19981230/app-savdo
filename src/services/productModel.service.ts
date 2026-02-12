@@ -6,13 +6,14 @@
 import { api } from '@/lib/api/client';
 import { API_ENDPOINTS } from '@/lib/api/config';
 import type { PaginationMeta, ProductCategory } from './productCategory.service';
+import type { ProductBranchCategory } from './productBranchCategory.service';
 
 // Types
 export interface ProductModel {
 	id: number;
 	name: string;
 	branch_category?: number; // ProductBranchCategory ID
-	branch_category_detail?: ProductCategory; // ProductBranchCategory detail
+	branch_category_detail?: ProductBranchCategory; // ProductBranchCategory detail
 
 	category?: number[];
 	category_detail?: ProductCategory[]; // Product Category IDs (optional in list response)
@@ -36,6 +37,11 @@ export interface ProductModelQueryParams {
 	is_delete?: boolean;
 	branch?: number; // Filter by branch
 	branch_category?: number; // Filter by branch
+}
+
+export interface SuggestedSortingResponse {
+	suggested_sorting: number;
+	message: string;
 }
 
 export const productModelService = {
@@ -64,5 +70,12 @@ export const productModelService = {
 	// Delete model
 	deleteModel: async (id: number) => {
 		return api.delete(API_ENDPOINTS.productModels.delete(id.toString()));
+	},
+
+	// Get suggested sorting for a branch category
+	getSuggestedSorting: async (branchCategoryId: number) => {
+		return api.get<SuggestedSortingResponse>(
+			API_ENDPOINTS.productModels.suggestedSorting(branchCategoryId.toString())
+		);
 	},
 };

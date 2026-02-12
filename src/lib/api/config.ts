@@ -121,6 +121,7 @@ export const API_ENDPOINTS = {
 		create: '/product-branch',
 		update: (id: string) => `/product-branch/${id}`,
 		delete: (id: string) => `/product-branch/${id}`,
+		suggestedSorting: '/product-branch/sorting',
 	},
 
 	// Product Branch Category endpoints (Mahsulot turlari kategoriyasi)
@@ -130,6 +131,7 @@ export const API_ENDPOINTS = {
 		create: '/product-branch-category/',
 		update: (id: string) => `/product-branch-category/${id}`,
 		delete: (id: string) => `/product-branch-category/${id}`,
+		suggestedSorting: (productBranchId: string) => `/product-branch-category/${productBranchId}/sorting`,
 	},
 
 	// Product Model endpoints
@@ -139,6 +141,7 @@ export const API_ENDPOINTS = {
 		create: '/product-model',
 		update: (id: string) => `/product-model/${id}`,
 		delete: (id: string) => `/product-model/${id}`,
+		suggestedSorting: (branchCategoryId: string) => `/product-model/${branchCategoryId}/sorting`,
 	},
 
 	// Model Size endpoints
@@ -158,6 +161,7 @@ export const API_ENDPOINTS = {
 		createBulk: '/product-type/create',
 		update: (id: string) => `/product-type/${id}`,
 		delete: (id: string) => `/product-type/${id}`,
+		suggestedSorting: (madelId: string) => `/product-type/${madelId}/sorting`,
 	},
 
 	// Exchange Rate endpoints

@@ -163,7 +163,7 @@ export default function Products() {
     const { data: branchesData } = useProductCategories({ limit: 500, is_delete: false });
     const branches = branchesData?.results ?? [];
 
-    // Branch category filter — tanlangan branch bo'yicha
+    // Branch category filter — tanlangan branch bo'yicha yoki barcha
     const { data: filterBranchCategoriesData } = useProductBranchCategories(
         filterBranch && filterBranch !== 'all'
             ? ({
@@ -172,11 +172,15 @@ export default function Products() {
                 is_delete: false,
                 product_branch: parseInt(filterBranch),
             } as Parameters<typeof productBranchCategoryService.getCategories>[0])
-            : undefined,
+            : {
+                page: 1,
+                limit: 500,
+                is_delete: false,
+            },
     );
     const filterBranchCategories = filterBranchCategoriesData?.results ?? [];
 
-    // Model filter — tanlangan branch_category bo'yicha
+    // Model filter — tanlangan branch_category bo'yicha yoki barcha
     const { data: filterModelsData } = useProductModels(
         filterBranchCategory && filterBranchCategory !== 'all'
             ? {
@@ -185,11 +189,15 @@ export default function Products() {
                 is_delete: false,
                 branch_category: parseInt(filterBranchCategory),
             }
-            : undefined,
+            : {
+                page: 1,
+                limit: 500,
+                is_delete: false,
+            },
     );
     const filterModels = filterModelsData?.results ?? [];
 
-    // Model Type filter — tanlangan model bo'yicha
+    // Model Type filter — tanlangan model bo'yicha yoki barcha
     const { data: filterModelTypesData } = useModelTypes(
         filterModel && filterModel !== 'all'
             ? {
@@ -198,7 +206,11 @@ export default function Products() {
                 is_delete: false,
                 madel: parseInt(filterModel),
             }
-            : undefined,
+            : {
+                page: 1,
+                limit: 500,
+                is_delete: false,
+            },
     );
     const filterModelTypes = filterModelTypesData?.results ?? [];
 
@@ -784,16 +796,9 @@ export default function Products() {
                                 setFilterModelType('');
                                 setCurrentPage(1);
                             }}
-                            disabled={!filterBranch || filterBranch === 'all'}
                         >
                             <SelectTrigger>
-                                <SelectValue
-                                    placeholder={
-                                        filterBranch && filterBranch !== 'all'
-                                            ? 'Kategoriya turi'
-                                            : "Avval bo'lim tanlang"
-                                    }
-                                />
+                                <SelectValue placeholder='Kategoriya turi' />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value='all'>Barcha kategoriya turlari</SelectItem>
@@ -812,16 +817,9 @@ export default function Products() {
                                 setFilterModelType('');
                                 setCurrentPage(1);
                             }}
-                            disabled={!filterBranchCategory || filterBranchCategory === 'all'}
                         >
                             <SelectTrigger>
-                                <SelectValue
-                                    placeholder={
-                                        filterBranchCategory && filterBranchCategory !== 'all'
-                                            ? 'Model'
-                                            : "Avval kategoriya turini tanlang"
-                                    }
-                                />
+                                <SelectValue placeholder='Model' />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value='all'>Barcha modellar</SelectItem>
@@ -839,16 +837,9 @@ export default function Products() {
                                 setFilterModelType(value);
                                 setCurrentPage(1);
                             }}
-                            disabled={!filterModel || filterModel === 'all'}
                         >
                             <SelectTrigger>
-                                <SelectValue
-                                    placeholder={
-                                        filterModel && filterModel !== 'all'
-                                            ? 'Model turi'
-                                            : "Avval model tanlang"
-                                    }
-                                />
+                                <SelectValue placeholder='Model turi' />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value='all'>Barcha model turlari</SelectItem>

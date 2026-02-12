@@ -19,6 +19,7 @@ export interface ModelType {
     is_delete: boolean;
     created_at?: string;
     updated_at?: string;
+    product_type_size?: ProductTypeSizeDetail[]; // API'dan qaytgan format
 }
 
 export interface ModelTypeListResponse {
@@ -43,11 +44,33 @@ export interface ProductTypeSizeItem {
     unit: string | number;
 }
 
+/** API'dan qaytgan product_type_size format */
+export interface ProductTypeSizeDetail {
+    id: number;
+    size: number;
+    unit: number;
+    unit_detail?: {
+        id: number;
+        code: string;
+        name: string;
+        is_active: boolean;
+    };
+    sorting: number;
+    is_delete: boolean;
+}
+
 export interface ProductTypeCreateItem {
     madel: number;
     name: string;
     sorting: number;
     product_type_size: ProductTypeSizeItem[];
+    branch_category?: number; // Update qilishda shart emas
+    branch?: number; // Update qilishda shart emas
+}
+
+export interface SuggestedSortingResponse {
+    suggested_sorting: number;
+    message: string;
 }
 
 export const modelTypeService = {
@@ -58,9 +81,9 @@ export const modelTypeService = {
         });
     },
 
-    // Get model type by ID
+    // Get model type by ID (API array qaytaradi)
     getModelTypeById: async (id: number) => {
-        return api.get<ModelType>(API_ENDPOINTS.modelTypes.byId(id.toString()));
+        return api.get<ModelType[]>(API_ENDPOINTS.modelTypes.byId(id.toString()));
     },
 
     // Create model type
@@ -86,5 +109,12 @@ export const modelTypeService = {
     // Delete model type
     deleteModelType: async (id: number) => {
         return api.delete(API_ENDPOINTS.modelTypes.delete(id.toString()));
+    },
+
+    // Get suggested sorting for a model
+    getSuggestedSorting: async (madelId: number) => {
+        return api.get<SuggestedSortingResponse>(
+            API_ENDPOINTS.modelTypes.suggestedSorting(madelId.toString())
+        );
     },
 };

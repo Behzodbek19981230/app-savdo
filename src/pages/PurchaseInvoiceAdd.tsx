@@ -112,6 +112,10 @@ export default function PurchaseInvoiceAdd() {
     const [categorySearch, setCategorySearch] = useState('');
     const [allCategories, setAllCategories] = useState<Array<{ value: number; label: string }>>([]);
 
+    const [branchCategoryPage, setBranchCategoryPage] = useState(1);
+    const [branchCategorySearch, setBranchCategorySearch] = useState('');
+    const [allBranchCategories, setAllBranchCategories] = useState<Array<{ value: number; label: string }>>([]);
+
     const [modelPage, setModelPage] = useState(1);
     const [modelSearch, setModelSearch] = useState('');
     const [allModels, setAllModels] = useState<Array<{ value: number; label: string }>>([]);
@@ -161,6 +165,7 @@ export default function PurchaseInvoiceAdd() {
 
     const selectedFilial = invoiceForm.watch('filial');
     const selectedBranch = productForm.watch('branch');
+    const selectedBranchCategory = productForm.watch('branch_category');
     const selectedModel = productForm.watch('model');
     const selectedType = productForm.watch('type');
     const selectedUnit = productForm.watch('unit');
@@ -181,19 +186,28 @@ export default function PurchaseInvoiceAdd() {
         is_delete: false,
     });
 
-    const { data: branchCategoriesData } = useProductBranchCategories(
-        selectedBranch ? { limit: 20, is_delete: false, product_branch: selectedBranch } : undefined,
+    // Branch categories with pagination and search
+    const { data: branchCategoriesData, isLoading: isBranchCategoriesLoading } = useProductBranchCategories(
+        selectedBranch
+            ? {
+                page: branchCategoryPage,
+                limit: 20,
+                search: branchCategorySearch || undefined,
+                is_delete: false,
+                product_branch: selectedBranch,
+            }
+            : undefined,
     );
 
-    // Models with pagination and search
+    // Models with pagination and search - branch_category bo'yicha filter
     const { data: modelsData, isLoading: isModelsLoading } = useProductModels(
-        selectedBranch
+        selectedBranchCategory
             ? {
                 page: modelPage,
                 limit: 20,
                 search: modelSearch || undefined,
                 is_delete: false,
-                branch: selectedBranch,
+                branch_category: selectedBranchCategory,
             }
             : undefined,
     );
@@ -266,6 +280,36 @@ export default function PurchaseInvoiceAdd() {
         setAllCategories([]);
     }, [categorySearch]);
 
+    // Branch categories pagination va search uchun effect
+    useEffect(() => {
+        if (branchCategoriesData?.results && selectedBranch) {
+            if (branchCategoryPage === 1) {
+                setAllBranchCategories(branchCategoriesData.results.map((c) => ({ value: c.id, label: c.name })));
+            } else {
+                setAllBranchCategories((prev) => {
+                    const existingIds = new Set(prev.map((p) => p.value));
+                    const newItems = branchCategoriesData.results
+                        .filter((c) => !existingIds.has(c.id))
+                        .map((c) => ({ value: c.id, label: c.name }));
+                    return [...prev, ...newItems];
+                });
+            }
+        }
+    }, [branchCategoriesData, branchCategoryPage, selectedBranch]);
+
+    // Branch category search o'zgarganda page ni reset qilish
+    useEffect(() => {
+        setBranchCategoryPage(1);
+        setAllBranchCategories([]);
+    }, [branchCategorySearch]);
+
+    // Branch o'zgarganda branch category listni tozalash
+    useEffect(() => {
+        setBranchCategoryPage(1);
+        setBranchCategorySearch('');
+        setAllBranchCategories([]);
+    }, [selectedBranch]);
+
     // Models pagination va search uchun effect
     useEffect(() => {
         if (modelsData?.results && selectedBranch) {
@@ -295,6 +339,13 @@ export default function PurchaseInvoiceAdd() {
         setModelSearch('');
         setAllModels([]);
     }, [selectedBranch]);
+
+    // Branch category o'zgarganda model listni tozalash
+    useEffect(() => {
+        setModelPage(1);
+        setModelSearch('');
+        setAllModels([]);
+    }, [selectedBranchCategory]);
 
     // Types pagination va search uchun effect
     useEffect(() => {
@@ -369,8 +420,8 @@ export default function PurchaseInvoiceAdd() {
     // Autocomplete uchun category options (dynamic)
     const categoryOptions = allCategories;
 
-    // Kategoriya turi (branch_category) options - tanlangan branch bo'yicha
-    const branchCategoryOptions = branchCategories.map((c) => ({ value: c.id, label: c.name }));
+    // Autocomplete uchun branch category options (dynamic)
+    const branchCategoryOptions = allBranchCategories;
 
     // Autocomplete uchun model options (dynamic)
     const modelOptions = allModels;
@@ -536,13 +587,22 @@ export default function PurchaseInvoiceAdd() {
         return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
     };
 
-    // Branch o'zgarganda branch_category ni tozalash
+    // Branch o'zgarganda branch_category va model ni tozalash
     useEffect(() => {
         if (isProductDialogOpen) {
             productForm.setValue('branch_category', 0);
+            productForm.setValue('model', 0);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedBranch, isProductDialogOpen]);
+
+    // Branch category o'zgarganda model ni tozalash
+    useEffect(() => {
+        if (isProductDialogOpen) {
+            productForm.setValue('model', 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBranchCategory, isProductDialogOpen]);
 
     // Mahsulot qo'shish dialogini ochish
     const openProductDialog = () => {
@@ -1028,33 +1088,35 @@ export default function PurchaseInvoiceAdd() {
                                                 Kategoriya turi <span className='text-destructive'>*</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Select
-                                                    value={field.value ? String(field.value) : ''}
+                                                <Autocomplete
+                                                    options={branchCategoryOptions}
+                                                    value={field.value || undefined}
                                                     onValueChange={(val) => field.onChange(Number(val))}
+                                                    placeholder={
+                                                        selectedBranch
+                                                            ? "Kategoriya turini tanlang"
+                                                            : "Avval bo'limni tanlang"
+                                                    }
+                                                    searchPlaceholder='Kategoriya turi qidirish...'
+                                                    emptyText='Kategoriya turi topilmadi'
                                                     disabled={!selectedBranch}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue
-                                                            placeholder={
-                                                                selectedBranch
-                                                                    ? "Kategoriya turini tanlang"
-                                                                    : "Avval bo'limni tanlang"
-                                                            }
-                                                        />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {branchCategoryOptions.map((opt) => (
-                                                            <SelectItem key={opt.value} value={String(opt.value)}>
-                                                                {opt.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                        {branchCategoryOptions.length === 0 && selectedBranch && (
-                                                            <div className='px-2 py-4 text-center text-sm text-muted-foreground'>
-                                                                Bu bo'limda kategoriya yo'q. &quot;Mahsulot turlari kategoriyasi&quot; sahifasida qo'shing.
-                                                            </div>
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
+                                                    isLoading={isBranchCategoriesLoading}
+                                                    onSearchChange={(search) => setBranchCategorySearch(search)}
+                                                    onScrollToBottom={() => {
+                                                        if (
+                                                            branchCategoriesData?.pagination &&
+                                                            branchCategoryPage < branchCategoriesData.pagination.lastPage
+                                                        ) {
+                                                            setBranchCategoryPage((prev) => prev + 1);
+                                                        }
+                                                    }}
+                                                    hasMore={
+                                                        branchCategoriesData?.pagination
+                                                            ? branchCategoryPage < branchCategoriesData.pagination.lastPage
+                                                            : false
+                                                    }
+                                                    isLoadingMore={isBranchCategoriesLoading && branchCategoryPage > 1}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -1077,13 +1139,17 @@ export default function PurchaseInvoiceAdd() {
                                                     value={field.value || undefined}
                                                     onValueChange={(val) => field.onChange(Number(val))}
                                                     placeholder={
-                                                        selectedBranch ? 'Brendni tanlang' : "Avval bo'limni tanlang"
+                                                        selectedBranchCategory
+                                                            ? 'Brendni tanlang'
+                                                            : selectedBranch
+                                                            ? "Avval kategoriya turini tanlang"
+                                                            : "Avval bo'limni tanlang"
                                                     }
                                                     searchPlaceholder='Brend qidirish...'
                                                     emptyText='Brend topilmadi'
-                                                    disabled={!selectedBranch}
+                                                    disabled={!selectedBranchCategory}
                                                     isLoading={isModelsLoading}
-                                                    allowCreate={!!selectedBranch}
+                                                    allowCreate={!!selectedBranchCategory}
                                                     onCreateNew={handleCreateModel}
                                                     createText="Yangi brend qo'shish"
                                                     onSearchChange={(search) => setModelSearch(search)}

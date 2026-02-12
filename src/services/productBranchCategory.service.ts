@@ -32,6 +32,11 @@ export interface ProductBranchCategoryQueryParams {
   product_branch?: number;
 }
 
+export interface SuggestedSortingResponse {
+  suggested_sorting: number;
+  message: string;
+}
+
 export const productBranchCategoryService = {
   getCategories: async (params?: ProductBranchCategoryQueryParams) => {
     return api.get<ProductBranchCategoryListResponse>(API_ENDPOINTS.productBranchCategories.list, {
@@ -56,5 +61,12 @@ export const productBranchCategoryService = {
 
   deleteCategory: async (id: number) => {
     return api.delete(API_ENDPOINTS.productBranchCategories.delete(id.toString()));
+  },
+
+  // Get suggested sorting for a product branch
+  getSuggestedSorting: async (productBranchId: number) => {
+    return api.get<SuggestedSortingResponse>(
+      API_ENDPOINTS.productBranchCategories.suggestedSorting(productBranchId.toString())
+    );
   },
 };

@@ -37,6 +37,11 @@ export interface ProductCategoryQueryParams {
     is_delete?: boolean;
 }
 
+export interface SuggestedSortingResponse {
+    suggested_sorting: number;
+    message: string;
+}
+
 export const productCategoryService = {
     // Get all categories
     getCategories: async (params?: ProductCategoryQueryParams) => {
@@ -63,5 +68,10 @@ export const productCategoryService = {
     // Delete category
     deleteCategory: async (id: number) => {
         return api.delete(API_ENDPOINTS.productCategories.delete(id.toString()));
+    },
+
+    // Get suggested sorting
+    getSuggestedSorting: async () => {
+        return api.get<SuggestedSortingResponse>(API_ENDPOINTS.productCategories.suggestedSorting);
     },
 };

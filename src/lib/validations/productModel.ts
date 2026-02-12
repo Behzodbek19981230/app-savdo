@@ -6,12 +6,13 @@
 import { z } from 'zod';
 
 export const productModelSchema = z.object({
+	branch: z.number().min(1, 'Bo\'limni tanlash majburiy'),
+	branch_category: z.number().min(1, 'Kategoriya turini tanlash majburiy'),
 	name: z
 		.string()
 		.min(1, 'Nomi majburiy')
 		.min(2, "Nomi kamida 2 ta belgidan iborat bo'lishi kerak")
 		.max(255, 'Nomi 255 ta belgidan oshmasligi kerak'),
-	branch_category: z.number().min(1, 'Kategoriya turini tanlash majburiy'),
 	sorting: z.number().int('Faqat butun son kiritish mumkin').nullable().optional().or(z.literal('')),
 });
 

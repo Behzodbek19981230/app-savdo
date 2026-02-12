@@ -85,9 +85,11 @@ export function Autocomplete({
         const listEl = listRef.current;
         const popoverEl = listEl.closest('[role="dialog"]') || listEl.closest('[data-radix-portal]')?.parentElement;
 
-        // 1) Document da capture fazada: ro'yxat ustidagi wheel boshqa (masalan Dialog) ga yetmasin, default scroll saqlansin
+        // 1) Document da capture fazada: ro'yxat ustidagi wheel boshqa (masalan Dialog) ga yetmasin
         const onDocCapture = (e: WheelEvent) => {
+            // Faqat ro'yxat ichida bo'lsa, event'ni to'xtatamiz (lekin scroll tabiiy ishlaydi)
             if (listEl.contains(e.target as Node)) {
+                // Event'ni to'xtatamiz, lekin scroll tabiiy ishlaydi (passive: true tufayli)
                 e.stopImmediatePropagation();
             }
         };
@@ -95,7 +97,7 @@ export function Autocomplete({
 
         // 2) Ro'yxatning o'zida bubble listener — scroll tabiiy ishlaydi, event yuqoriga (dialogga) ketmaydi
         const onListWheel = (e: WheelEvent) => {
-            e.stopPropagation();
+            // Scroll oxiriga yetganda keyingi sahifani yuklash
             if (onScrollToBottom) {
                 const threshold = 60;
                 setTimeout(() => {
@@ -104,6 +106,8 @@ export function Autocomplete({
                     }
                 }, 50);
             }
+            // Event'ni to'xtatamiz, lekin scroll allaqachon ishlagan bo'ladi (passive: true tufayli)
+            e.stopPropagation();
         };
         listEl.addEventListener('wheel', onListWheel, { passive: true });
 
@@ -251,7 +255,11 @@ export function Autocomplete({
                         onScroll={handleScroll}
                         onWheel={handleWheel}
                         className="max-h-[400px] overflow-y-auto overflow-x-hidden"
-                        style={{ maxHeight: '400px' }}
+                        style={{
+                            maxHeight: '400px',
+                            overscrollBehavior: 'contain',
+                            WebkitOverflowScrolling: 'touch'
+                        }}
                     >
                         {filteredOptions.length === 0 && !allowCreate && !isLoading && (
                             <CommandEmpty>{emptyText}</CommandEmpty>

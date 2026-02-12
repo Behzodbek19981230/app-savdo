@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     Table,
     TableBody,
@@ -72,6 +73,7 @@ import {
 } from '@/hooks/api/useProductCategories';
 import { productCategorySchema, type ProductCategoryFormData } from '@/lib/validations/productCategory';
 import type { ProductCategory } from '@/services/productCategory.service';
+import { productCategoryService } from '@/services/productCategory.service';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -79,6 +81,7 @@ type SortField = 'name' | 'sorting' | 'created_at' | null;
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function ProductCategories() {
+    const queryClient = useQueryClient();
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<SortField>(null);
@@ -87,6 +90,8 @@ export default function ProductCategories() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [suggestedSorting, setSuggestedSorting] = useState<number | null>(null);
+    const [isLoadingSuggestedSorting, setIsLoadingSuggestedSorting] = useState(false);
 
     const form = useForm<ProductCategoryFormData>({
         resolver: zodResolver(productCategorySchema),
@@ -103,7 +108,7 @@ export default function ProductCategories() {
 
     const { data, isLoading } = useProductCategories({
         page: currentPage,
-        perPage: ITEMS_PER_PAGE,
+        limit: ITEMS_PER_PAGE,
         search: searchQuery || undefined,
         ordering,
         is_delete: false,
@@ -147,19 +152,31 @@ export default function ProductCategories() {
         return <ArrowDown className="h-4 w-4 ml-2" />;
     };
 
-    const handleOpenDialog = (item?: ProductCategory) => {
+    const handleOpenDialog = async (item?: ProductCategory) => {
         if (item) {
             setEditingId(item.id);
+            setSuggestedSorting(null);
             form.reset({
                 name: item.name || '',
                 sorting: item.sorting,
             });
         } else {
             setEditingId(null);
+            setSuggestedSorting(null);
             form.reset({
                 name: '',
                 sorting: null,
             });
+            // Yangi qo'shishda suggested sorting olish
+            setIsLoadingSuggestedSorting(true);
+            try {
+                const response = await productCategoryService.getSuggestedSorting();
+                setSuggestedSorting(response.suggested_sorting);
+            } catch (error) {
+                console.error('Error fetching suggested sorting:', error);
+            } finally {
+                setIsLoadingSuggestedSorting(false);
+            }
         }
         setIsDialogOpen(true);
     };
@@ -167,7 +184,10 @@ export default function ProductCategories() {
     const handleCloseDialog = () => {
         setIsDialogOpen(false);
         setEditingId(null);
+        setSuggestedSorting(null);
         form.reset();
+        // Modal yopilganda list'ni yangilash
+        queryClient.invalidateQueries({ queryKey: ['productCategories'] });
     };
 
     const onSubmit = async (data: ProductCategoryFormData) => {
@@ -202,6 +222,8 @@ export default function ProductCategories() {
             await deleteCategory.mutateAsync(deletingId);
             setIsDeleteDialogOpen(false);
             setDeletingId(null);
+            // O'chirilganda list'ni yangilash
+            queryClient.invalidateQueries({ queryKey: ['productCategories'] });
         } catch (error) {
             console.error('Error deleting category:', error);
         }
@@ -394,7 +416,15 @@ export default function ProductCategories() {
                 </CardContent>
             </Card>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (!open) {
+                        handleCloseDialog();
+                    }
+                }}
+            >
                 <DialogContent className="sm:max-w-[525px]">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -441,9 +471,21 @@ export default function ProductCategories() {
                                                     }}
                                                 />
                                             </FormControl>
-                                            <p className="text-xs text-muted-foreground">
-                                                Tartib raqami bo&apos;yicha saralanadi
-                                            </p>
+                                            {!editingId && suggestedSorting !== null && (
+                                                <p className="text-xs text-red-500 font-medium">
+                                                    Tavsiya etilgan tartib raqami: {suggestedSorting}
+                                                </p>
+                                            )}
+                                            {!editingId && suggestedSorting === null && isLoadingSuggestedSorting && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    Tavsiya etilgan tartib raqami yuklanmoqda...
+                                                </p>
+                                            )}
+                                            {editingId && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    Tartib raqami bo&apos;yicha saralanadi
+                                                </p>
+                                            )}
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -463,7 +505,16 @@ export default function ProductCategories() {
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDeleteDialogOpen(open);
+                    if (!open) {
+                        // Delete dialog yopilganda list'ni yangilash
+                        queryClient.invalidateQueries({ queryKey: ['productCategories'] });
+                    }
+                }}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
