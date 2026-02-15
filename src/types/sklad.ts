@@ -29,6 +29,7 @@ export interface Sklad {
 	phone_number?: string;
 	is_active?: boolean;
 	is_delete?: boolean;
+	sorting?: number | null;
 	created_at?: string;
 	updated_at?: string;
 }
@@ -54,6 +55,7 @@ export interface CreateSkladPayload {
 	phone_number?: string;
 	is_active?: boolean;
 	is_delete?: boolean;
+	sorting?: number | null;
 }
 
 export type UpdateSkladPayload = Partial<CreateSkladPayload>;

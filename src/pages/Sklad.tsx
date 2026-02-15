@@ -75,6 +75,7 @@ const skladSchema = z.object({
 	address: z.string().optional(),
 	phone_number: z.string().optional(),
 	is_active: z.boolean().default(true),
+	sorting: z.coerce.number().int().min(0).optional(),
 });
 
 type SkladFormData = z.infer<typeof skladSchema>;
@@ -101,6 +102,7 @@ export default function SkladPage() {
 			address: '',
 			phone_number: '',
 			is_active: true,
+			sorting: 0,
 		},
 	});
 
@@ -169,6 +171,7 @@ export default function SkladPage() {
 				address: item.address || '',
 				phone_number: item.phone_number || '',
 				is_active: item.is_active ?? true,
+				sorting: item.sorting ?? 0,
 			});
 		} else {
 			setEditingId(null);
@@ -180,6 +183,7 @@ export default function SkladPage() {
 				address: '',
 				phone_number: '',
 				is_active: true,
+				sorting: 0,
 			});
 		}
 		setIsDialogOpen(true);
@@ -202,6 +206,7 @@ export default function SkladPage() {
 				phone_number: data.phone_number,
 				is_active: data.is_active,
 				is_delete: false,
+				sorting: data.sorting ?? 0,
 			};
 
 			if (editingId) {
@@ -566,6 +571,26 @@ export default function SkladPage() {
 										<FormLabel>Telefon raqami</FormLabel>
 										<FormControl>
 											<Input placeholder='+998 90 123 45 67' {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name='sorting'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Tartib (ordering)</FormLabel>
+										<FormControl>
+											<Input
+												type='number'
+												min={0}
+												placeholder='0'
+												value={field.value ?? 0}
+												onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

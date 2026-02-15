@@ -225,8 +225,7 @@ export default function Products() {
 		branch_category:
 			filterBranchCategory && filterBranchCategory !== 'all' ? parseInt(filterBranchCategory) : undefined,
 		model: filterModel && filterModel !== 'all' ? parseInt(filterModel) : undefined,
-		model_type: filterModelType && filterModelType !== 'all' ? parseInt(filterModelType) : undefined,
-		type: filterType && filterType !== 'all' ? filterType : undefined,
+		type: filterModelType && filterModelType !== 'all' ? parseInt(filterModelType) : undefined,
 	});
 
 	const selectedCategory = form.watch('category');
@@ -1011,7 +1010,9 @@ export default function Products() {
 														onClick={async () => {
 															setSelectedProduct(product);
 															setCurrentImageIndex(0);
-															const data = await productService.getProductImages(product.id);
+															const data = await productService.getProductImages(
+																product.id,
+															);
 															setImages(data);
 															setIsImageGalleryOpen(true);
 														}}
