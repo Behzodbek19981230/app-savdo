@@ -2,7 +2,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { authService } from '@/services';
 import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute, GuestRoute } from '@/components/ProtectedRoute';
@@ -42,7 +43,16 @@ const queryClient = new QueryClient({
 		},
 	},
 });
+const RootRedirect = () => {
+	const isAuth = authService.isAuthenticated();
+	return <Navigate to={isAuth ? '/dashboard' : '/login'} replace />;
+};
+
 const publicRoutes = [
+	{
+		path: '/',
+		element: <RootRedirect />,
+	},
 	{
 		path: '/login',
 		element: <Login />,

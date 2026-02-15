@@ -208,11 +208,15 @@ export const productService = {
     deleteProduct: async (id: number) => {
         return api.delete(API_ENDPOINTS.products.delete(id.toString()));
     },
-    getProductImages: async (id: number) => {
-        return api.get<ProductAttachment[]>(API_ENDPOINTS.productImages.list, {
-            params: {
-                product: id,
+    getProductImages: async (id: number): Promise<ProductAttachment[]> => {
+        const data = await api.get<{ results?: ProductAttachment[] } | ProductAttachment[]>(
+            API_ENDPOINTS.productImages.list,
+            {
+                params: {
+                    product: id,
+                },
             },
-        });
+        );
+        return Array.isArray(data) ? data : (data?.results ?? []);
     },
 };

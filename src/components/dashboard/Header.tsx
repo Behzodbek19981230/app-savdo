@@ -142,7 +142,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 								"Kurs yo'q"
 							)}
 						</span>
-						{(isAdmin || isManager) && (
+						{(isAdmin || isManager || isSuperAdmin) && (
 							<Button
 								variant='ghost'
 								size='icon'
@@ -157,7 +157,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
 				<div className='flex items-center gap-2 lg:gap-2.5 flex-shrink-0'>
 					{/* Mobile dollar kursi button - faqat Admin va Manager uchun tahrirlash */}
-					{(isAdmin || isManager) && (
+					{(isAdmin || isManager || isSuperAdmin) && (
 						<Button
 							variant='outline'
 							size='icon'
