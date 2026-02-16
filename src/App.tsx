@@ -32,6 +32,8 @@ import PurchaseInvoiceShow from './pages/PurchaseInvoiceShow';
 import Suppliers from './pages/Suppliers';
 import Sklad from './pages/Sklad';
 import Units from './pages/Units';
+import OrderHistory from './pages/OrderHistory';
+import OrderHistoryShow from './pages/OrderHistoryShow';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -97,11 +99,11 @@ const protectedRoutes = [
 	},
 	{
 		path: '/model-sizes',
-		element: <ModelTypeAndSize defaultTab="model-size" />,
+		element: <ModelTypeAndSize defaultTab='model-size' />,
 	},
 	{
 		path: '/model-types',
-		element: <ModelTypeAndSize defaultTab="model-type" />,
+		element: <ModelTypeAndSize defaultTab='model-type' />,
 	},
 	{
 		path: '/role',
@@ -122,6 +124,14 @@ const protectedRoutes = [
 	{
 		path: '/purchase-invoices',
 		element: <PurchaseInvoices />,
+	},
+	{
+		path: '/order-history',
+		element: <OrderHistory />,
+	},
+	{
+		path: '/order-history/:id',
+		element: <OrderHistoryShow />,
 	},
 	{
 		path: '/purchase-invoices/add',

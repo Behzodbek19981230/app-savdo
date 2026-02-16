@@ -82,7 +82,7 @@ const supplierSchema = z.object({
 type SupplierFormData = z.infer<typeof supplierSchema>;
 
 export default function Suppliers() {
-	const { user } = useAuthContext();
+	const { user, selectedFilialId } = useAuthContext();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [sortField, setSortField] = useState<SortField>(null);
@@ -97,7 +97,7 @@ export default function Suppliers() {
 		resolver: zodResolver(supplierSchema),
 		defaultValues: {
 			name: '',
-			filial: user?.filials_detail?.[0]?.id || 0,
+			filial: (selectedFilialId ?? user?.filials_detail?.[0]?.id) || 0,
 			region: 0,
 			district: 0,
 			address: '',
@@ -106,6 +106,13 @@ export default function Suppliers() {
 			is_active: true,
 		},
 	});
+
+	// Sync form filial when global selected filial changes
+	useEffect(() => {
+		if (selectedFilialId) {
+			form.setValue('filial', selectedFilialId);
+		}
+	}, [selectedFilialId]);
 
 	const selectedRegion = form.watch('region');
 
@@ -119,6 +126,7 @@ export default function Suppliers() {
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
+		filial: selectedFilialId ?? undefined,
 	});
 
 	const { data: regionsData } = useRegions({ perPage: 100 });

@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { usePurchaseInvoices, useDeletePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
+import { useAuthContext } from '@/contexts/AuthContext';
 import type { PurchaseInvoice } from '@/types/purchaseInvoice';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Plus, Trash2, Eye, Package, ArrowDownCircle } from 'lucide-react';
@@ -52,12 +53,15 @@ export default function PurchaseInvoices() {
 
 	const ordering = sortField && sortDirection ? `${sortDirection === 'desc' ? '-' : ''}${sortField}` : undefined;
 
+	const { selectedFilialId } = useAuthContext();
+
 	const { data, isLoading } = usePurchaseInvoices({
 		page: currentPage,
 		perPage: ITEMS_PER_PAGE,
 		ordering,
 		date_from: dateFrom ? moment(dateFrom).format('YYYY-MM-DD') : undefined,
 		date_to: dateTo ? moment(dateTo).format('YYYY-MM-DD') : undefined,
+		filial: selectedFilialId ?? undefined,
 	});
 
 	const deletePurchaseInvoice = useDeletePurchaseInvoice();

@@ -18,3 +18,6 @@ export * from './productImage.service';
 export * from './role.service';
 export * from './user.service';
 export * from './company.service';
+export * from './client.service';
+export * from './orderHistory.service';
+export * from './orderHistoryProduct.service';

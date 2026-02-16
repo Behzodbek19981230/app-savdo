@@ -81,7 +81,7 @@ const skladSchema = z.object({
 type SkladFormData = z.infer<typeof skladSchema>;
 
 export default function SkladPage() {
-	const { user } = useAuthContext();
+	const { user, selectedFilialId } = useAuthContext();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [sortField, setSortField] = useState<SortField>(null);
@@ -118,6 +118,7 @@ export default function SkladPage() {
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
+		filial: selectedFilialId ?? undefined,
 	});
 
 	const { data: regionsData } = useRegions({ perPage: 100 });
@@ -589,7 +590,9 @@ export default function SkladPage() {
 												min={0}
 												placeholder='0'
 												value={field.value ?? 0}
-												onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+												onChange={(e) =>
+													field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+												}
 											/>
 										</FormControl>
 										<FormMessage />

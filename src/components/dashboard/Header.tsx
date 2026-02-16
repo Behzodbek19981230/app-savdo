@@ -35,7 +35,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 	const [today, setToday] = useState(new Date());
 	const [isExchangeDialogOpen, setIsExchangeDialogOpen] = useState(false);
 	const [dollarValue, setDollarValue] = useState<number | undefined>(undefined);
-	const [selectedFilialId, setSelectedFilialId] = useState<number | null>(null);
+	const { selectedFilialId, setSelectedFilialId } = useAuthContext();
 
 	const user = authService.getStoredUser();
 	const { mutate: logout } = useLogout();

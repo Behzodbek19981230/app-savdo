@@ -104,7 +104,7 @@ interface AddedProduct extends ProductFormData {
 
 export default function PurchaseInvoiceAdd() {
 	const navigate = useNavigate();
-	const { user } = useAuthContext();
+	const { user, selectedFilialId } = useAuthContext();
 	const { toast } = useToast();
 	const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 	const [addedProducts, setAddedProducts] = useState<AddedProduct[]>([]);
@@ -142,12 +142,19 @@ export default function PurchaseInvoiceAdd() {
 		defaultValues: {
 			type: 0,
 			supplier: 0,
-			filial: user?.filials_detail?.[0]?.id || 0,
+			filial: (selectedFilialId ?? user?.filials_detail?.[0]?.id) || 0,
 			sklad: 0,
 			date: moment().format('YYYY-MM-DD'),
 			employee: user?.id || 0,
 		},
 	});
+
+	// Sync form filial when global selected filial changes
+	useEffect(() => {
+		if (selectedFilialId) {
+			invoiceForm.setValue('filial', selectedFilialId);
+		}
+	}, [selectedFilialId]);
 
 	// Mahsulot form
 	const productForm = useForm<ProductFormData>({
@@ -185,7 +192,7 @@ export default function PurchaseInvoiceAdd() {
 	const { data: usersData } = useUsers({ limit: 20, is_active: true });
 	const { data: suppliersData } = useSuppliers({ limit: 20, is_delete: false });
 	const { data: companiesData } = useCompanies({ limit: 20, is_delete: false });
-	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilial || undefined, is_delete: false });
+	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilialId ?? undefined, is_delete: false });
 	const { data: productsData } = useProducts({ limit: 20, is_delete: false });
 
 	// Categories with pagination and search
@@ -296,12 +303,17 @@ export default function PurchaseInvoiceAdd() {
 	useEffect(() => {
 		if (!selectedBranch) return;
 		const raw = branchCategoriesData as
-			| { results?: Array<{ id: number; name: string }>; data?: { results?: Array<{ id: number; name: string }> } }
+			| {
+					results?: Array<{ id: number; name: string }>;
+					data?: { results?: Array<{ id: number; name: string }> };
+			  }
 			| Array<{ id: number; name: string }>
 			| undefined;
 		const list: Array<{ id: number; name: string }> = Array.isArray(raw)
 			? raw
-			: (raw?.results ?? (raw as { data?: { results?: Array<{ id: number; name: string }> } })?.data?.results ?? []);
+			: (raw?.results ??
+				(raw as { data?: { results?: Array<{ id: number; name: string }> } })?.data?.results ??
+				[]);
 		if (!list.length) {
 			if (!isBranchCategoriesLoading) setAllBranchCategories([]);
 			return;
