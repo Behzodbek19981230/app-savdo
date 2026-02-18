@@ -27,6 +27,7 @@ import Users from './pages/Users';
 import Companies from './pages/Companies';
 import ExchangeRates from './pages/ExchangeRates';
 import PurchaseInvoices from './pages/PurchaseInvoices';
+import Korzinka from './pages/Korzinka';
 import PurchaseInvoiceAdd from './pages/PurchaseInvoiceAdd';
 import PurchaseInvoiceShow from './pages/PurchaseInvoiceShow';
 import Suppliers from './pages/Suppliers';
@@ -124,6 +125,10 @@ const protectedRoutes = [
 	{
 		path: '/purchase-invoices',
 		element: <PurchaseInvoices />,
+	},
+	{
+		path: '/karzinka',
+		element: <Korzinka />,
 	},
 	{
 		path: '/order-history',

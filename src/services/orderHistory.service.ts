@@ -80,4 +80,12 @@ export const orderHistoryService = {
 	getList: async (params?: Record<string, unknown>) => {
 		return api.get<OrderHistoryListResponse>('/order-history', { params });
 	},
+	// Fetch korzinka (cart) order histories
+	korzinka: async (params?: Record<string, unknown>) => {
+		return api.get<any>('/order-history/karzinka', { params });
+	},
+	// Delete an order history (korzinka item)
+	delete: async (id: number | string) => {
+		return api.delete(`/order-history/${id}`);
+	},
 };
