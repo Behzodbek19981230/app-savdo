@@ -54,6 +54,15 @@ export interface OrderHistoryItem {
 	created_by_detail?: { id: number; full_name?: string; phone_number?: string };
 	order_filial?: number;
 	order_filial_detail?: { id: number; name?: string };
+	currency?: number | null;
+	currency_detail?: { id: number; code?: string; name?: string } | null;
+	number?: number;
+}
+
+export interface OrderHistoryDateGroup {
+	date: string;
+	count: number;
+	items: OrderHistoryItem[];
 }
 
 export interface OrderHistoryListResponse {
@@ -63,7 +72,8 @@ export interface OrderHistoryListResponse {
 		perPage: number;
 		total: number;
 	};
-	results: OrderHistoryItem[];
+	results: OrderHistoryDateGroup[];
+	filters?: unknown;
 }
 
 export const orderHistoryService = {

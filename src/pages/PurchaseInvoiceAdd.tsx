@@ -82,8 +82,6 @@ const productSchema = z.object({
 	unit: z.coerce.number().positive("O'lchov birligi tanlanishi shart"), // O'lchov birligi (Unit)
 	count: z.coerce.number().int().positive('Miqdor kiritilishi shart'), // int
 	real_price: z.coerce.number().positive('Xaqiqiy narx kiritilishi shart'), // float - Dollar
-	unit_price: z.coerce.number().positive('Dona narx kiritilishi shart'), // float - Dollar
-	wholesale_price: z.coerce.number().positive('Optom narx kiritilishi shart'), // float - Dollar
 	min_price: z.coerce.number().positive('Minimal narx kiritilishi shart'), // float - Dollar
 	note: z.string().optional(), // Izoh
 });
@@ -171,8 +169,6 @@ export default function PurchaseInvoiceAdd() {
 			unit: 0,
 			count: 0,
 			real_price: 0,
-			unit_price: 0,
-			wholesale_price: 0,
 			min_price: 0,
 			note: '',
 		},
@@ -718,8 +714,6 @@ export default function PurchaseInvoiceAdd() {
 			unit: 0,
 			count: 0,
 			real_price: 0,
-			unit_price: 0,
-			wholesale_price: 0,
 			min_price: 0,
 			note: '',
 		});
@@ -808,8 +802,8 @@ export default function PurchaseInvoiceAdd() {
 					is_weight: product.is_weight,
 					count: product.count,
 					real_price: product.real_price,
-					unit_price: product.unit_price,
-					wholesale_price: product.wholesale_price,
+					unit_price: product.real_price,
+					wholesale_price: 0,
 					min_price: product.min_price,
 					note: product.note,
 					filial_id: values.filial,
@@ -1142,7 +1136,7 @@ export default function PurchaseInvoiceAdd() {
 					<Form {...productForm}>
 						<form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
 							{/* Bo'lim va Kategoriya turi */}
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+							<div className='grid grid-cols-1 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='branch'
@@ -1502,61 +1496,9 @@ export default function PurchaseInvoiceAdd() {
 										</FormItem>
 									)}
 								/>
-								<FormField
-									control={productForm.control}
-									name='unit_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Dona narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
 							</div>
 
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								<FormField
-									control={productForm.control}
-									name='wholesale_price'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												Optom narxi <span className='text-destructive'>*</span>
-											</FormLabel>
-											<div className='flex'>
-												<FormControl>
-													<Input
-														type='number'
-														step='0.01'
-														placeholder='0.00'
-														{...field}
-														className='rounded-r-none'
-													/>
-												</FormControl>
-												<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
-													$
-												</span>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+							<div className='grid grid-cols-1 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='min_price'

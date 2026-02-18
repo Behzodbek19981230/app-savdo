@@ -55,4 +55,8 @@ export const orderHistoryProductService = {
 	list: async (params?: Record<string, unknown>) => {
 		return api.get<OrderHistoryProductListResponse>('/order-history-product', { params });
 	},
+	// Fetch products grouped by model for a specific order history
+	byModel: async (orderHistoryId: number | string) => {
+		return api.get<any>(`/order-history/${orderHistoryId}/product-by-model`);
+	},
 };

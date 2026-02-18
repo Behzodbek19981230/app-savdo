@@ -22,7 +22,7 @@ import {
 	PaginationPrevious,
 } from '@/components/ui/pagination';
 
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 5;
 
 export default function OrderHistoryPage() {
 	const { selectedFilialId } = useAuthContext();
@@ -82,7 +82,7 @@ export default function OrderHistoryPage() {
 	// Build params
 	const params: Record<string, unknown> = {
 		page,
-		perPage: ITEMS_PER_PAGE,
+		limit: ITEMS_PER_PAGE,
 		filial: selectedFilialId ?? undefined,
 	};
 	if (search) params.search = search;
@@ -94,9 +94,16 @@ export default function OrderHistoryPage() {
 
 	const { data, isLoading } = useOrderHistory(params);
 
-	const items = data?.results || [];
+	const dateGroups = data?.results || [];
 	const pagination = data?.pagination;
-	const totalPages = pagination?.lastPage || 1;
+	const lastPage = pagination?.lastPage || 1;
+
+	// Format currency helper
+	const formatCurrency = (value: string | number | undefined) => {
+		if (!value) return '0.00';
+		const num = typeof value === 'string' ? parseFloat(value) : value;
+		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+	};
 
 	useEffect(() => {
 		setPage(1);
@@ -177,113 +184,205 @@ export default function OrderHistoryPage() {
 						<div className='flex items-center justify-center py-10'>
 							<Loader2 className='h-8 w-8 animate-spin text-primary' />
 						</div>
-					) : items.length === 0 ? (
+					) : dateGroups.length === 0 ? (
 						<div className='flex flex-col items-center justify-center py-10 text-center'>
 							<Package className='h-12 w-12 text-muted-foreground/50 mb-4' />
 							<p className='text-muted-foreground'>Buyurtmalar topilmadi</p>
 						</div>
 					) : (
-						<>
-							<div className='rounded-md border'>
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead className='w-[60px]'>t/r</TableHead>
-											<TableHead>Mijoz</TableHead>
-											<TableHead>Xodim</TableHead>
-											<TableHead>Zakaz (summa)</TableHead>
-											<TableHead>To'langan</TableHead>
-											<TableHead>Qarz</TableHead>
-											<TableHead>Umumiy qarz</TableHead>
-											<TableHead>Sanasi</TableHead>
-											<TableHead>Holati</TableHead>
-											<TableHead className='text-right'>Actions</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{items.map((it: any, idx: number) => (
-											<TableRow key={it.id}>
-												<TableCell className='font-medium'>
-													{(page - 1) * ITEMS_PER_PAGE + idx + 1}
-												</TableCell>
-												<TableCell>{it.client_detail?.full_name || `#${it.client}`}</TableCell>
-												<TableCell>{it.created_by_detail?.full_name || '-'}</TableCell>
-												<TableCell className='text-blue-600 font-semibold'>
-													<Link to={`/order-history/${it.id}`}>
-														{it.all_product_summa || '0'}
-													</Link>
-												</TableCell>
-												<TableCell>0</TableCell>
-												<TableCell>0</TableCell>
-												<TableCell>{it.total_debt_client || '0'}</TableCell>
-												<TableCell>
-													{it.created_time
-														? moment(it.created_time).format('YYYY-MM-DD HH:mm')
-														: '-'}
-												</TableCell>
-												<TableCell>
-													{it.order_status ? (
-														<span className='px-3 py-1 rounded-full bg-green-100 text-green-700'>
-															Yakunlangan
-														</span>
-													) : (
-														<span className='px-3 py-1 rounded-full bg-yellow-100 text-yellow-700'>
-															Korzinkada
-														</span>
-													)}
-												</TableCell>
-												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-1'>
-														<Button
-															variant='ghost'
-															size='icon'
-															onClick={() => navigate(`/order-history/${it.id}`)}
-														>
-															<Eye className='h-4 w-4' />
-														</Button>
-													</div>
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
+						<div className='rounded-md border'>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className='w-[60px]'>t/r</TableHead>
 
-							{/* Pagination */}
-							{totalPages > 1 && (
-								<div className='mt-4 flex justify-center'>
-									<Pagination>
-										<PaginationContent>
-											<PaginationItem>
-												<PaginationPrevious onClick={() => setPage(Math.max(1, page - 1))} />
-											</PaginationItem>
-											{[...Array(Math.min(5, totalPages))].map((_, i) => {
-												let pageNum: number;
-												if (totalPages <= 5) pageNum = i + 1;
-												else if (page <= 3) pageNum = i + 1;
-												else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-												else pageNum = page - 2 + i;
-												return (
-													<PaginationItem key={pageNum}>
-														<PaginationLink
-															onClick={() => setPage(pageNum)}
-															isActive={pageNum === page}
+										<TableHead>Sanasi</TableHead>
+										<TableHead>Mijoz</TableHead>
+										<TableHead>Xodim</TableHead>
+										<TableHead className='text-right'>Zakaz (summa)</TableHead>
+										<TableHead className='text-right'>To'langan</TableHead>
+										<TableHead className='text-right'>Qarz</TableHead>
+										<TableHead className='text-right'>Umumiy qarz</TableHead>
+										<TableHead>Holati</TableHead>
+										<TableHead className='text-right'>Actions</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{dateGroups.map((group: any, groupIdx: number) => {
+										// Calculate totals for this date group
+										const totalSumma = group.items.reduce(
+											(sum: number, item: any) =>
+												sum + parseFloat(item.summa_total_dollar || '0'),
+											0,
+										);
+										const totalPaid = group.items.reduce((sum: number, item: any) => {
+											const paid =
+												parseFloat(item.summa_dollar || '0') +
+												parseFloat(item.summa_naqt || '0') +
+												parseFloat(item.summa_kilik || '0') +
+												parseFloat(item.summa_terminal || '0') +
+												parseFloat(item.summa_transfer || '0');
+											return sum + paid;
+										}, 0);
+										const totalQarz = group.items.reduce((sum: number, item: any) => {
+											const paid =
+												parseFloat(item.summa_dollar || '0') +
+												parseFloat(item.summa_naqt || '0') +
+												parseFloat(item.summa_kilik || '0') +
+												parseFloat(item.summa_terminal || '0') +
+												parseFloat(item.summa_transfer || '0');
+											const qarz = parseFloat(item.summa_total_dollar || '0') - paid;
+											return sum + qarz;
+										}, 0);
+										const totalDebt = group.items.reduce(
+											(sum: number, item: any) => sum + parseFloat(item.total_debt_client || '0'),
+											0,
+										);
+
+										return (
+											<>
+												{/* Summary Row */}
+												<TableRow
+													key={`summary-${group.date}`}
+													className='bg-muted/50 font-semibold'
+												>
+													<TableCell></TableCell>
+													<TableCell className='font-semibold'>
+														Jami {moment(group.date).format('YYYY-MM-DD')} ({group.count})
+													</TableCell>
+													<TableCell></TableCell>
+													<TableCell></TableCell>
+													<TableCell className='text-right font-semibold'>
+														{formatCurrency(totalSumma)}
+													</TableCell>
+													<TableCell className='text-right font-semibold'>
+														{formatCurrency(totalPaid)}
+													</TableCell>
+													<TableCell className='text-right font-semibold'>
+														{formatCurrency(totalQarz)}
+													</TableCell>
+													<TableCell className='text-right font-semibold'>
+														{formatCurrency(totalDebt)}
+													</TableCell>
+													<TableCell></TableCell>
+													<TableCell></TableCell>
+												</TableRow>
+												{/* Order Items */}
+												{group.items.map((it: any, idx: number) => {
+													const paid =
+														parseFloat(it.summa_dollar || '0') +
+														parseFloat(it.summa_naqt || '0') +
+														parseFloat(it.summa_kilik || '0') +
+														parseFloat(it.summa_terminal || '0') +
+														parseFloat(it.summa_transfer || '0');
+													const qarz = parseFloat(it.summa_total_dollar || '0') - paid;
+
+													return (
+														<TableRow
+															key={it.id}
+															className={it.order_status === false ? 'bg-red-50' : ''}
 														>
-															{pageNum}
-														</PaginationLink>
-													</PaginationItem>
-												);
-											})}
-											<PaginationItem>
-												<PaginationNext
-													onClick={() => setPage(Math.min(totalPages, page + 1))}
-												/>
+															<TableCell className='font-medium'>{idx + 1}</TableCell>
+															<TableCell>
+																{it.created_time
+																	? moment(it.created_time).format('YYYY-MM-DD HH:mm')
+																	: group.date}
+															</TableCell>
+															<TableCell>
+																{it.client_detail?.full_name || `#${it.client}`}
+															</TableCell>
+															<TableCell>
+																{it.created_by_detail?.full_name || '-'}
+															</TableCell>
+															<TableCell className='text-right text-blue-600 font-semibold'>
+																<Link to={`/order-history/${it.id}`}>
+																	{formatCurrency(it.summa_total_dollar)}
+																</Link>
+															</TableCell>
+															<TableCell className='text-right'>
+																{formatCurrency(paid)}
+															</TableCell>
+															<TableCell className='text-right'>
+																{formatCurrency(qarz)}
+															</TableCell>
+															<TableCell className='text-right'>
+																{formatCurrency(it.total_debt_client)}
+															</TableCell>
+															<TableCell>
+																{it.is_karzinka ? (
+																	<span className='px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs'>
+																		Korzinkada
+																	</span>
+																) : it.order_status ? (
+																	<span className='px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs'>
+																		Yakunlangan
+																	</span>
+																) : (
+																	<span className='px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs'>
+																		Yakunlanmagan
+																	</span>
+																)}
+															</TableCell>
+															<TableCell className='text-right'>
+																<div className='flex items-center justify-end gap-1'>
+																	<Button
+																		variant='ghost'
+																		size='icon'
+																		onClick={() =>
+																			navigate(`/order-history/${it.id}`)
+																		}
+																	>
+																		<Eye className='h-4 w-4' />
+																	</Button>
+																</div>
+															</TableCell>
+														</TableRow>
+													);
+												})}
+											</>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</div>
+					)}
+					{/* Pagination */}
+					{!isLoading && dateGroups.length > 0 && lastPage > 1 && (
+						<div className='mt-4 flex justify-center'>
+							<Pagination>
+								<PaginationContent>
+									<PaginationItem>
+										<PaginationPrevious
+											onClick={() => setPage(Math.max(1, page - 1))}
+											className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+										/>
+									</PaginationItem>
+									{[...Array(Math.min(5, lastPage))].map((_, i) => {
+										let pageNum: number;
+										if (lastPage <= 5) pageNum = i + 1;
+										else if (page <= 3) pageNum = i + 1;
+										else if (page >= lastPage - 2) pageNum = lastPage - 4 + i;
+										else pageNum = page - 2 + i;
+										return (
+											<PaginationItem key={pageNum}>
+												<PaginationLink
+													onClick={() => setPage(pageNum)}
+													isActive={pageNum === page}
+												>
+													{pageNum}
+												</PaginationLink>
 											</PaginationItem>
-										</PaginationContent>
-									</Pagination>
-								</div>
-							)}
-						</>
+										);
+									})}
+									<PaginationItem>
+										<PaginationNext
+											onClick={() => setPage(Math.min(lastPage, page + 1))}
+											className={page === lastPage ? 'pointer-events-none opacity-50' : ''}
+										/>
+									</PaginationItem>
+								</PaginationContent>
+							</Pagination>
+						</div>
 					)}
 				</CardContent>
 			</Card>
