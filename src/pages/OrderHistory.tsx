@@ -282,7 +282,7 @@ export default function OrderHistoryPage() {
 															key={it.id}
 															className={
 																it.order_status === false
-																	? 'bg-red-50 dark:bg-red-900'
+																	? 'bg-red-50 dark:bg-[#7b5858]'
 																	: ''
 															}
 														>
