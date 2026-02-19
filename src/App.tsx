@@ -35,6 +35,7 @@ import Sklad from './pages/Sklad';
 import Units from './pages/Units';
 import OrderHistory from './pages/OrderHistory';
 import OrderHistoryShow from './pages/OrderHistoryShow';
+import ExpenseCategories from './pages/ExpenseCategories';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -157,6 +158,10 @@ const protectedRoutes = [
 	{
 		path: '/units',
 		element: <Units />,
+	},
+	{
+		path: '/expense-categories',
+		element: <ExpenseCategories />,
 	},
 ];
 

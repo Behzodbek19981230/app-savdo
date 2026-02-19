@@ -226,6 +226,15 @@ export const API_ENDPOINTS = {
 		update: (id: string) => `/product-type-size/${id}`,
 		delete: (id: string) => `/product-type-size/${id}`,
 	},
+
+	// Expense Category endpoints (Xarajat kategoriyalari)
+	expenseCategories: {
+		list: '/expense-category',
+		byId: (id: string) => `/expense-category/${id}`,
+		create: '/expense-category',
+		update: (id: string) => `/expense-category/${id}`,
+		delete: (id: string) => `/expense-category/${id}`,
+	},
 } as const;
 
 // Request timeout (milliseconds)
