@@ -280,7 +280,11 @@ export default function OrderHistoryPage() {
 													return (
 														<TableRow
 															key={it.id}
-															className={it.order_status === false ? 'bg-red-50' : ''}
+															className={
+																it.order_status === false
+																	? 'bg-red-50 dark:bg-red-900'
+																	: ''
+															}
 														>
 															<TableCell className='font-medium'>{idx + 1}</TableCell>
 															<TableCell>
@@ -318,7 +322,7 @@ export default function OrderHistoryPage() {
 																		Yakunlangan
 																	</span>
 																) : (
-																	<span className='px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs'>
+																	<span className='px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs dark:bg-red-900 dark:text-red-200'>
 																		Yakunlanmagan
 																	</span>
 																)}
