@@ -98,15 +98,15 @@ const OrderHistoryShow: React.FC = () => {
 								<div className='text-xs text-muted-foreground'>Holat</div>
 								<div>
 									{order?.is_karzinka ? (
-										<span className='px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs'>
+										<span className='px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs dark:bg-yellow-900 dark:text-yellow-200'>
 											Korzinkada
 										</span>
 									) : order?.order_status ? (
-										<span className='px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs'>
+										<span className='px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs dark:bg-green-900 dark:text-green-200'>
 											Yakunlangan
 										</span>
 									) : (
-										<span className='px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs'>
+										<span className='px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs dark:bg-red-900 dark:text-red-200'>
 											Yakunlanmagan
 										</span>
 									)}
@@ -117,7 +117,7 @@ const OrderHistoryShow: React.FC = () => {
 				</div>
 
 				{isLoading && <div>Yuklanmoqda...</div>}
-				{error && <div className='text-red-600'>Mahsulotlarni yuklashda xato</div>}
+				{error && <div className='text-red-600 dark:text-red-300'>Mahsulotlarni yuklashda xato</div>}
 
 				{groups.map((g: any) => {
 					const modelTotalCount = g.product.reduce((s: number, it: any) => s + (it.count || 0), 0);
@@ -128,7 +128,9 @@ const OrderHistoryShow: React.FC = () => {
 
 					return (
 						<div key={g.model_id} className='mb-6'>
-							<div className='bg-blue-50 px-4 py-2 font-semibold text-blue-700 rounded-t'>{g.model}</div>
+							<div className='bg-blue-50 px-4 py-2 font-semibold text-blue-700 rounded-t dark:bg-blue-900 dark:text-blue-200'>
+								{g.model}
+							</div>
 							<Table>
 								<TableHeader>
 									<TableRow>
