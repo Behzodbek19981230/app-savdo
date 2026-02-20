@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -316,17 +317,17 @@ export default function Companies() {
 		<div className='space-y-6'>
 			<Card>
 				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
-				<div>
+					<div>
 						<div className='flex items-center gap-2'>
 							<Building2 className='h-5 w-5 text-primary' />
 							<CardTitle className='text-lg'>Filiallar</CardTitle>
 						</div>
 						<CardDescription>{headerSubtitle}</CardDescription>
-				</div>
-				<Button onClick={() => handleOpenDialog()}>
-					<Plus className='mr-2 h-4 w-4' />
-					Yangi filial qo'shish
-				</Button>
+					</div>
+					<Button onClick={() => handleOpenDialog()}>
+						<Plus className='mr-2 h-4 w-4' />
+						Yangi filial qo'shish
+					</Button>
 				</CardHeader>
 				<CardContent>
 					<div className='mb-4'>
@@ -496,7 +497,7 @@ export default function Companies() {
 											<FormItem>
 												<FormLabel>Telefon raqami</FormLabel>
 												<FormControl>
-													<Input placeholder='+998...' {...field} />
+													<PhoneInput placeholder='+998 90 123 45 67' {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>

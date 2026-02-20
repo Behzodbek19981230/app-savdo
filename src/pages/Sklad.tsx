@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -100,7 +101,7 @@ export default function SkladPage() {
 			region: 0,
 			district: 0,
 			address: '',
-			phone_number: '',
+			phone_number: '+998',
 			is_active: true,
 			sorting: 0,
 		},
@@ -170,7 +171,7 @@ export default function SkladPage() {
 				region: item.region || 0,
 				district: item.district || 0,
 				address: item.address || '',
-				phone_number: item.phone_number || '',
+				phone_number: item.phone_number ?? '+998',
 				is_active: item.is_active ?? true,
 				sorting: item.sorting ?? 0,
 			});
@@ -182,7 +183,7 @@ export default function SkladPage() {
 				region: 0,
 				district: 0,
 				address: '',
-				phone_number: '',
+				phone_number: '+998',
 				is_active: true,
 				sorting: 0,
 			});
@@ -571,7 +572,7 @@ export default function SkladPage() {
 									<FormItem>
 										<FormLabel>Telefon raqami</FormLabel>
 										<FormControl>
-											<Input placeholder='+998 90 123 45 67' {...field} />
+											<PhoneInput placeholder='+998 90 123 45 67' {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

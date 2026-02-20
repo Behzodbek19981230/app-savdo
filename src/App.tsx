@@ -34,8 +34,8 @@ import Suppliers from './pages/Suppliers';
 import Sklad from './pages/Sklad';
 import Units from './pages/Units';
 import OrderHistory from './pages/OrderHistory';
-import OrderHistoryShow from './pages/OrderHistoryShow';
 import ExpenseCategories from './pages/ExpenseCategories';
+import { OrderShowPage } from './pages/OrderHistoryShow';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -137,7 +137,7 @@ const protectedRoutes = [
 	},
 	{
 		path: '/order-history/:id',
-		element: <OrderHistoryShow />,
+		element: <OrderShowPage />,
 	},
 	{
 		path: '/purchase-invoices/add',

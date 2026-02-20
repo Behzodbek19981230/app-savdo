@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { useKorzinka } from '@/hooks/api/useKorzinka';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Eye, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,8 @@ import moment from 'moment';
 import { formatCurrency } from '@/lib/utils';
 
 const KorzinkaPage: React.FC = () => {
-	const { data, isLoading, error } = useKorzinka(undefined, true);
+	const { selectedFilialId } = useAuthContext();
+	const { data, isLoading, error } = useKorzinka({ filial: selectedFilialId ?? undefined }, true);
 	const dateGroups = data?.results || data?.data || [];
 	const navigate = useNavigate();
 	const deleteMutation = useDeleteOrderHistory();

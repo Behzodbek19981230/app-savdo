@@ -179,6 +179,7 @@ export interface ProductQueryParams {
 	type?: number;
 	branch?: number;
 	branch_category?: number;
+	filial?: number;
 }
 
 export const productService = {

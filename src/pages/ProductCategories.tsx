@@ -482,9 +482,9 @@ export default function ProductCategories() {
                                                 </p>
                                             )}
                                             {editingId && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    Tartib raqami bo&apos;yicha saralanadi
-                                                </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Tartib raqami bo&apos;yicha saralanadi
+                                            </p>
                                             )}
                                             <FormMessage />
                                         </FormItem>

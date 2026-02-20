@@ -102,7 +102,7 @@ interface AddedProduct extends ProductFormData {
 
 export default function PurchaseInvoiceAdd() {
 	const navigate = useNavigate();
-	const { user, selectedFilialId } = useAuthContext();
+	const { user } = useAuthContext();
 	const { toast } = useToast();
 	const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 	const [addedProducts, setAddedProducts] = useState<AddedProduct[]>([]);
@@ -186,7 +186,12 @@ export default function PurchaseInvoiceAdd() {
 
 	// Data fetching
 	const { data: usersData } = useUsers({ limit: 20, is_active: true });
-	const { data: suppliersData } = useSuppliers({ limit: 20, is_delete: false });
+	const { selectedFilialId } = useAuthContext();
+	const { data: suppliersData } = useSuppliers({
+		limit: 20,
+		is_delete: false,
+		filial: selectedFilialId ?? undefined,
+	});
 	const { data: companiesData } = useCompanies({ limit: 20, is_delete: false });
 	const { data: skladsData } = useSklads({ perPage: 1000, filial: selectedFilialId ?? undefined, is_delete: false });
 	const { data: productsData } = useProducts({ limit: 20, is_delete: false });
@@ -269,6 +274,15 @@ export default function PurchaseInvoiceAdd() {
 	const units = unitsData?.results || [];
 	const productTypeSizes = productTypeSizesData?.results || [];
 	const dollarRate = exchangeRatesData?.results?.[0]?.dollar || 12500;
+
+	// Ensure the invoice 'employee' defaults to the current user when available
+	useEffect(() => {
+		const currentEmployee = invoiceForm.getValues().employee;
+		if ((currentEmployee === undefined || currentEmployee === 0) && user?.id) {
+			invoiceForm.setValue('employee', user.id);
+		}
+		// Also if users list is loaded but doesn't include current employee, still set it
+	}, [user, users, invoiceForm]);
 
 	// Categories pagination va search uchun effect
 	useEffect(() => {
@@ -864,31 +878,6 @@ export default function PurchaseInvoiceAdd() {
 
 								<FormField
 									control={invoiceForm.control}
-									name='type'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Turi</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={String(field.value)}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Turini tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													<SelectItem value='0'>Tovar kirimi</SelectItem>
-													<SelectItem value='1'>Vozvrat</SelectItem>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<FormField
-									control={invoiceForm.control}
 									name='supplier'
 									render={({ field }) => (
 										<FormItem>
@@ -1136,7 +1125,7 @@ export default function PurchaseInvoiceAdd() {
 					<Form {...productForm}>
 						<form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
 							{/* Bo'lim va Kategoriya turi */}
-							<div className='grid grid-cols-1 gap-4'>
+							<div className='grid grid-cols-2 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='branch'
@@ -1468,7 +1457,7 @@ export default function PurchaseInvoiceAdd() {
 							{/* Hidden product field - endi ishlatilmaydi */}
 							<input type='hidden' {...productForm.register('product')} value={1} />
 
-							{/* Narxlar - Dollar */}
+							{/* Narxlar - Dollar (bir qatorda: Xaqiqiy va Minimal) */}
 							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<FormField
 									control={productForm.control}
@@ -1496,9 +1485,7 @@ export default function PurchaseInvoiceAdd() {
 										</FormItem>
 									)}
 								/>
-							</div>
 
-							<div className='grid grid-cols-1 gap-4'>
 								<FormField
 									control={productForm.control}
 									name='min_price'
