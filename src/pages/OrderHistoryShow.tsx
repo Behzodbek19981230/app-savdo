@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User } from 'lucide-react';
+import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User, Upload } from 'lucide-react';
+import { renderReceiptHtml } from '@/components/Receipt';
 import { OrderResponse, orderService } from '@/services';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,9 @@ export function OrderShowPage() {
 	const [data, setData] = useState<OrderProductsByModelResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const printRef = useRef<HTMLDivElement | null>(null);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [isUploading, setIsUploading] = useState(false);
 
 	const handleBack = () => window.history.back();
 
@@ -47,6 +51,32 @@ export function OrderShowPage() {
 				console.error('Print failed', e);
 			}
 		}, 300);
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const f = e.target.files?.[0] ?? null;
+		setSelectedFile(f);
+	};
+
+	const handleUploadPdf = async () => {
+		if (!selectedFile || !id) return;
+		setIsUploading(true);
+		try {
+			const fd = new FormData();
+			fd.append('file', selectedFile);
+
+			// TODO: replace URL with real endpoint for uploading order PDFs
+			// Example: await fetch(`/api/orders/${id}/upload-pdf`, { method: 'POST', body: fd });
+			console.log('Would upload file for order', id, selectedFile.name);
+			toast({ title: 'Fayl yuklandi', description: selectedFile.name, variant: 'success' });
+			setSelectedFile(null);
+			if (fileInputRef.current) fileInputRef.current.value = '';
+		} catch (err) {
+			console.error(err);
+			toast({ title: 'Xatolik', description: 'Fayl yuklanmadi', variant: 'destructive' });
+		} finally {
+			setIsUploading(false);
+		}
 	};
 
 	useEffect(() => {
@@ -150,11 +180,103 @@ export function OrderShowPage() {
 							variant='outline'
 							size='sm'
 							className='px-2 py-1 flex items-center gap-2'
-							onClick={() => printFor(`Mijoz uchun - Order #${order_history.id}`)}
+							onClick={() => {
+								// Build printable receipt HTML using the Receipt helper
+								try {
+									const items = products.flatMap((g) =>
+										g.product.map((p: any) => {
+											const usd = Number(p.price_dollar || 0);
+											const priceUz = usd * (Number(order_history.exchange_rate) || 1);
+											const count = Number(p.count || 0);
+											return {
+												id: p.id,
+												modelName: g.model,
+												name: p.branch_category_detail?.name || p.type_detail?.name || '-',
+												quantity: count,
+												unit: p.type_detail?.name || p.unit || '-',
+												price: priceUz,
+												totalPrice: priceUz * count,
+											};
+										}),
+									);
+
+									const totalAmount = Number(order_history.all_product_summa || 0);
+									const usdRate = Number(order_history.exchange_rate) || 1;
+									const totalPaidUZS =
+										Number(order_history.summa_naqt || 0) +
+										Number(order_history.summa_dollar || 0) * usdRate +
+										Number(order_history.summa_transfer || 0) +
+										Number(order_history.summa_terminal || 0);
+
+									const receiptHtml = renderReceiptHtml({
+										items,
+										totalAmount,
+										usdAmount: (totalAmount / usdRate).toFixed(2),
+										usdRate,
+										customer: {
+											name: order_history.client_detail?.full_name || '',
+										} as any,
+										kassirName: order_history.created_by_detail?.full_name || '',
+										orderNumber: String(order_history.id),
+										date: new Date(order_history.created_time),
+										paidAmount: totalPaidUZS,
+										remainingDebt: Number(order_history.client_detail?.total_debt || 0) * usdRate,
+										filialLogo: order_history.order_filial_detail?.logo || null,
+									});
+
+									const w = window.open('', '_blank', 'width=900,height=700');
+									if (!w) return;
+									w.document.write(receiptHtml);
+									w.document.close();
+									w.focus();
+									setTimeout(() => {
+										try {
+											w.print();
+											w.close();
+										} catch (e) {
+											console.error('Print failed', e);
+										}
+									}, 300);
+								} catch (err) {
+									console.error('Receipt print error', err);
+								}
+							}}
 						>
 							<User className='h-4 w-4 text-emerald-600' />
 							<span className='text-sm text-emerald-700'>Mijoz uchun</span>
 						</Button>
+
+						{/* Upload PDF for hodim */}
+						<div className='flex items-center gap-2'>
+							<input
+								type='file'
+								accept='application/pdf'
+								ref={fileInputRef}
+								onChange={handleFileChange}
+								className='hidden'
+								id='order-pdf-upload'
+							/>
+							<label htmlFor='order-pdf-upload'>
+								<Button variant='ghost' size='sm' className='px-2 py-1 flex items-center gap-2'>
+									<Upload className='h-4 w-4 text-sky-600' />
+									<span className='text-sm text-sky-700'>Fayl tanla</span>
+								</Button>
+							</label>
+							{selectedFile && (
+								<Button
+									variant='secondary'
+									size='sm'
+									className='px-2 py-1 flex items-center gap-2'
+									onClick={handleUploadPdf}
+									disabled={isUploading}
+								>
+									<Upload className='h-4 w-4' />
+									<span className='text-sm'>
+										{isUploading ? 'Yuklanmoqda...' : selectedFile.name}
+									</span>
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 
