@@ -69,6 +69,22 @@ export function DateRangePicker({
 	disabled = false,
 	className,
 }: DateRangePickerProps) {
+	const handleFromSelect = (d: Date | undefined) => {
+		if (onDateFromChange) onDateFromChange(d);
+		if (d && dateTo && d > dateTo) {
+			// clear the end date if it is before the new start
+			if (onDateToChange) onDateToChange(undefined);
+		}
+	};
+
+	const handleToSelect = (d: Date | undefined) => {
+		if (onDateToChange) onDateToChange(d);
+		if (d && dateFrom && d < dateFrom) {
+			// clear the start date if it is after the new end
+			if (onDateFromChange) onDateFromChange(undefined);
+		}
+	};
+
 	return (
 		<div className={cn('flex items-center gap-2', className)}>
 			<Popover>
@@ -86,7 +102,14 @@ export function DateRangePicker({
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className='w-auto p-0' align='start'>
-					<Calendar mode='single' selected={dateFrom} onSelect={onDateFromChange} initialFocus locale={uz} />
+					<Calendar
+						mode='single'
+						selected={dateFrom}
+						onSelect={handleFromSelect}
+						initialFocus
+						locale={uz}
+						disabled={dateTo ? { after: dateTo } : undefined}
+					/>
 				</PopoverContent>
 			</Popover>
 			<span className='text-muted-foreground'>—</span>
@@ -105,7 +128,14 @@ export function DateRangePicker({
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className='w-auto p-0' align='start'>
-					<Calendar mode='single' selected={dateTo} onSelect={onDateToChange} initialFocus locale={uz} />
+					<Calendar
+						mode='single'
+						selected={dateTo}
+						onSelect={handleToSelect}
+						initialFocus
+						locale={uz}
+						disabled={dateFrom ? { before: dateFrom } : undefined}
+					/>
 				</PopoverContent>
 			</Popover>
 		</div>

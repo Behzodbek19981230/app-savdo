@@ -160,16 +160,21 @@ function SidebarContent() {
 	}, [isSuperadmin, isAdmin, isManager]);
 
 	// Accordion state per section and optional submenu open state
-	// default: all sections closed
+	// default: keep the primary (first) section open
+	const primarySectionTitle = filteredNavSections[0]?.title ?? '';
 	const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
 		const init: Record<string, boolean> = {};
-		filteredNavSections.forEach((s) => (init[s.title] = false));
+		filteredNavSections.forEach((s) => (init[s.title] = s.title === primarySectionTitle));
 		return init;
 	});
 
 	const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
-	const toggleSection = (title: string) => setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+	const toggleSection = (title: string) => {
+		// prevent collapsing the primary/main section
+		if (title === primarySectionTitle) return;
+		setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+	};
 
 	const toggleItem = (sectionTitle: string, itemLabel: string) => {
 		const key = `${sectionTitle}::${itemLabel}`;

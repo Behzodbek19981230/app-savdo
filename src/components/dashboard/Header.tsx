@@ -303,7 +303,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 					<DialogHeader>
 						<DialogTitle>Dollar kursi</DialogTitle>
 						<DialogDescription>
-							{isAdmin || isManager ? 'Bugungi dollar kursini kiriting' : 'Joriy dollar kursi'}
+							{isAdmin || isManager || isSuperAdmin
+								? 'Bugungi dollar kursini kiriting'
+								: 'Joriy dollar kursi'}
 						</DialogDescription>
 					</DialogHeader>
 					<div className='grid gap-4 py-4'>
@@ -320,16 +322,16 @@ export function Header({ onMenuClick }: HeaderProps) {
 								}}
 								min={0}
 								step={1}
-								disabled={!(isAdmin || isManager)}
-								readOnly={!(isAdmin || isManager)}
+								disabled={!(isAdmin || isManager || isSuperAdmin)}
+								readOnly={!(isAdmin || isManager || isSuperAdmin)}
 							/>
 						</div>
 					</div>
 					<DialogFooter>
 						<Button variant='outline' onClick={() => setIsExchangeDialogOpen(false)}>
-							{isAdmin || isManager ? 'Bekor qilish' : 'Yopish'}
+							{isAdmin || isManager || isSuperAdmin ? 'Bekor qilish' : 'Yopish'}
 						</Button>
-						{(isAdmin || isManager) && (
+						{(isAdmin || isManager || isSuperAdmin) && (
 							<Button onClick={handleSaveExchangeRate} disabled={isMutating || !dollarValue}>
 								{isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
 								Saqlash

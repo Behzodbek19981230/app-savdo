@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2, Banknote, CreditCard } from 'lucide-react';
+import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User } from 'lucide-react';
 import { OrderResponse, orderService } from '@/services';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -97,78 +97,68 @@ export function OrderShowPage() {
 		<div ref={printRef} className='h-full overflow-y-auto p-4 sm:p-6'>
 			{/* Order History Ma'lumotlari */}
 			<div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-3 sm:p-4 mb-4'>
-				<div className='flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700'>
-					<h2 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100'>
-						{order_history.client_detail?.full_name || "Noma'lum"}
-					</h2>
+				<div className='flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700'>
+					{/* Left: client name + phone */}
+					<div className='flex items-center gap-3 min-w-0'>
+						<div className='min-w-0'>
+							<div className='text-sm font-semibold text-gray-800 dark:text-slate-100 truncate'>
+								{order_history.client_detail?.full_name || "Noma'lum"}
+							</div>
+							<div className='text-xs text-gray-500 dark:text-gray-300 truncate'>
+								{order_history.client_detail?.phone_number || ''}
+							</div>
+						</div>
+					</div>
+
+					{/* Center: timestamp (hidden on very small screens) */}
+					<div className='hidden sm:block text-xs text-gray-500 dark:text-gray-400'>
+						<div className='text-xs text-gray-500 dark:text-gray-400'>Qo'shilgan vaqti:</div>
+
+						{new Date(order_history.created_time).toLocaleTimeString('ru-RU', {
+							day: '2-digit',
+							month: '2-digit',
+							year: '2-digit',
+							hour: '2-digit',
+							minute: '2-digit',
+							second: '2-digit',
+						})}
+					</div>
+
+					{/* Right: compact actions */}
 					<div className='flex items-center gap-2'>
-						<Button variant='ghost' size='sm' onClick={handleBack}>
-							Orqaga
+						<Button
+							variant='ghost'
+							size='sm'
+							className='px-2 py-1 flex items-center gap-2'
+							onClick={handleBack}
+						>
+							<ChevronLeft className='h-4 w-4 text-rose-600' />
+							<span className='text-sm text-rose-700 dark:text-rose-300'>Orqaga</span>
 						</Button>
+
 						<Button
 							variant='outline'
 							size='sm'
+							className='px-2 py-1 flex items-center gap-2'
 							onClick={() => printFor(`Hodim uchun - Order #${order_history.id}`)}
 						>
-							Hodim uchun chop
+							<Printer className='h-4 w-4 text-indigo-600' />
+							<span className='text-sm text-indigo-700'>Hodim uchun</span>
 						</Button>
+
 						<Button
 							variant='outline'
 							size='sm'
+							className='px-2 py-1 flex items-center gap-2'
 							onClick={() => printFor(`Mijoz uchun - Order #${order_history.id}`)}
 						>
-							Mijoz uchun chop
+							<User className='h-4 w-4 text-emerald-600' />
+							<span className='text-sm text-emerald-700'>Mijoz uchun</span>
 						</Button>
 					</div>
 				</div>
 
 				<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3'>
-					{/* Mijoz ma'lumotlari */}
-					<div className='bg-gradient-to-br from-blue-50 to-indigo-50 p-2 rounded border border-blue-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-						<p className='text-[10px] font-semibold text-blue-600 mb-1 uppercase tracking-wide'>Mijoz</p>
-						<p className='font-bold text-gray-800 dark:text-slate-100 text-sm mb-0.5'>
-							{order_history.client_detail?.full_name || "Noma'lum"}
-						</p>
-						<p className='text-xs text-gray-600 dark:text-gray-300'>
-							{order_history.client_detail?.phone_number || ''}
-						</p>
-						{order_history.client_detail?.total_debt &&
-							Number(order_history.client_detail.total_debt) > 0 && (
-								<p className='text-[10px] text-red-600 font-semibold mt-0.5'>
-									Qarz: {Number(order_history.client_detail.total_debt).toLocaleString()}
-								</p>
-							)}
-					</div>
-
-					{/* Sana va vaqt */}
-					<div className='bg-gradient-to-br from-purple-50 to-pink-50 p-2 rounded border border-purple-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-						<p className='text-[10px] font-semibold text-purple-600 mb-1 uppercase tracking-wide'>
-							Sana va vaqt
-						</p>
-						{order_history.created_time ? (
-							<>
-								<p className='font-bold text-gray-800 dark:text-slate-100 text-sm'>
-									{new Date(order_history.created_time)
-										.toLocaleDateString('ru-RU', {
-											year: 'numeric',
-											month: '2-digit',
-											day: '2-digit',
-										})
-										.replace(/\//g, '.')}
-								</p>
-								<p className='text-xs text-gray-600 dark:text-gray-300 mt-0.5'>
-									{new Date(order_history.created_time).toLocaleTimeString('ru-RU', {
-										hour: '2-digit',
-										minute: '2-digit',
-										second: '2-digit',
-									})}
-								</p>
-							</>
-						) : (
-							<p className='font-bold text-gray-800 dark:text-slate-100 text-sm'>Noma'lum</p>
-						)}
-					</div>
-
 					{/* Kassir */}
 					<div className='bg-gradient-to-br from-green-50 to-emerald-50 p-2 rounded border border-green-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
 						<p className='text-[10px] font-semibold text-green-600 mb-1 uppercase tracking-wide'>Kassir</p>
@@ -298,6 +288,33 @@ export function OrderShowPage() {
 							</div>
 						</div>
 					</div>
+					{/* Qarz ma'lumotlari */}
+					<div className='bg-gradient-to-br from-red-50 to-pink-50 p-2 rounded border border-red-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 '>
+						<p className='text-[10px] font-semibold text-red-600 mb-2 uppercase tracking-wide'>
+							Qarz ma'lumotlari
+						</p>
+						<p className='font-bold text-red-700 dark:text-red-200 text-base'>
+							{Number(order_history.client_detail?.total_debt || 0).toFixed(2)} USD
+						</p>
+						<p className='text-xs text-red-600 dark:text-red-200 mt-0.5'>
+							{(Number(order_history.client_detail?.total_debt || 0) * usdRate).toLocaleString()} UZS
+						</p>
+					</div>
+
+					{/* Foyda */}
+					{Number(order_history.all_profit_dollar || 0) > 0 && (
+						<div className='bg-gradient-to-br from-lime-50 to-green-50 p-2 rounded border border-lime-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
+							<p className='text-[10px] font-semibold text-lime-600 mb-1 uppercase tracking-wide dark:text-lime-200'>
+								Foyda
+							</p>
+							<p className='font-bold text-lime-700 dark:text-lime-200 text-base'>
+								{Number(order_history.all_profit_dollar).toFixed(2)} USD
+							</p>
+							<p className='text-xs text-lime-600 dark:text-lime-200 mt-0.5'>
+								{(Number(order_history.all_profit_dollar) * usdRate).toLocaleString()} UZS
+							</p>
+						</div>
+					)}
 
 					{/* To'lov usullari */}
 					<div className='md:col-span-2 lg:col-span-3 xl:col-span-5'>
@@ -416,49 +433,6 @@ export function OrderShowPage() {
 									</div>
 								)}
 							</div>
-						</div>
-					)}
-
-					{/* Qarz ma'lumotlari */}
-					{(Number(order_history.total_debt_client || 0) > 0 ||
-						Number(order_history.total_debt_today_client || 0) > 0) && (
-						<div className='bg-gradient-to-br from-red-50 to-pink-50 p-2 rounded border border-red-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 '>
-							<p className='text-[10px] font-semibold text-red-600 mb-2 uppercase tracking-wide'>
-								Qarz ma'lumotlari
-							</p>
-							<div className='grid grid-cols-2 gap-2'>
-								{Number(order_history.total_debt_client || 0) > 0 && (
-									<div className='bg-white dark:bg-slate-800 p-2 rounded border border-red-100 dark:border-slate-700'>
-										<p className='text-[10px] text-gray-500 mb-0.5'>Umumiy qarz</p>
-										<p className='font-bold text-red-700 text-xs'>
-											{Number(order_history.total_debt_client).toLocaleString()} UZS
-										</p>
-									</div>
-								)}
-								{Number(order_history.total_debt_today_client || 0) > 0 && (
-									<div className='bg-white dark:bg-slate-800 p-2 rounded border border-red-100 dark:border-slate-700'>
-										<p className='text-[10px] text-gray-500 mb-0.5'>Bugungi qarz</p>
-										<p className='font-bold text-red-700 text-xs'>
-											{Number(order_history.total_debt_today_client).toLocaleString()} UZS
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
-					)}
-
-					{/* Foyda */}
-					{Number(order_history.all_profit_dollar || 0) > 0 && (
-						<div className='bg-gradient-to-br from-lime-50 to-green-50 p-2 rounded border border-lime-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-							<p className='text-[10px] font-semibold text-lime-600 mb-1 uppercase tracking-wide dark:text-lime-200'>
-								Foyda
-							</p>
-							<p className='font-bold text-lime-700 dark:text-lime-200 text-base'>
-								{Number(order_history.all_profit_dollar).toFixed(2)} USD
-							</p>
-							<p className='text-xs text-lime-600 dark:text-lime-200 mt-0.5'>
-								{(Number(order_history.all_profit_dollar) * usdRate).toLocaleString()} UZS
-							</p>
 						</div>
 					)}
 
