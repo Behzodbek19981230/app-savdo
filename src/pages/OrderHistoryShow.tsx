@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, Banknote, CreditCard } from 'lucide-react';
 import { OrderResponse, orderService } from '@/services';
 import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface ProductByModel {
 	model_id: number;
@@ -19,6 +20,34 @@ export function OrderShowPage() {
 	const { id } = useParams<{ id: string }>();
 	const [data, setData] = useState<OrderProductsByModelResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const printRef = useRef<HTMLDivElement | null>(null);
+
+	const handleBack = () => window.history.back();
+
+	const printFor = (title: string) => {
+		const content = printRef.current?.innerHTML;
+		if (!content) return;
+		const w = window.open('', '_blank', 'width=900,height=700');
+		if (!w) return;
+		w.document.write(`<!doctype html><html><head><title>${title}</title>`);
+		w.document.write('</head><body>');
+		w.document.write(
+			`<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;">${title}</h3>`,
+		);
+		w.document.write(content);
+		w.document.write('</body></html>');
+		w.document.close();
+		w.focus();
+		// give the new window a moment to render
+		setTimeout(() => {
+			try {
+				w.print();
+				w.close();
+			} catch (e) {
+				console.error('Print failed', e);
+			}
+		}, 300);
+	};
 
 	useEffect(() => {
 		const loadData = async () => {
@@ -65,19 +94,31 @@ export function OrderShowPage() {
 	const totalPaidUSD = usdRate ? totalPaidUZS / usdRate : 0;
 
 	return (
-		<div className='h-full overflow-y-auto p-4 sm:p-6'>
+		<div ref={printRef} className='h-full overflow-y-auto p-4 sm:p-6'>
 			{/* Order History Ma'lumotlari */}
 			<div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-3 sm:p-4 mb-4'>
 				<div className='flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700'>
 					<h2 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-slate-100'>
-						Order #{order_history.id}
+						{order_history.client_detail?.full_name || "Noma'lum"}
 					</h2>
-					<div
-						className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-							order_history.order_status ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-						}`}
-					>
-						{order_history.order_status ? 'Tugallangan' : 'Kutilmoqda'}
+					<div className='flex items-center gap-2'>
+						<Button variant='ghost' size='sm' onClick={handleBack}>
+							Orqaga
+						</Button>
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={() => printFor(`Hodim uchun - Order #${order_history.id}`)}
+						>
+							Hodim uchun chop
+						</Button>
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={() => printFor(`Mijoz uchun - Order #${order_history.id}`)}
+						>
+							Mijoz uchun chop
+						</Button>
 					</div>
 				</div>
 
@@ -218,25 +259,44 @@ export function OrderShowPage() {
 					</div>
 
 					{/* To'lanishi kerak */}
-					<div className='bg-gradient-to-br from-emerald-50 to-green-50 p-2 rounded border-2 border-emerald-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-						<p className='text-[10px] font-semibold text-emerald-600 mb-1 uppercase tracking-wide'>
-							To'lanishi kerak
+					{/* To'lanishi kerak va Jami to'landi yonma-yon */}
+					{(Number(order_history.all_product_summa || 0) - Number(order_history.discount_amount || 0) > 0 ||
+						totalPaidUZS > 0) && (
+						<div className='bg-gradient-to-br from-emerald-50 to-green-50 p-2 rounded border-2 border-emerald-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
+							<p className='text-[10px] font-semibold text-emerald-600 mb-1 uppercase tracking-wide'>
+								To'lanishi kerak
+							</p>
+							<p className='font-bold text-emerald-700 dark:text-emerald-200 text-base mb-0.5'>
+								{(
+									(Number(order_history.all_product_summa || 0) -
+										Number(order_history.discount_amount || 0)) /
+									usdRate
+								).toFixed(2)}{' '}
+								USD
+							</p>
+							<p className='text-xs font-semibold text-emerald-600 dark:text-emerald-200'>
+								{(
+									Number(order_history.all_product_summa || 0) -
+									Number(order_history.discount_amount || 0)
+								).toLocaleString()}{' '}
+								UZS
+							</p>
+						</div>
+					)}
+
+					{/* Jami to'landi */}
+					<div className='bg-gradient-to-br from-indigo-50 to-blue-50 p-2 rounded border-2 border-indigo-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
+						<p className='text-[10px] font-semibold text-indigo-600 mb-1 uppercase tracking-wide'>
+							Jami to'landi
 						</p>
-						<p className='font-bold text-emerald-700 dark:text-emerald-200 text-base mb-0.5'>
-							{(
-								(Number(order_history.all_product_summa || 0) -
-									Number(order_history.discount_amount || 0)) /
-								usdRate
-							).toFixed(2)}{' '}
-							USD
-						</p>
-						<p className='text-xs font-semibold text-emerald-600 dark:text-emerald-200'>
-							{(
-								Number(order_history.all_product_summa || 0) -
-								Number(order_history.discount_amount || 0)
-							).toLocaleString()}{' '}
-							UZS
-						</p>
+						<div className='text-right'>
+							<div className='font-bold text-lg sm:text-xl text-indigo-700'>
+								{totalPaidUSD ? totalPaidUSD.toFixed(2) : '0.00'} USD
+							</div>
+							<div className='text-sm sm:text-base text-gray-500'>
+								{totalPaidUZS.toLocaleString()} UZS
+							</div>
+						</div>
 					</div>
 
 					{/* To'lov usullari */}
@@ -330,19 +390,6 @@ export function OrderShowPage() {
 								</div>
 							)}
 						</div>
-						<div className='mt-2 pt-2 border-t border-gray-200 dark:border-gray-700'>
-							<div className='flex items-center justify-between gap-3'>
-								<span className='text-sm sm:text-base font-semibold text-gray-700'>Jami to'landi:</span>
-								<div className='text-right'>
-									<div className='font-bold text-lg sm:text-xl text-indigo-700'>
-										{totalPaidUSD ? totalPaidUSD.toFixed(2) : '0.00'} USD
-									</div>
-									<div className='text-sm sm:text-base text-gray-500'>
-										{totalPaidUZS.toLocaleString()} UZS
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
 
 					{/* Qaytim */}
@@ -375,7 +422,7 @@ export function OrderShowPage() {
 					{/* Qarz ma'lumotlari */}
 					{(Number(order_history.total_debt_client || 0) > 0 ||
 						Number(order_history.total_debt_today_client || 0) > 0) && (
-						<div className='bg-gradient-to-br from-red-50 to-pink-50 p-2 rounded border border-red-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 md:col-span-2 lg:col-span-3 xl:col-span-5'>
+						<div className='bg-gradient-to-br from-red-50 to-pink-50 p-2 rounded border border-red-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 '>
 							<p className='text-[10px] font-semibold text-red-600 mb-2 uppercase tracking-wide'>
 								Qarz ma'lumotlari
 							</p>

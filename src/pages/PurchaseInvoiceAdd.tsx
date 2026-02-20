@@ -112,6 +112,7 @@ export default function PurchaseInvoiceAdd() {
 	const [newUnitName, setNewUnitName] = useState('');
 	const [newUnitCode, setNewUnitCode] = useState('');
 	const [isCreatingUnit, setIsCreatingUnit] = useState(false);
+	const { selectedFilialId } = useAuthContext();
 
 	// Autocomplete pagination va search state'lar
 	const [categoryPage, setCategoryPage] = useState(1);
@@ -186,7 +187,6 @@ export default function PurchaseInvoiceAdd() {
 
 	// Data fetching
 	const { data: usersData } = useUsers({ limit: 20, is_active: true });
-	const { selectedFilialId } = useAuthContext();
 	const { data: suppliersData } = useSuppliers({
 		limit: 20,
 		is_delete: false,

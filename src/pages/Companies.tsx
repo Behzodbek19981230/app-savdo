@@ -80,7 +80,7 @@ export default function Companies() {
 			region: 0,
 			district: 0,
 			address: '',
-			phone_number: '',
+			phone_number: '+998',
 			logo: undefined,
 			is_active: true,
 		},
@@ -92,7 +92,7 @@ export default function Companies() {
 
 	const { data, isLoading } = useCompanies({
 		page: currentPage,
-		perPage: ITEMS_PER_PAGE,
+		limit: ITEMS_PER_PAGE,
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
@@ -178,7 +178,7 @@ export default function Companies() {
 				region: 0,
 				district: 0,
 				address: '',
-				phone_number: '',
+				phone_number: '+998',
 				logo: undefined,
 				is_active: true,
 			});
@@ -522,7 +522,7 @@ export default function Companies() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='0'>-</SelectItem>
+														<SelectItem value='0'>Tanlang</SelectItem>
 														{regions.map((r) => (
 															<SelectItem key={r.id} value={String(r.id)}>
 																{r.name}
@@ -558,7 +558,7 @@ export default function Companies() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='0'>-</SelectItem>
+														<SelectItem value='0'>Tanlang</SelectItem>
 														{districts.map((d) => (
 															<SelectItem key={d.id} value={String(d.id)}>
 																{d.name}

@@ -90,7 +90,7 @@ export default function Users() {
 			is_active: true,
 			date_of_birthday: '',
 			gender: '',
-			phone_number: '',
+			phone_number: '+998',
 			email: '',
 			password: '',
 			companies: [],
@@ -256,7 +256,7 @@ export default function Users() {
 				is_active: true,
 				date_of_birthday: '',
 				gender: '',
-				phone_number: '',
+				phone_number: '+998',
 				email: '',
 				password: '',
 				companies: [],
@@ -697,7 +697,7 @@ export default function Users() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='none'>-</SelectItem>
+														<SelectItem value='none'>Tanlang</SelectItem>
 														<SelectItem value='male'>Male</SelectItem>
 														<SelectItem value='female'>Female</SelectItem>
 													</SelectContent>
@@ -833,7 +833,7 @@ export default function Users() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='0'>-</SelectItem>
+														<SelectItem value='0'>Tanlang</SelectItem>
 														{companies.map((c) => (
 															<SelectItem key={c.id} value={String(c.id)}>
 																{c.name}
@@ -864,7 +864,7 @@ export default function Users() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='0'>-</SelectItem>
+														<SelectItem value='0'>Tanlang</SelectItem>
 														{regions.map((r) => (
 															<SelectItem key={r.id} value={String(r.id)}>
 																{r.name}
@@ -901,7 +901,7 @@ export default function Users() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value='0'>-</SelectItem>
+														<SelectItem value='0'>Tanlang</SelectItem>
 														{districts.map((d) => (
 															<SelectItem key={d.id} value={String(d.id)}>
 																{d.name}
