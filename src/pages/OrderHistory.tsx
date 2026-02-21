@@ -121,14 +121,17 @@ export default function OrderHistoryPage() {
 							<CardTitle>Buyurtma tarixi</CardTitle>
 							<CardDescription>Buyurtmalar ro'yxati</CardDescription>
 						</div>
-						<div className='flex items-center gap-2'>
-							<Input
-								placeholder='Mijoz nomi yoki telefon'
-								value={search}
-								onChange={(e) => setSearch(e.target.value)}
-								className='min-w-[220px]'
-							/>
-							<div className='w-[260px]'>
+						<div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
+							<div className='w-full sm:w-auto'>
+								<Input
+									placeholder='Mijoz nomi yoki telefon'
+									value={search}
+									onChange={(e) => setSearch(e.target.value)}
+									className='w-full sm:min-w-[220px]'
+								/>
+							</div>
+
+							<div className='w-full sm:w-[260px]'>
 								<Autocomplete
 									options={clientOptions}
 									value={clientId ?? undefined}
@@ -145,38 +148,47 @@ export default function OrderHistoryPage() {
 									isLoadingMore={isClientsFetching}
 								/>
 							</div>
-							<Select
-								onValueChange={(v) => setEmployee(v && v !== '0' ? Number(v) : null)}
-								value={employee ? String(employee) : '0'}
-							>
-								<SelectTrigger className='min-w-[180px]'>
-									<SelectValue placeholder='Barcha xodimlar' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value='0'>Barcha xodimlar</SelectItem>
-									{users.map((u: any) => (
-										<SelectItem key={u.id} value={String(u.id)}>
-											{u.full_name || u.username}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<Select onValueChange={(v) => setStatus(v)} value={status}>
-								<SelectTrigger className='min-w-[140px]'>
-									<SelectValue placeholder='Barcha holatlar' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value='all'>Barchasi</SelectItem>
-									<SelectItem value='completed'>Yakunlangan</SelectItem>
-									<SelectItem value='pending'>Korzinkada</SelectItem>
-								</SelectContent>
-							</Select>
-							<DateRangePicker
-								dateFrom={dateFrom}
-								dateTo={dateTo}
-								onDateFromChange={(d) => setDateFrom(d)}
-								onDateToChange={(d) => setDateTo(d)}
-							/>
+
+							<div className='w-full sm:w-auto'>
+								<Select
+									onValueChange={(v) => setEmployee(v && v !== '0' ? Number(v) : null)}
+									value={employee ? String(employee) : '0'}
+								>
+									<SelectTrigger className='w-full sm:min-w-[180px]'>
+										<SelectValue placeholder='Barcha xodimlar' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='0'>Barcha xodimlar</SelectItem>
+										{users.map((u: any) => (
+											<SelectItem key={u.id} value={String(u.id)}>
+												{u.full_name || u.username}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className='w-full sm:w-auto'>
+								<Select onValueChange={(v) => setStatus(v)} value={status}>
+									<SelectTrigger className='w-full sm:min-w-[140px]'>
+										<SelectValue placeholder='Barcha holatlar' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='all'>Barchasi</SelectItem>
+										<SelectItem value='completed'>Yakunlangan</SelectItem>
+										<SelectItem value='pending'>Korzinkada</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className='w-full sm:w-auto'>
+								<DateRangePicker
+									dateFrom={dateFrom}
+									dateTo={dateTo}
+									onDateFromChange={(d) => setDateFrom(d)}
+									onDateToChange={(d) => setDateTo(d)}
+								/>
+							</div>
 						</div>
 					</div>
 				</CardHeader>

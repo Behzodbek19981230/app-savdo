@@ -88,4 +88,7 @@ export const orderHistoryService = {
 	delete: async (id: number | string) => {
 		return api.delete(`/order-history/${id}`);
 	},
+	deleteKorzinka: async (id: number | string) => {
+		return api.delete(`/order-history/karzinka/${id}`);
+	},
 };

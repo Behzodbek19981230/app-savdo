@@ -6,7 +6,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Eye, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useDeleteOrderHistory } from '@/hooks/api/useDeleteOrderHistory';
+import { useDeleteKorzinkaOrderHistory, useDeleteOrderHistory } from '@/hooks/api/useDeleteOrderHistory';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,7 +25,7 @@ const KorzinkaPage: React.FC = () => {
 	const { data, isLoading, error } = useKorzinka({ filial: selectedFilialId ?? undefined }, true);
 	const dateGroups = data?.results || data?.data || [];
 	const navigate = useNavigate();
-	const deleteMutation = useDeleteOrderHistory();
+	const deleteMutation = useDeleteKorzinkaOrderHistory();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
 
