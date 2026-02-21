@@ -85,7 +85,7 @@ import {
 	ProductType,
 	ProductTypeLabels,
 } from '@/services/product.service';
-import { productSchema, type ProductFormData } from '@/lib/validations/product';
+import { productSchema, productFormSchema, type ProductFormValues } from '@/lib/validations/product';
 import { ModelSizeTypeLabels } from '@/services';
 import { productCategoryService } from '@/services/productCategory.service';
 import { productBranchCategoryService } from '@/services/productBranchCategory.service';
@@ -143,8 +143,8 @@ export default function Products() {
 	const [filterModelTypeSearch, setFilterModelTypeSearch] = useState('');
 
 	// Form
-	const form = useForm<ProductFormData>({
-		resolver: zodResolver(productSchema),
+	const form = useForm<ProductFormValues>({
+		resolver: zodResolver(productFormSchema),
 		defaultValues: {
 			category: 0,
 			branch_category: 0,
@@ -152,7 +152,6 @@ export default function Products() {
 			model_type: 0,
 			size: 0,
 			unit: 0,
-			type: ProductType.DONA,
 			count: 0,
 			reserve_limit: 100,
 			real_price: 0,
@@ -547,7 +546,6 @@ export default function Products() {
 				model_type: 0,
 				size: 0,
 				unit: 0,
-				type: ProductType.DONA,
 				count: 0,
 				reserve_limit: 100,
 				real_price: 0,
@@ -573,7 +571,6 @@ export default function Products() {
 			model_type: p.type || 0,
 			size: p.size || 0,
 			unit: unitId,
-			type: ProductType.DONA,
 			count: p.count || 0,
 			reserve_limit: p.reserve_limit || 100,
 			real_price: parseNum(p.real_price),
@@ -672,7 +669,7 @@ export default function Products() {
 		form.reset();
 	};
 
-	const onSubmit = async (data: ProductFormData) => {
+	const onSubmit = async (data: ProductFormValues) => {
 		try {
 			const submitData: Partial<Product> & Record<string, unknown> = {
 				branch: data.category,
@@ -1342,7 +1339,12 @@ export default function Products() {
 						</div>
 					) : (
 						<Form {...form}>
-							<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3'>
+							<form
+								onSubmit={form.handleSubmit(onSubmit, (errors) => {
+									console.log('Form validation errors:', errors);
+								})}
+								className='space-y-3'
+							>
 								{/* Bo'lim va Kategoriya turi */}
 								<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 									<FormField
