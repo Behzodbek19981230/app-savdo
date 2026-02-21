@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Autocomplete } from '@/components/ui/autocomplete';
@@ -1079,6 +1080,7 @@ export default function Products() {
 											</TableHead>
 											<TableHead className='text-right'>Narxi ($)</TableHead>
 											<TableHead className='text-right'>Min narx ($)</TableHead>
+											<TableHead className='text-center'>Status</TableHead>
 											<TableHead className='text-right'>Amallar</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -1107,7 +1109,7 @@ export default function Products() {
 														</AvatarFallback>
 													</Avatar>
 												</TableCell>
-												<TableCell>{product.branch_detail?.name || '-'}</TableCell>
+												<TableCell>{product.branch_detail?.name ?? '-'}</TableCell>
 												<TableCell>{product.branch_category_detail?.name ?? '-'}</TableCell>
 												<TableCell className='font-medium'>
 													{product.model_detail?.name || '-'}
@@ -1150,6 +1152,21 @@ export default function Products() {
 												</TableCell>
 												<TableCell className='text-right text-green-600'>
 													{formatPrice(product.min_price)}
+												</TableCell>
+												<TableCell className='text-center'>
+													<Switch
+														checked={!!product.is_active}
+														onCheckedChange={async (checked) => {
+															try {
+																await updateProduct.mutateAsync({
+																	id: product.id,
+																	data: { is_active: checked },
+																});
+															} catch (err) {
+																console.error('Failed to update product status', err);
+															}
+														}}
+													/>
 												</TableCell>
 												<TableCell>
 													<div className='flex items-center justify-end '>
