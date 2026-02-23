@@ -91,4 +91,8 @@ export const orderHistoryService = {
 	deleteKorzinka: async (id: number | string) => {
 		return api.delete(`/order-history/karzinka/${id}`);
 	},
+	// Restore an order from korzinka back to orders
+	restoreKorzinka: async (id: number | string) => {
+		return api.put(`/order-history/karzinka/${id}/restore`);
+	},
 };

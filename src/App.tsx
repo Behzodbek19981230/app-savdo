@@ -28,6 +28,7 @@ import Companies from './pages/Companies';
 import ExchangeRates from './pages/ExchangeRates';
 import PurchaseInvoices from './pages/PurchaseInvoices';
 import Korzinka from './pages/Korzinka';
+import DebtKorzinka from './pages/DebtKorzinka';
 import PurchaseInvoiceAdd from './pages/PurchaseInvoiceAdd';
 import PurchaseInvoiceShow from './pages/PurchaseInvoiceShow';
 import Suppliers from './pages/Suppliers';
@@ -130,6 +131,14 @@ const protectedRoutes = [
 	{
 		path: '/karzinka',
 		element: <Korzinka />,
+	},
+	{
+		path: '/debt-repayment/karzinka',
+		element: <DebtKorzinka />,
+	},
+	{
+		path: '/debt-repayment/karzinka/:id',
+		element: <DebtKorzinka />,
 	},
 	{
 		path: '/order-history',

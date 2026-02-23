@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { useKorzinka } from '@/hooks/api/useKorzinka';
+import { useDebtKorzinka } from '@/hooks/api/useDebtKorzinka';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Eye, Trash2, RotateCw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { orderHistoryService } from '@/services/orderHistory.service';
+import { debtRepaymentService } from '@/services/debtRepayment.service';
 import { ORDER_HISTORY_KEYS } from '@/hooks/api/useOrderHistory';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useDeleteKorzinkaOrderHistory, useDeleteOrderHistory } from '@/hooks/api/useDeleteOrderHistory';
+import { useDeleteDebtKorzinka } from '@/hooks/api/useDeleteDebtKorzinka';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -24,12 +24,25 @@ import {
 import moment from 'moment';
 import { formatCurrency } from '@/lib/utils';
 
-const KorzinkaPage: React.FC = () => {
+const DebtKorzinkaPage: React.FC = () => {
 	const { selectedFilialId } = useAuthContext();
-	const { data, isLoading, error } = useKorzinka({ filial: selectedFilialId ?? undefined }, true);
-	const dateGroups = data?.results || data?.data || [];
+	const { data, isLoading, error } = useDebtKorzinka({ filial: selectedFilialId ?? undefined }, true);
+	const rawGroups = data?.results || data?.data || [];
+	const dateGroups = Array.isArray(rawGroups) ? rawGroups : [];
+	// Normalize: if API returned a flat results array (items) instead of grouped-by-date objects,
+	// wrap them into a single group with `items` so the UI can work uniformly.
+	const groups =
+		dateGroups.length > 0 && !('items' in dateGroups[0])
+			? [
+					{
+						date: dateGroups[0]?.created_time || dateGroups[0]?.date || '',
+						count: dateGroups.length,
+						items: dateGroups,
+					},
+				]
+			: dateGroups;
 	const navigate = useNavigate();
-	const deleteMutation = useDeleteKorzinkaOrderHistory();
+	const deleteMutation = useDeleteDebtKorzinka();
 
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
@@ -62,9 +75,9 @@ const KorzinkaPage: React.FC = () => {
 	const handleRestore = async () => {
 		if (!restoringId) return;
 		try {
-			await orderHistoryService.restoreKorzinka(restoringId);
-			toast({ title: 'Qayta tiklandi', description: "Buyurtma buyurtmalarga qo'shildi", variant: 'success' });
-			queryClient.invalidateQueries({ queryKey: ['korzinka'], exact: false });
+			await debtRepaymentService.restoreKorzinka(restoringId);
+			toast({ title: 'Qayta tiklandi', description: "Qarz qayta ro'yxatga qo'shildi", variant: 'success' });
+			queryClient.invalidateQueries({ queryKey: ['debt-repayment-korzinka'], exact: false });
 			queryClient.invalidateQueries({ queryKey: ORDER_HISTORY_KEYS.all });
 			setIsRestoreDialogOpen(false);
 			setRestoringId(null);
@@ -78,7 +91,7 @@ const KorzinkaPage: React.FC = () => {
 		<div className='space-y-6'>
 			<Card>
 				<CardHeader>
-					<CardTitle>Korzinka - Buyurtmalar</CardTitle>
+					<CardTitle>Qarzlar - Korzinka</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
@@ -87,8 +100,8 @@ const KorzinkaPage: React.FC = () => {
 						</div>
 					) : error ? (
 						<div className='text-red-600'>Korzinka ma'lumotlarini olishda xato</div>
-					) : dateGroups.length === 0 ? (
-						<div className='text-muted-foreground text-center py-8'>Korzinkada buyurtma topilmadi</div>
+					) : groups.length === 0 ? (
+						<div className='text-muted-foreground text-center py-8'>Korzinkada qarz topilmadi</div>
 					) : (
 						<div className='rounded-md border'>
 							<Table>
@@ -98,16 +111,17 @@ const KorzinkaPage: React.FC = () => {
 										<TableHead>Sanasi</TableHead>
 										<TableHead>Mijoz</TableHead>
 										<TableHead>Xodim</TableHead>
-										<TableHead className='text-right'>Zakaz (summa)</TableHead>
+										<TableHead className='text-right'>Summa</TableHead>
 										<TableHead>Holati</TableHead>
 										<TableHead className='text-right'>Actions</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{dateGroups.map((group: any, groupIdx: number) => {
-										const totalSumma = group.items.reduce(
+									{groups.map((group: any, groupIdx: number) => {
+										const items = Array.isArray(group.items) ? group.items : [];
+										const totalSumma = items.reduce(
 											(sum: number, item: any) =>
-												sum + parseFloat(item.summa_total_dollar || '0'),
+												sum + parseFloat(item.summa || item.amount || '0'),
 											0,
 										);
 
@@ -130,10 +144,10 @@ const KorzinkaPage: React.FC = () => {
 													<TableCell></TableCell>
 												</TableRow>
 
-												{group.items.map((it: any, idx: number) => (
+												{items.map((it: any, idx: number) => (
 													<TableRow
 														key={it.id}
-														className={it.order_status === false ? 'bg-red-50' : ''}
+														className={it.status === false ? 'bg-red-50' : ''}
 													>
 														<TableCell className='font-medium'>{idx + 1}</TableCell>
 														<TableCell>
@@ -146,10 +160,8 @@ const KorzinkaPage: React.FC = () => {
 														</TableCell>
 														<TableCell>{it.created_by_detail?.full_name || '-'}</TableCell>
 														<TableCell className='text-right text-blue-600 font-semibold'>
-															<Link to={`/order-history/${it.id}`}>
-																{formatCurrency(
-																	it.summa_total_dollar || it.all_product_summa || 0,
-																)}
+															<Link to={`/debt-repayment/karzinka/${it.id}`}>
+																{formatCurrency(it.summa || it.amount || 0)}
 															</Link>
 														</TableCell>
 														<TableCell>
@@ -157,7 +169,7 @@ const KorzinkaPage: React.FC = () => {
 																<span className='px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs'>
 																	Korzinkada
 																</span>
-															) : it.order_status ? (
+															) : it.status ? (
 																<span className='px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs'>
 																	Yakunlangan
 																</span>
@@ -169,14 +181,6 @@ const KorzinkaPage: React.FC = () => {
 														</TableCell>
 														<TableCell className='text-right'>
 															<div className='flex items-center justify-end gap-1'>
-																<Button
-																	variant='ghost'
-																	size='icon'
-																	onClick={() => navigate(`/order-history/${it.id}`)}
-																>
-																	<Eye className='h-4 w-4' />
-																</Button>
-																{/* Restore from korzinka back to orders */}
 																<Button
 																	variant='ghost'
 																	size='icon'
@@ -204,14 +208,13 @@ const KorzinkaPage: React.FC = () => {
 						</div>
 					)}
 
-					{/* Delete Confirmation Modal */}
 					{/* Restore Confirmation Modal */}
 					<AlertDialog open={isRestoreDialogOpen} onOpenChange={(open) => setIsRestoreDialogOpen(open)}>
 						<AlertDialogContent>
 							<AlertDialogHeader>
-								<AlertDialogTitle>Buyurtmani qayta tiklash</AlertDialogTitle>
+								<AlertDialogTitle>Qarzni qayta tiklash</AlertDialogTitle>
 								<AlertDialogDescription>
-									Ushbu buyurtmani yana buyurtmalar qatoriga qo'shmoqchimisiz?
+									Ushbu qarzni yana qarzlar ro'yxatiga qo'shmoqchimisiz?
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
@@ -222,6 +225,8 @@ const KorzinkaPage: React.FC = () => {
 							</AlertDialogFooter>
 						</AlertDialogContent>
 					</AlertDialog>
+
+					{/* Delete Confirmation Modal */}
 					<AlertDialog
 						open={isDeleteDialogOpen}
 						onOpenChange={(open) => {
@@ -233,7 +238,7 @@ const KorzinkaPage: React.FC = () => {
 							<AlertDialogHeader>
 								<AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
 								<AlertDialogDescription>
-									Bu amalni qaytarib bo'lmaydi. Korzinkadan buyurtma o'chiriladi.
+									Bu amalni qaytarib bo'lmaydi. Korzinkadan qarz o'chiriladi.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
@@ -251,4 +256,4 @@ const KorzinkaPage: React.FC = () => {
 	);
 };
 
-export default KorzinkaPage;
+export default DebtKorzinkaPage;

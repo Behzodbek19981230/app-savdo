@@ -70,7 +70,10 @@ const adminSection: NavSection[] = [
 	},
 	{
 		title: 'KORZINKA',
-		items: [{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/karzinka' }],
+		items: [
+			{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/karzinka' },
+			{ icon: Wallet, label: 'Qarzlar', path: '/debt-repayment/karzinka' },
+		],
 	},
 	//   {
 	//     title: "MOLIYA",

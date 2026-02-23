@@ -2,6 +2,16 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User, Upload } from 'lucide-react';
 import { renderReceiptHtml } from '@/components/Receipt';
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+	DialogDescription,
+	DialogClose,
+	DialogTrigger,
+} from '@/components/ui/dialog';
 import { OrderResponse, orderService } from '@/services';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -42,7 +52,85 @@ export function OrderShowPage() {
 		w.document.write('</body></html>');
 		w.document.close();
 		w.focus();
-		// give the new window a moment to render
+		// don't auto-print; let user print manually from the new window
+		// give the new window a moment to render (no automatic print)
+		setTimeout(() => {
+			try {
+				w.focus();
+			} catch (e) {
+				console.error('Window focus failed', e);
+			}
+		}, 300);
+	};
+
+	const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+	const [receiptHtmlPreview, setReceiptHtmlPreview] = useState<string>('');
+	const [printRole, setPrintRole] = useState<'hodim' | 'mijoz'>('hodim');
+
+	const buildReceiptHtml = () => {
+		try {
+			const items = products.flatMap((g) =>
+				g.product.map((p: any) => {
+					const usd = Number(p.price_dollar || 0);
+					const priceUz = usd * (Number(order_history.exchange_rate) || 1);
+					const count = Number(p.count || 0);
+					return {
+						id: p.id,
+						modelName: g.model,
+						name: p.branch_category_detail?.name || p.type_detail?.name || '-',
+						joy: p.sklad_detail?.name || 'Ombor',
+						quantity: count,
+						unit: p.type_detail?.name || p.unit || '-',
+						price: priceUz,
+						totalPrice: priceUz * count,
+					};
+				}),
+			);
+
+			const totalAmount = Number(order_history.all_product_summa || 0);
+			const usdRate = Number(order_history.exchange_rate) || 1;
+			const totalPaidUZS =
+				Number(order_history.summa_naqt || 0) +
+				Number(order_history.summa_dollar || 0) * usdRate +
+				Number(order_history.summa_transfer || 0) +
+				Number(order_history.summa_terminal || 0);
+
+			return renderReceiptHtml({
+				items,
+				totalAmount,
+				usdAmount: (totalAmount / usdRate).toFixed(2),
+				usdRate,
+				customer: {
+					name: order_history.client_detail?.full_name || '',
+				} as any,
+				kassirName: order_history.created_by_detail?.full_name || '',
+				orderNumber: String(order_history.id),
+				date: new Date(order_history.created_time),
+				paidAmount: totalPaidUZS,
+				remainingDebt: Number(order_history.client_detail?.total_debt || 0) * usdRate,
+				filialLogo: order_history.order_filial_detail?.logo || null,
+				hodimLayout: printRole === 'hodim',
+			});
+		} catch (e) {
+			console.error('Failed to build receipt html', e);
+			return '';
+		}
+	};
+
+	const openPrintPreview = (role: 'hodim' | 'mijoz') => {
+		setPrintRole(role);
+		const html = buildReceiptHtml();
+		setReceiptHtmlPreview(html);
+		setIsPrintDialogOpen(true);
+	};
+
+	const printPreview = () => {
+		if (!receiptHtmlPreview) return;
+		const w = window.open('', '_blank', 'width=900,height=700');
+		if (!w) return;
+		w.document.write(receiptHtmlPreview);
+		w.document.close();
+		w.focus();
 		setTimeout(() => {
 			try {
 				w.print();
@@ -170,7 +258,7 @@ export function OrderShowPage() {
 							variant='outline'
 							size='sm'
 							className='px-2 py-1 flex items-center gap-2'
-							onClick={() => printFor(`Hodim uchun - Order #${order_history.id}`)}
+							onClick={() => openPrintPreview('hodim')}
 						>
 							<Printer className='h-4 w-4 text-indigo-600' />
 							<span className='text-sm text-indigo-700'>Hodim uchun</span>
@@ -180,105 +268,37 @@ export function OrderShowPage() {
 							variant='outline'
 							size='sm'
 							className='px-2 py-1 flex items-center gap-2'
-							onClick={() => {
-								// Build printable receipt HTML using the Receipt helper
-								try {
-									const items = products.flatMap((g) =>
-										g.product.map((p: any) => {
-											const usd = Number(p.price_dollar || 0);
-											const priceUz = usd * (Number(order_history.exchange_rate) || 1);
-											const count = Number(p.count || 0);
-											return {
-												id: p.id,
-												modelName: g.model,
-												name: p.branch_category_detail?.name || p.type_detail?.name || '-',
-												quantity: count,
-												unit: p.type_detail?.name || p.unit || '-',
-												price: priceUz,
-												totalPrice: priceUz * count,
-											};
-										}),
-									);
-
-									const totalAmount = Number(order_history.all_product_summa || 0);
-									const usdRate = Number(order_history.exchange_rate) || 1;
-									const totalPaidUZS =
-										Number(order_history.summa_naqt || 0) +
-										Number(order_history.summa_dollar || 0) * usdRate +
-										Number(order_history.summa_transfer || 0) +
-										Number(order_history.summa_terminal || 0);
-
-									const receiptHtml = renderReceiptHtml({
-										items,
-										totalAmount,
-										usdAmount: (totalAmount / usdRate).toFixed(2),
-										usdRate,
-										customer: {
-											name: order_history.client_detail?.full_name || '',
-										} as any,
-										kassirName: order_history.created_by_detail?.full_name || '',
-										orderNumber: String(order_history.id),
-										date: new Date(order_history.created_time),
-										paidAmount: totalPaidUZS,
-										remainingDebt: Number(order_history.client_detail?.total_debt || 0) * usdRate,
-										filialLogo: order_history.order_filial_detail?.logo || null,
-									});
-
-									const w = window.open('', '_blank', 'width=900,height=700');
-									if (!w) return;
-									w.document.write(receiptHtml);
-									w.document.close();
-									w.focus();
-									setTimeout(() => {
-										try {
-											w.print();
-											w.close();
-										} catch (e) {
-											console.error('Print failed', e);
-										}
-									}, 300);
-								} catch (err) {
-									console.error('Receipt print error', err);
-								}
-							}}
+							onClick={() => openPrintPreview('mijoz')}
 						>
 							<User className='h-4 w-4 text-emerald-600' />
 							<span className='text-sm text-emerald-700'>Mijoz uchun</span>
 						</Button>
-
-						{/* Upload PDF for hodim */}
-						<div className='flex items-center gap-2'>
-							<input
-								type='file'
-								accept='application/pdf'
-								ref={fileInputRef}
-								onChange={handleFileChange}
-								className='hidden'
-								id='order-pdf-upload'
-							/>
-							<label htmlFor='order-pdf-upload'>
-								<Button variant='ghost' size='sm' className='px-2 py-1 flex items-center gap-2'>
-									<Upload className='h-4 w-4 text-sky-600' />
-									<span className='text-sm text-sky-700'>Fayl tanla</span>
-								</Button>
-							</label>
-							{selectedFile && (
-								<Button
-									variant='secondary'
-									size='sm'
-									className='px-2 py-1 flex items-center gap-2'
-									onClick={handleUploadPdf}
-									disabled={isUploading}
-								>
-									<Upload className='h-4 w-4' />
-									<span className='text-sm'>
-										{isUploading ? 'Yuklanmoqda...' : selectedFile.name}
-									</span>
-								</Button>
-							)}
-						</div>
 					</div>
 				</div>
+
+				{/* Print Preview Dialog for Hodim */}
+				<Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
+					<DialogContent className='max-w-5xl w-[95vw] sm:w-[90vw] lg:w-[80vw]'>
+						<div className='overflow-auto max-h-[70vh] my-2'>
+							{receiptHtmlPreview ? (
+								<div dangerouslySetInnerHTML={{ __html: receiptHtmlPreview }} />
+							) : (
+								<div className='p-4 text-sm text-muted-foreground'>Preview mavjud emas</div>
+							)}
+						</div>
+						<DialogFooter>
+							<div className='flex items-center gap-2 ml-auto'>
+								<Button variant='secondary' onClick={printPreview}>
+									<Printer className='h-4 w-4 mr-2' />
+									Chop etish
+								</Button>
+								<Button variant='ghost' onClick={() => setIsPrintDialogOpen(false)}>
+									Yopish
+								</Button>
+							</div>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 
 				<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3'>
 					{/* Kassir */}
