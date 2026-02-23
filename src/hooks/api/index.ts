@@ -21,3 +21,5 @@ export * from './useUnit';
 export * from './useClients';
 export * from './useOrderHistory';
 export * from './useOrderHistoryProducts';
+export * from './useFilialDashboard';
+export * from './useNotes';

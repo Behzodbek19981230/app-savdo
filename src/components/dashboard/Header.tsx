@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useExchangeRates, useCreateExchangeRate, useUpdateExchangeRate } from '@/hooks/api/useExchangeRate';
 import type { ExchangeRate } from '@/types/exchangeRate';
-import { useCompanies, useUser } from '@/hooks/api';
+import { useCompanies, useNotes } from '@/hooks/api';
 import moment from 'moment';
 import { Label } from '../ui/label';
 import { authService } from '@/services';
@@ -53,6 +53,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 	const isMutating = createExchangeRate.isPending || updateExchangeRate.isPending;
 
 	const { data: filialsData } = useCompanies();
+	const { data: notesData } = useNotes();
+	const unreadNotesCount = (notesData || []).filter((note) => note.is_read === false).length;
 	const filials = !isSuperAdmin ? user?.filials_detail || [] : filialsData?.results || [];
 	// Tanlangan filial yoki birinchi filial (default: birinchi filial)
 	const userFilialId = selectedFilialId || filials[0]?.id || user?.companies?.[0];
@@ -263,9 +265,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
 					<Button variant='outline' size='icon' className='relative h-10 w-10 rounded-xl shadow-sm'>
 						<Bell className='h-[18px] w-[18px]' />
-						<span className='absolute right-1.5 top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-extrabold text-destructive-foreground border-2 border-background'>
-							3
-						</span>
+						{unreadNotesCount > 0 && (
+							<span className='absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] px-1 items-center justify-center rounded-full bg-destructive text-[10px] font-extrabold text-destructive-foreground border-2 border-background'>
+								{unreadNotesCount > 99 ? '99+' : unreadNotesCount}
+							</span>
+						)}
 					</Button>
 
 					<ThemeToggle />

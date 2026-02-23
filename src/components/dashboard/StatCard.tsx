@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 interface StatCardProps {
 	title: string;
 	value: string;
-	change: number;
+	change?: number;
 	icon: LucideIcon;
 	iconColor: 'primary' | 'success' | 'warning' | 'info';
 }
@@ -24,7 +24,8 @@ const iconBgClasses = {
 };
 
 export function StatCard({ title, value, change, icon: Icon, iconColor }: StatCardProps) {
-	const isPositive = change >= 0;
+	const hasChange = typeof change === 'number';
+	const isPositive = (change ?? 0) >= 0;
 
 	return (
 		<div className='relative overflow-hidden rounded-xl lg:rounded-[18px] border border-border bg-card p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[120px] lg:min-h-[130px]'>
@@ -52,22 +53,23 @@ export function StatCard({ title, value, change, icon: Icon, iconColor }: StatCa
 				</div>
 			</div>
 
-			{/* Footer: trend chip */}
-			<div className='mt-3 lg:mt-4 flex items-center gap-2 flex-wrap'>
-				<span
-					className={cn(
-						'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold border',
-						isPositive
-							? 'bg-success/[0.12] border-success/[0.22] text-success'
-							: 'bg-destructive/[0.10] border-destructive/[0.22] text-destructive',
-					)}
-				>
-					{isPositive ? <TrendingUp className='h-3.5 w-3.5' /> : <TrendingDown className='h-3.5 w-3.5' />}
-					{isPositive ? '+' : ''}
-					{change}%
-				</span>
-				<span className='text-xs text-muted-foreground hidden sm:inline'>o'tgan oyga nisbatan</span>
-			</div>
+			{hasChange && (
+				<div className='mt-3 lg:mt-4 flex items-center gap-2 flex-wrap'>
+					<span
+						className={cn(
+							'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold border',
+							isPositive
+								? 'bg-success/[0.12] border-success/[0.22] text-success'
+								: 'bg-destructive/[0.10] border-destructive/[0.22] text-destructive',
+						)}
+					>
+						{isPositive ? <TrendingUp className='h-3.5 w-3.5' /> : <TrendingDown className='h-3.5 w-3.5' />}
+						{isPositive ? '+' : ''}
+						{change}%
+					</span>
+					<span className='text-xs text-muted-foreground hidden sm:inline'>o'tgan oyga nisbatan</span>
+				</div>
+			)}
 		</div>
 	);
 }

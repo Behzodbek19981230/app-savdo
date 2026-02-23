@@ -1,62 +1,69 @@
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
-import { RecentOrders } from '@/components/dashboard/RecentOrders';
-import { TopProducts } from '@/components/dashboard/TopProducts';
-import { DollarSign, Users, ShoppingCart, TrendingUp } from 'lucide-react';
-
-// Demo data from dashboard.html
-const kpiData = [
-	{
-		title: 'Jami daromad',
-		value: '$18,210',
-		change: 10.4,
-		icon: DollarSign,
-		iconColor: 'primary',
-	},
-	{
-		title: 'Mijozlar soni',
-		value: '780',
-		change: 6.1,
-		icon: Users,
-		iconColor: 'success',
-	},
-	{
-		title: 'Buyurtmalar',
-		value: '401',
-		change: -1.9,
-		icon: ShoppingCart,
-		iconColor: 'warning',
-	},
-	{
-		title: 'O‘sish darajasi',
-		value: '18.2%',
-		change: 2.6,
-		icon: TrendingUp,
-		iconColor: 'info',
-	},
-];
+import { NotesPanel } from '@/components/dashboard/NotesPanel';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useFilialDashboard } from '@/hooks/api/useFilialDashboard';
+import { UserRound, Users, ShoppingCart, UserCog } from 'lucide-react';
 
 const Index = () => {
+	const { selectedFilialId, user } = useAuthContext();
+	const filialId = selectedFilialId ?? user?.filials_detail?.[0]?.id ?? user?.companies?.[0] ?? null;
+	const { data, isLoading, isError } = useFilialDashboard(filialId);
+
+	const cardCount = data?.card_count;
+	const numberFormatter = new Intl.NumberFormat('uz-UZ');
+	const kpiData = cardCount
+		? [
+				{
+					title: 'Mijozlar soni',
+					value: numberFormatter.format(cardCount.clients_count),
+					icon: Users,
+					iconColor: 'success' as const,
+				},
+				{
+					title: 'Qarzdor mijozlar',
+					value: numberFormatter.format(cardCount.debtors_count),
+					icon: UserRound,
+					iconColor: 'warning' as const,
+				},
+				{
+					title: 'Karzinka buyurtmalar',
+					value: numberFormatter.format(cardCount.karzinka_orders_count),
+					icon: ShoppingCart,
+					iconColor: 'primary' as const,
+				},
+				{
+					title: 'Foydalanuvchilar',
+					value: numberFormatter.format(cardCount.users_count),
+					icon: UserCog,
+					iconColor: 'info' as const,
+				},
+			]
+		: [];
+
 	return (
 		<div>
-			{/* KPIs */}
 			<div className='grid gap-3 lg:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
-				{kpiData.map((kpi) => (
-					<StatCard key={kpi.title} {...kpi} />
-				))}
+				{isLoading ? (
+					<div className='col-span-full rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>
+						Dashboard ma'lumotlari yuklanmoqda...
+					</div>
+				) : isError ? (
+					<div className='col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive'>
+						Dashboard ma'lumotlarini yuklab bo'lmadi.
+					</div>
+				) : (
+					kpiData.map((kpi) => <StatCard key={kpi.title} {...kpi} />)
+				)}
 			</div>
 
-			{/* Chart + Top Products */}
-			<div className='grid gap-3 lg:gap-4 grid-cols-1 lg:grid-cols-3 mt-4'>
-				<div className='lg:col-span-2'>
-					<RevenueChart />
-				</div>
-				<TopProducts />
-			</div>
-
-			{/* Recent Orders */}
 			<div className='mt-4'>
-				<RecentOrders />
+				<div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+					<div className='lg:col-span-2'>
+						<RevenueChart data={data?.monthly} isLoading={isLoading} />
+					</div>
+					<NotesPanel />
+				</div>
 			</div>
 		</div>
 	);
