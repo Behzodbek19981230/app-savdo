@@ -178,7 +178,20 @@ function SidebarContent() {
 	const toggleSection = (title: string) => {
 		// prevent collapsing the primary/main section
 		if (title === primarySectionTitle) return;
-		setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+		setOpenSections((prev) => {
+			const isCurrentlyOpen = prev[title];
+			// Agar ochilayotgan bo'lsa, boshqa barcha sectionlarni yopish (asosiydan tashqari)
+			if (!isCurrentlyOpen) {
+				const newState: Record<string, boolean> = {};
+				// Asosiy sectionni har doim ochiq qoldirish
+				newState[primarySectionTitle] = true;
+				// Faqat bosilgan sectionni ochish
+				newState[title] = true;
+				return newState;
+			}
+			// Agar yopilayotgan bo'lsa, faqat o'sha sectionni yopish
+			return { ...prev, [title]: false };
+		});
 	};
 
 	const toggleItem = (sectionTitle: string, itemLabel: string) => {

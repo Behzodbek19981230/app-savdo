@@ -235,6 +235,16 @@ export const API_ENDPOINTS = {
 		update: (id: string) => `/expense-category/${id}`,
 		delete: (id: string) => `/expense-category/${id}`,
 	},
+
+	// Expense endpoints (Xarajatlar)
+	expenses: {
+		list: '/expense',
+		byId: (id: string) => `/expense/${id}`,
+		create: '/expense',
+		update: (id: string) => `/expense/${id}`,
+		delete: (id: string) => `/expense/${id}`,
+		groupByDate: '/expense/group-by-date',
+	},
 } as const;
 
 // Request timeout (milliseconds)

@@ -23,3 +23,4 @@ export * from './orderHistory.service';
 export * from './orderHistoryProduct.service';
 export * from './filialDashboard.service';
 export * from './note.service';
+export * from './expenseService';

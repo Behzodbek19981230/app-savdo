@@ -93,6 +93,8 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
     const deleteNote = useDeleteNote();
     const [notes, setNotes] = useState<NoteItem[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+    const [viewingNote, setViewingNote] = useState<NoteItem | null>(null);
     const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
@@ -219,6 +221,11 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
         });
     };
 
+    const openView = (note: NoteItem) => {
+        setViewingNote(note);
+        setIsViewDialogOpen(true);
+    };
+
     return (
         <div className={embedded ? 'flex flex-col h-full' : 'rounded-xl border border-border bg-card shadow-sm'}>
             {/* Header — faqat embedded bo'lmaganda ko'rsatiladi */}
@@ -268,8 +275,9 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                             return (
                                 <div
                                     key={note.id}
-                                    className={`group flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-muted/50 ${note.is_read === false ? 'bg-amber-50/60 dark:bg-amber-950/15' : ''
+                                    className={`group flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-muted/50 cursor-pointer ${note.is_read === false ? 'bg-amber-50/60 dark:bg-amber-950/15' : ''
                                         }`}
+                                    onClick={() => openView(note)}
                                 >
                                     {/* Status dot */}
                                     <span
@@ -310,7 +318,10 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                     </div>
 
                                     {/* Actions — visible on hover */}
-                                    <div className='flex flex-shrink-0 items-center gap-0.5 transition-opacity opacity-100'>
+                                    <div
+                                        className='flex flex-shrink-0 items-center gap-0.5 transition-opacity opacity-100'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         {canDone && (
                                             <Button
                                                 size='icon'
@@ -348,7 +359,69 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                 )}
             </div>
 
-            {/* Dialog */}
+            {/* View Dialog - To'liq ko'rsatish */}
+            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+                <DialogContent className='sm:max-w-[500px]'>
+                    <DialogHeader>
+                        <DialogTitle className='text-base'>{viewingNote?.title || 'Sarlavha'}</DialogTitle>
+                    </DialogHeader>
+                    <div className='space-y-4 py-2'>
+                        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                            <Clock className='h-4 w-4' />
+                            <span>{shortDate(viewingNote?.date || viewingNote?.created_at)}</span>
+                            {viewingNote?.created_by_detail?.full_name && (
+                                <>
+                                    <span>·</span>
+                                    <span>{viewingNote.created_by_detail.full_name}</span>
+                                </>
+                            )}
+                            {viewingNote?.status && (
+                                <>
+                                    <span>·</span>
+                                    <span
+                                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${viewingNote.status === 'done'
+                                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                            : viewingNote.status === 'expired'
+                                                ? 'bg-red-500/15 text-red-700 dark:text-red-400'
+                                                : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                            }`}
+                                    >
+                                        {statusLabel[viewingNote.status] || 'Yangi'}
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                        {viewingNote?.text && (
+                            <div className='rounded-lg border border-border bg-muted/30 p-4'>
+                                <p className='text-sm whitespace-pre-wrap break-words'>{viewingNote.text}</p>
+                            </div>
+                        )}
+                        {!viewingNote?.text && (
+                            <p className='text-sm text-muted-foreground italic'>Izoh mavjud emas</p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button size='sm' variant='outline' onClick={() => setIsViewDialogOpen(false)}>
+                            Yopish
+                        </Button>
+                        {viewingNote && (
+                            <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={() => {
+                                    setIsViewDialogOpen(false);
+                                    openEdit(viewingNote);
+                                }}
+                            >
+                                <Pencil className='h-3.5 w-3.5 mr-1.5' />
+                                Tahrirlash
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit/Create Dialog */}
             <Dialog
                 open={isDialogOpen}
                 onOpenChange={(open) => {

@@ -27,6 +27,7 @@ export function useCreateNote() {
         mutationFn: (payload: NotePayload) => noteService.createNote(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: noteKeys.all });
+            queryClient.invalidateQueries({ queryKey: noteKeys.allCount });
             toast.success("Eslatma qo'shildi");
         },
         onError: () => {
@@ -42,6 +43,7 @@ export function useUpdateNote() {
         mutationFn: ({ id, payload }: { id: number; payload: NotePayload }) => noteService.updateNote(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: noteKeys.all });
+            queryClient.invalidateQueries({ queryKey: noteKeys.allCount });
             toast.success('Eslatma yangilandi');
         },
         onError: () => {
@@ -57,6 +59,7 @@ export function useDeleteNote() {
         mutationFn: (id: number) => noteService.deleteNote(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: noteKeys.all });
+            queryClient.invalidateQueries({ queryKey: noteKeys.allCount });
             toast.success("Eslatma o'chirildi");
         },
         onError: () => {
