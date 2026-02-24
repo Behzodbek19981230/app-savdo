@@ -3,6 +3,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useFilialDashboard } from '@/hooks/api/useFilialDashboard';
 import { UserRound, Users, ShoppingCart, UserCog } from 'lucide-react';
+import { StatisticsCards } from '@/components/dashboard/StatisticsCards';
 
 const Index = () => {
     const { selectedFilialId, user } = useAuthContext();
@@ -66,6 +67,7 @@ const Index = () => {
 
             {/* Statistika */}
             <RevenueChart data={data?.monthly} isLoading={isLoading} />
+            <StatisticsCards />
         </div>
     );
 };
