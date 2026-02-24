@@ -40,6 +40,7 @@ export interface NotePayload {
     title: string;
     text: string;
     status?: string;
+    is_read?: boolean;
     is_delete?: boolean;
 }
 
@@ -49,8 +50,8 @@ const normalizeList = (response: NoteItem[] | NotesListResponse): NoteItem[] => 
 };
 
 export const noteService = {
-    getNotes: async (): Promise<NoteItem[]> => {
-        const response = await api.get<NoteItem[] | NotesListResponse>('/note');
+    getNotes: async (params?: Record<string, unknown>): Promise<NoteItem[]> => {
+        const response = await api.get<NoteItem[] | NotesListResponse>('/note', { params });
         return normalizeList(response);
     },
     createNote: async (data: NotePayload) => {

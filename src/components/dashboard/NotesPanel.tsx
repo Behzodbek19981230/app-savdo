@@ -3,6 +3,7 @@ import { CalendarDays, Pencil, Plus, Quote, Trash2, UserCircle2 } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     useCreateNote,
@@ -27,11 +28,61 @@ const formatDate = (rawDate?: string) => {
     if (!rawDate) return 'Sana';
     const date = new Date(rawDate);
     if (Number.isNaN(date.getTime())) return 'Sana';
-    return new Intl.DateTimeFormat('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat('uz-UZ', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(date);
 };
 
-const todayDate = () => {
-    return new Date().toISOString().slice(0, 10);
+const getDefaultReminderDate = () => {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() + 5);
+    return date;
+};
+
+const toTimeValue = (date: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const parseReminder = (rawDate?: string) => {
+    const fallback = getDefaultReminderDate();
+    if (!rawDate) {
+        return {
+            date: fallback,
+            time: toTimeValue(fallback),
+        };
+    }
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) {
+        return {
+            date: fallback,
+            time: toTimeValue(fallback),
+        };
+    }
+    return {
+        date,
+        time: toTimeValue(date),
+    };
+};
+
+const toIsoFromDateAndTime = (date: Date, time: string) => {
+    const [hourStr, minuteStr] = time.split(':');
+    const hour = Number(hourStr);
+    const minute = Number(minuteStr);
+    const next = new Date(date);
+    next.setHours(Number.isNaN(hour) ? 0 : hour, Number.isNaN(minute) ? 0 : minute, 0, 0);
+    return next.toISOString();
+};
+
+const isDueNow = (rawDate?: string) => {
+    if (!rawDate) return false;
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return false;
+    return date.getTime() <= Date.now();
 };
 
 const upsertNote = (current: NoteItem[], note: NoteItem) => {
@@ -62,7 +113,7 @@ const getStatusView = (status?: NoteItem['status']) => {
 };
 
 export function NotesPanel() {
-    const { data, isLoading } = useNotes();
+    const { data, isLoading } = useNotes({});
     const createNote = useCreateNote();
     const updateNote = useUpdateNote();
     const deleteNote = useDeleteNote();
@@ -71,6 +122,9 @@ export function NotesPanel() {
     const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
+    const initialReminder = getDefaultReminderDate();
+    const [reminderDate, setReminderDate] = useState<Date | undefined>(initialReminder);
+    const [reminderTime, setReminderTime] = useState(toTimeValue(initialReminder));
     const reconnectRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -149,6 +203,9 @@ export function NotesPanel() {
         setEditingNoteId(null);
         setTitle('');
         setText('');
+        const nextReminder = getDefaultReminderDate();
+        setReminderDate(nextReminder);
+        setReminderTime(toTimeValue(nextReminder));
     };
 
     const openCreate = () => {
@@ -157,17 +214,20 @@ export function NotesPanel() {
     };
 
     const openEdit = (note: NoteItem) => {
+        const parsedReminder = parseReminder(note.date);
         setEditingNoteId(note.id);
         setTitle(note.title || '');
         setText(note.text || '');
+        setReminderDate(parsedReminder.date);
+        setReminderTime(parsedReminder.time);
         setIsDialogOpen(true);
     };
 
     const onSave = async () => {
         const trimmedTitle = title.trim();
-        if (!trimmedTitle) return;
+        if (!trimmedTitle || !reminderDate || !reminderTime) return;
         const payload = {
-            date: editingNote?.date || todayDate(),
+            date: toIsoFromDateAndTime(reminderDate, reminderTime),
             title: trimmedTitle,
             text: text.trim(),
             sorting: 0,
@@ -189,6 +249,20 @@ export function NotesPanel() {
         const confirmed = window.confirm("Eslatmani o'chirishni tasdiqlaysizmi?");
         if (!confirmed) return;
         await deleteNote.mutateAsync(noteId);
+    };
+
+    const onDone = async (note: NoteItem) => {
+        await updateNote.mutateAsync({
+            id: note.id,
+            payload: {
+                sorting: note.sorting ?? 0,
+                date: note.date || new Date().toISOString(),
+                title: note.title,
+                text: note.text || '',
+                status: 'done',
+                is_delete: note.is_delete ?? false,
+            },
+        });
     };
 
     return (
@@ -249,6 +323,15 @@ export function NotesPanel() {
                                     <Button size='icon' variant='ghost' className='h-8 w-8' onClick={() => openEdit(note)}>
                                         <Pencil className='h-4 w-4' />
                                     </Button>
+                                    {note.status !== 'done' && isDueNow(note.date) && (
+                                        <Button
+                                            variant='outline'
+                                            className='h-8 px-2 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400'
+                                            onClick={() => onDone(note)}
+                                        >
+                                            Bajarildi
+                                        </Button>
+                                    )}
                                     <Button
                                         size='icon'
                                         variant='ghost'
@@ -290,6 +373,17 @@ export function NotesPanel() {
                     </DialogHeader>
                     <div className='grid gap-3 py-2'>
                         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder='Sarlavha' />
+                        <DatePicker
+                            date={reminderDate}
+                            onDateChange={setReminderDate}
+                            placeholder='Eslatma sanasi'
+                        />
+                        <Input
+                            type='time'
+                            value={reminderTime}
+                            onChange={(e) => setReminderTime(e.target.value)}
+                            placeholder='Eslatma soati'
+                        />
                         <Textarea
                             value={text}
                             onChange={(e) => setText(e.target.value)}
@@ -301,7 +395,7 @@ export function NotesPanel() {
                         <Button variant='outline' onClick={() => setIsDialogOpen(false)}>
                             Bekor qilish
                         </Button>
-                        <Button onClick={onSave} disabled={isMutating || !title.trim()}>
+                        <Button onClick={onSave} disabled={isMutating || !title.trim() || !reminderDate || !reminderTime}>
                             Saqlash
                         </Button>
                     </DialogFooter>
