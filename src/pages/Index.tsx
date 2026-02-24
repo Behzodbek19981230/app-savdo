@@ -1,6 +1,5 @@
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
-import { NotesPanel } from '@/components/dashboard/NotesPanel';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useFilialDashboard } from '@/hooks/api/useFilialDashboard';
 import { UserRound, Users, ShoppingCart, UserCog } from 'lucide-react';
@@ -65,9 +64,8 @@ const Index = () => {
                 )}
             </div>
 
-            {/* Chart + Eslatmalar */}
+            {/* Statistika */}
             <RevenueChart data={data?.monthly} isLoading={isLoading} />
-            <NotesPanel />
         </div>
     );
 };

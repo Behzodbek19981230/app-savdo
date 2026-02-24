@@ -1,4 +1,4 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import type { FilialDashboardMonthlyItem } from '@/services/filialDashboard.service';
 
 interface RevenueChartProps {
@@ -77,7 +77,13 @@ export function RevenueChart({ data = [], isLoading = false }: RevenueChartProps
                                     padding: '8px 12px',
                                     boxShadow: '0 6px 18px rgba(15, 23, 42, 0.06)',
                                 }}
-                                formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                                formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                            />
+                            <Legend
+                                verticalAlign='top'
+                                align='right'
+                                iconType='circle'
+                                wrapperStyle={{ paddingBottom: 8, fontSize: 12 }}
                             />
                             <Area
                                 type='monotone'

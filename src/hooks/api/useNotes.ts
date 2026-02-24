@@ -4,6 +4,7 @@ import { noteService, type NotePayload } from '@/services/note.service';
 
 export const noteKeys = {
     all: ['notes'] as const,
+    allCount: ['notes-count'] as const,
 };
 
 export function useNotes({ params }: { params?: Record<string, unknown> }) {
@@ -13,6 +14,12 @@ export function useNotes({ params }: { params?: Record<string, unknown> }) {
     });
 }
 
+export function useNotesAll() {
+    return useQuery({
+        queryKey: noteKeys.allCount,
+        queryFn: () => noteService.getNotes(),
+    });
+}
 export function useCreateNote() {
     const queryClient = useQueryClient();
 

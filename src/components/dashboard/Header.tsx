@@ -60,12 +60,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             is_read: false,
         },
     });
-    const unreadNotesCount = (notesData || []).filter((note) => note.is_read === false).length;
+    const unreadNotesCount = (notesData || []).length;
     const sortedNotes = useMemo(() => {
         return [...(notesData || [])].sort((a, b) => {
-            const aUnread = a.is_read === false ? 0 : 1;
-            const bUnread = b.is_read === false ? 0 : 1;
-            if (aUnread !== bUnread) return aUnread - bUnread;
             const aTime = new Date(a.date || a.updated_at || a.created_at || 0).getTime();
             const bTime = new Date(b.date || b.updated_at || b.created_at || 0).getTime();
             return bTime - aTime;
