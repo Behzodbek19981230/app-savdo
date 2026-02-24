@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User, Upload } from 'lucide-react';
+import { Loader2, Banknote, CreditCard, ChevronLeft, Printer, User, Upload, AlertTriangle, Check, X, Pencil } from 'lucide-react';
 import { renderReceiptHtml } from '@/components/Receipt';
 import {
 	Dialog,
@@ -13,8 +13,10 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { OrderResponse, orderService } from '@/services';
+import { orderHistoryProductService } from '@/services/orderHistoryProduct.service';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ProductByModel {
 	model_id: number;
@@ -27,6 +29,103 @@ interface OrderProductsByModelResponse {
 	products: ProductByModel[];
 }
 
+/** Inline editable cell for given_count */
+function GivenCountCell({
+	productId,
+	count,
+	givenCount,
+	onUpdated,
+}: {
+	productId: number;
+	count: number;
+	givenCount: number;
+	onUpdated: (productId: number, newValue: number) => void;
+}) {
+	const [isEditing, setIsEditing] = useState(false);
+	const [value, setValue] = useState(String(givenCount));
+	const [isSaving, setIsSaving] = useState(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+	const isDifferent = givenCount !== count;
+
+	useEffect(() => {
+		if (isEditing && inputRef.current) {
+			inputRef.current.focus();
+			inputRef.current.select();
+		}
+	}, [isEditing]);
+
+	const handleSave = async () => {
+		const parsed = Number(value);
+		if (isNaN(parsed) || parsed < 0) {
+			setValue(String(givenCount));
+			setIsEditing(false);
+			return;
+		}
+		if (parsed === givenCount) {
+			setIsEditing(false);
+			return;
+		}
+		setIsSaving(true);
+		try {
+			await orderHistoryProductService.updateGivenCount(productId, parsed);
+			onUpdated(productId, parsed);
+			toast({ title: 'Yangilandi', description: `Berilgan soni: ${parsed}` });
+		} catch (err: any) {
+			console.error(err);
+			toast({ title: 'Xatolik', description: 'Berilgan sonini yangilashda xatolik', variant: 'destructive' });
+			setValue(String(givenCount));
+		} finally {
+			setIsSaving(false);
+			setIsEditing(false);
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === 'Enter') handleSave();
+		if (e.key === 'Escape') {
+			setValue(String(givenCount));
+			setIsEditing(false);
+		}
+	};
+
+	if (isEditing) {
+		return (
+			<div className='flex items-center justify-end gap-1'>
+				<Input
+					ref={inputRef}
+					type='number'
+					min={0}
+					value={value}
+					onChange={(e) => setValue(e.target.value)}
+					onKeyDown={handleKeyDown}
+					onBlur={handleSave}
+					disabled={isSaving}
+					className='h-7 w-20 text-right text-sm px-1.5'
+				/>
+				{isSaving && <Loader2 className='h-3.5 w-3.5 animate-spin text-muted-foreground' />}
+			</div>
+		);
+	}
+
+	return (
+		<div
+			className='flex items-center justify-end gap-1.5 cursor-pointer group/cell'
+			onClick={() => setIsEditing(true)}
+			title='Bosib tahrirlang'
+		>
+			<span className={`text-sm ${isDifferent ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-gray-800 dark:text-slate-100'}`}>
+				{givenCount}
+			</span>
+			{isDifferent && (
+				<AlertTriangle className='h-3.5 w-3.5 text-amber-500 flex-shrink-0' title={`Soni: ${count}, Berilgan: ${givenCount}`} />
+			)}
+			<span className='inline-flex items-center justify-center h-5 w-5 rounded bg-muted/80 text-muted-foreground opacity-0 group-hover/cell:opacity-100 transition-opacity'>
+				<Pencil className='h-3 w-3' />
+			</span>
+		</div>
+	);
+}
+
 export function OrderShowPage() {
 	const { id } = useParams<{ id: string }>();
 	const [data, setData] = useState<OrderProductsByModelResponse | null>(null);
@@ -37,6 +136,22 @@ export function OrderShowPage() {
 	const [isUploading, setIsUploading] = useState(false);
 
 	const handleBack = () => window.history.back();
+
+	/** Update given_count locally after successful API call */
+	const handleGivenCountUpdated = (productId: number, newValue: number) => {
+		setData((prev) => {
+			if (!prev) return prev;
+			return {
+				...prev,
+				products: prev.products.map((group) => ({
+					...group,
+					product: group.product.map((p: any) =>
+						p.id === productId ? { ...p, given_count: newValue } : p,
+					),
+				})),
+			};
+		});
+	};
 
 	const printFor = (title: string) => {
 		const content = printRef.current?.innerHTML;
@@ -713,8 +828,13 @@ export function OrderShowPage() {
 													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
 														{count}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
-														{product.given_count || 0}
+													<td className='px-3 py-2 sm:px-4 sm:py-3'>
+														<GivenCountCell
+															productId={product.id}
+															count={count}
+															givenCount={Number(product.given_count || 0)}
+															onUpdated={handleGivenCountUpdated}
+														/>
 													</td>
 													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
 														{priceDollar.toFixed(2)}

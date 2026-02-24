@@ -7,10 +7,12 @@ export const FILIAL_DASHBOARD_KEYS = {
 };
 
 export function useFilialDashboard(filialId: number | null) {
+	const hasValidFilialId = typeof filialId === 'number' && Number.isFinite(filialId) && filialId > 0;
+
 	return useQuery({
 		queryKey: FILIAL_DASHBOARD_KEYS.detail(filialId),
 		queryFn: () => filialDashboardService.get(filialId as number),
-		enabled: !!filialId,
+		enabled: hasValidFilialId,
 		staleTime: 5 * 60 * 1000,
 	});
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, Pencil, Plus, Quote, Trash2, UserCircle2 } from 'lucide-react';
+import { Check, Clock, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,6 @@ import {
     useUpdateNote,
 } from '@/hooks/api/useNotes';
 import { getNotesWsUrl, type NoteItem } from '@/services/note.service';
-import moment from 'moment';
 
 type WsNotePayload = {
     type?: string;
@@ -22,19 +21,15 @@ type WsNotePayload = {
     note_id?: number;
 } & Partial<NoteItem>;
 
-
-
-const formatDate = (rawDate?: string) => {
-    if (!rawDate) return 'Sana';
-    const date = new Date(rawDate);
-    if (Number.isNaN(date.getTime())) return 'Sana';
-    return new Intl.DateTimeFormat('uz-UZ', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(date);
+const shortDate = (rawDate?: string) => {
+    if (!rawDate) return '—';
+    const d = new Date(rawDate);
+    if (Number.isNaN(d.getTime())) return '—';
+    const day = String(d.getDate()).padStart(2, '0');
+    const mon = String(d.getMonth() + 1).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${day}.${mon} ${h}:${m}`;
 };
 
 const getDefaultReminderDate = () => {
@@ -50,23 +45,10 @@ const toTimeValue = (date: Date) => {
 
 const parseReminder = (rawDate?: string) => {
     const fallback = getDefaultReminderDate();
-    if (!rawDate) {
-        return {
-            date: fallback,
-            time: toTimeValue(fallback),
-        };
-    }
+    if (!rawDate) return { date: fallback, time: toTimeValue(fallback) };
     const date = new Date(rawDate);
-    if (Number.isNaN(date.getTime())) {
-        return {
-            date: fallback,
-            time: toTimeValue(fallback),
-        };
-    }
-    return {
-        date,
-        time: toTimeValue(date),
-    };
+    if (Number.isNaN(date.getTime())) return { date: fallback, time: toTimeValue(fallback) };
+    return { date, time: toTimeValue(date) };
 };
 
 const toIsoFromDateAndTime = (date: Date, time: string) => {
@@ -80,9 +62,8 @@ const toIsoFromDateAndTime = (date: Date, time: string) => {
 
 const isDueNow = (rawDate?: string) => {
     if (!rawDate) return false;
-    const date = new Date(rawDate);
-    if (Number.isNaN(date.getTime())) return false;
-    return date.getTime() <= Date.now();
+    const d = new Date(rawDate);
+    return !Number.isNaN(d.getTime()) && d.getTime() <= Date.now();
 };
 
 const upsertNote = (current: NoteItem[], note: NoteItem) => {
@@ -93,23 +74,16 @@ const upsertNote = (current: NoteItem[], note: NoteItem) => {
     return next;
 };
 
-const getStatusView = (status?: NoteItem['status']) => {
-    if (status === 'done') {
-        return {
-            label: 'Bajarilgan',
-            className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-        };
-    }
-    if (status === 'expired') {
-        return {
-            label: "Muddati o'tgan",
-            className: 'bg-destructive/15 text-destructive',
-        };
-    }
-    return {
-        label: 'Yangi',
-        className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-    };
+const statusDot: Record<string, string> = {
+    done: 'bg-emerald-500',
+    expired: 'bg-red-500',
+    new: 'bg-amber-500',
+};
+
+const statusLabel: Record<string, string> = {
+    done: 'Bajarilgan',
+    expired: "Muddati o'tgan",
+    new: 'Yangi',
 };
 
 export function NotesPanel() {
@@ -146,33 +120,23 @@ export function NotesPanel() {
                         payload = null;
                     }
                     if (!payload) return;
-
                     const action = payload.action || payload.type;
                     const note = payload.note || (payload.id ? (payload as NoteItem) : null);
-
                     if (action === 'delete' || action === 'deleted') {
                         const removeId = payload.note_id || payload.id;
-                        if (!removeId) return;
-                        setNotes((prev) => prev.filter((item) => item.id !== removeId));
+                        if (removeId) setNotes((prev) => prev.filter((item) => item.id !== removeId));
                         return;
                     }
-
-                    if (note?.id) {
-                        setNotes((prev) => upsertNote(prev, note));
-                    }
+                    if (note?.id) setNotes((prev) => upsertNote(prev, note));
                 };
-
                 socket.onclose = () => {
-                    if (!isMounted) return;
-                    reconnectRef.current = window.setTimeout(connect, 3000);
+                    if (isMounted) reconnectRef.current = window.setTimeout(connect, 3000);
                 };
             } catch {
                 reconnectRef.current = window.setTimeout(connect, 5000);
             }
         };
-
         connect();
-
         return () => {
             isMounted = false;
             if (reconnectRef.current) window.clearTimeout(reconnectRef.current);
@@ -181,21 +145,21 @@ export function NotesPanel() {
     }, []);
 
     const isMutating = createNote.isPending || updateNote.isPending || deleteNote.isPending;
-    const unreadCount = useMemo(() => notes.filter((note) => note.is_read === false).length, [notes]);
+    const unreadCount = useMemo(() => notes.filter((n) => n.is_read === false).length, [notes]);
 
     const sortedNotes = useMemo(() => {
         return [...notes].sort((a, b) => {
-            const aUnread = a.is_read === false ? 0 : 1;
-            const bUnread = b.is_read === false ? 0 : 1;
-            if (aUnread !== bUnread) return aUnread - bUnread;
-            const aTime = new Date(a.date || a.updated_at || a.created_at || 0).getTime();
-            const bTime = new Date(b.date || b.updated_at || b.created_at || 0).getTime();
-            return bTime - aTime;
+            const aU = a.is_read === false ? 0 : 1;
+            const bU = b.is_read === false ? 0 : 1;
+            if (aU !== bU) return aU - bU;
+            const aT = new Date(a.date || a.updated_at || a.created_at || 0).getTime();
+            const bT = new Date(b.date || b.updated_at || b.created_at || 0).getTime();
+            return bT - aT;
         });
     }, [notes]);
 
     const editingNote = useMemo(
-        () => (editingNoteId ? notes.find((note) => note.id === editingNoteId) || null : null),
+        () => (editingNoteId ? notes.find((n) => n.id === editingNoteId) || null : null),
         [editingNoteId, notes],
     );
 
@@ -203,23 +167,20 @@ export function NotesPanel() {
         setEditingNoteId(null);
         setTitle('');
         setText('');
-        const nextReminder = getDefaultReminderDate();
-        setReminderDate(nextReminder);
-        setReminderTime(toTimeValue(nextReminder));
+        const next = getDefaultReminderDate();
+        setReminderDate(next);
+        setReminderTime(toTimeValue(next));
     };
 
-    const openCreate = () => {
-        resetForm();
-        setIsDialogOpen(true);
-    };
+    const openCreate = () => { resetForm(); setIsDialogOpen(true); };
 
     const openEdit = (note: NoteItem) => {
-        const parsedReminder = parseReminder(note.date);
+        const r = parseReminder(note.date);
         setEditingNoteId(note.id);
         setTitle(note.title || '');
         setText(note.text || '');
-        setReminderDate(parsedReminder.date);
-        setReminderTime(parsedReminder.time);
+        setReminderDate(r.date);
+        setReminderTime(r.time);
         setIsDialogOpen(true);
     };
 
@@ -234,20 +195,17 @@ export function NotesPanel() {
             status: editingNote?.status || 'new',
             is_delete: false,
         };
-
         if (editingNoteId) {
             await updateNote.mutateAsync({ id: editingNoteId, payload });
         } else {
             await createNote.mutateAsync(payload);
         }
-
         setIsDialogOpen(false);
         resetForm();
     };
 
     const onDelete = async (noteId: number) => {
-        const confirmed = window.confirm("Eslatmani o'chirishni tasdiqlaysizmi?");
-        if (!confirmed) return;
+        if (!window.confirm("Eslatmani o'chirishni tasdiqlaysizmi?")) return;
         await deleteNote.mutateAsync(noteId);
     };
 
@@ -266,100 +224,118 @@ export function NotesPanel() {
     };
 
     return (
-        <div className='rounded-2xl border border-amber-200/70 bg-amber-50/70 p-4 lg:p-5 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/20'>
-            <div className='flex items-start justify-between gap-3'>
-                <div>
-                    <h3 className='text-3xl font-extrabold text-foreground'>Eslatmalar</h3>
-                    <p className='mt-1 text-xl text-foreground/90'>Oy - Yil</p>
-                    <p className='text-sm mt-1 text-muted-foreground'>{moment().format('MMMM YYYY')}</p>
+        <div className='rounded-xl border border-border bg-card shadow-sm'>
+            {/* Header */}
+            <div className='flex items-center justify-between gap-2 border-b border-border px-4 py-2.5'>
+                <div className='flex items-center gap-2'>
+                    <h3 className='text-sm font-semibold text-foreground'>Eslatmalar</h3>
+                    {unreadCount > 0 && (
+                        <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500/15 px-1.5 text-[10px] font-bold text-amber-700 dark:text-amber-400'>
+                            {unreadCount}
+                        </span>
+                    )}
                 </div>
-                <Quote className='h-10 w-10 text-amber-300/90 dark:text-amber-700/80' />
-            </div>
-
-            <div className='mt-4 flex justify-end'>
-                <Button size='sm' className='rounded-xl' onClick={openCreate}>
-                    <Plus className='mr-1.5 h-4 w-4' />
-                    Eslatma qo'shish
+                <Button size='sm' variant='ghost' className='h-7 gap-1 px-2 text-xs' onClick={openCreate}>
+                    <Plus className='h-3.5 w-3.5' />
+                    Qo'shish
                 </Button>
             </div>
-            <div className='mt-2 text-xs text-muted-foreground'>
-                O'qilmaganlar: <span className='font-semibold text-foreground'>{unreadCount}</span>
-            </div>
 
-            <div className='mt-3 space-y-3 max-h-[420px] overflow-y-auto pr-1'>
+            {/* List */}
+            <div className='max-h-[320px] overflow-y-auto'>
                 {isLoading ? (
-                    <div className='rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>Yuklanmoqda...</div>
+                    <p className='px-4 py-6 text-center text-xs text-muted-foreground'>Yuklanmoqda...</p>
                 ) : sortedNotes.length === 0 ? (
-                    <div className='rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>
-                        Hozircha eslatma mavjud emas
-                    </div>
+                    <p className='px-4 py-6 text-center text-xs text-muted-foreground'>Eslatma mavjud emas</p>
                 ) : (
-                    sortedNotes.map((note) => (
-                        <div
-                            key={note.id}
-                            className={`rounded-xl border border-border bg-card p-4 shadow-sm ${note.is_read === false ? 'ring-1 ring-amber-400/60 dark:ring-amber-600/50' : ''
-                                }`}
-                        >
-                            <div className='flex items-start justify-between gap-3'>
-                                <h4 className='text-2xl font-extrabold text-foreground break-words'>
-                                    {note.title || 'Sarlavha'}
-                                </h4>
-                                <div className='flex items-center gap-1'>
-                                    {(() => {
-                                        const statusView = getStatusView(note.status);
-                                        return (
-                                            <span
-                                                className={`mr-2 rounded-full px-2 py-1 text-[11px] font-semibold ${statusView.className}`}
-                                            >
-                                                {statusView.label}
+                    <div className='divide-y divide-border'>
+                        {sortedNotes.map((note) => {
+                            const st = note.status || 'new';
+                            const canDone = st !== 'done' && isDueNow(note.date);
+                            return (
+                                <div
+                                    key={note.id}
+                                    className={`group flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-muted/50 ${note.is_read === false ? 'bg-amber-50/60 dark:bg-amber-950/15' : ''
+                                        }`}
+                                >
+                                    {/* Status dot */}
+                                    <span
+                                        className={`h-2 w-2 flex-shrink-0 rounded-full ${statusDot[st] || statusDot.new}`}
+                                        title={statusLabel[st] || 'Yangi'}
+                                    />
+
+                                    {/* Content */}
+                                    <div className='min-w-0 flex-1'>
+                                        <div className='flex items-center gap-1.5'>
+                                            <span className='truncate text-[13px] font-medium text-foreground'>
+                                                {note.title || 'Sarlavha'}
                                             </span>
-                                        );
-                                    })()}
-                                    {note.is_read === false && (
-                                        <span className='mr-2 rounded-full bg-blue-500/15 px-2 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-400'>
-                                            O'qilmagan
-                                        </span>
-                                    )}
-                                    <Button size='icon' variant='ghost' className='h-8 w-8' onClick={() => openEdit(note)}>
-                                        <Pencil className='h-4 w-4' />
-                                    </Button>
-                                    {note.status !== 'done' && isDueNow(note.date) && (
+                                            {note.is_read === false && (
+                                                <span className='flex-shrink-0 rounded bg-blue-500/15 px-1 py-px text-[9px] font-semibold text-blue-600 dark:text-blue-400'>
+                                                    yangi
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className='flex items-center gap-2 text-[11px] text-muted-foreground'>
+                                            <span className='inline-flex items-center gap-1'>
+                                                <Clock className='h-3 w-3' />
+                                                {shortDate(note.date || note.created_at)}
+                                            </span>
+                                            {note.created_by_detail?.full_name && (
+                                                <>
+                                                    <span>·</span>
+                                                    <span className='truncate'>{note.created_by_detail.full_name}</span>
+                                                </>
+                                            )}
+                                            {note.text && (
+                                                <>
+                                                    <span>·</span>
+                                                    <span className='truncate max-w-[120px]'>{note.text}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Actions — visible on hover */}
+                                    <div className='flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100'>
+                                        {canDone && (
+                                            <Button
+                                                size='icon'
+                                                variant='ghost'
+                                                className='h-6 w-6 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400'
+                                                title='Bajarildi'
+                                                onClick={() => onDone(note)}
+                                            >
+                                                <Check className='h-3.5 w-3.5' />
+                                            </Button>
+                                        )}
                                         <Button
-                                            variant='outline'
-                                            className='h-8 px-2 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400'
-                                            onClick={() => onDone(note)}
+                                            size='icon'
+                                            variant='ghost'
+                                            className='h-6 w-6'
+                                            title='Tahrirlash'
+                                            onClick={() => openEdit(note)}
                                         >
-                                            Bajarildi
+                                            <Pencil className='h-3 w-3' />
                                         </Button>
-                                    )}
-                                    <Button
-                                        size='icon'
-                                        variant='ghost'
-                                        className='h-8 w-8 text-destructive'
-                                        onClick={() => onDelete(note.id)}
-                                    >
-                                        <Trash2 className='h-4 w-4' />
-                                    </Button>
+                                        <Button
+                                            size='icon'
+                                            variant='ghost'
+                                            className='h-6 w-6 text-destructive hover:text-destructive'
+                                            title="O'chirish"
+                                            onClick={() => onDelete(note.id)}
+                                        >
+                                            <Trash2 className='h-3 w-3' />
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='mt-1 flex items-center gap-3 text-sm text-foreground/80'>
-                                <span className='inline-flex items-center gap-1.5'>
-                                    <UserCircle2 className='h-4 w-4 text-amber-500 dark:text-amber-400' />
-                                    {note.created_by_detail?.full_name || note.author_name || 'Foydalanuvchi'}
-                                </span>
-                                <span>·</span>
-                                <span className='inline-flex items-center gap-1.5'>
-                                    <CalendarDays className='h-4 w-4' />
-                                    {formatDate(note.date || note.updated_at || note.created_at)}
-                                </span>
-                            </div>
-                            <div className='my-3 h-1 rounded-full bg-amber-500/90 dark:bg-amber-500/70' />
-                            <p className='text-lg text-foreground/90 break-words'>{note.text || 'Izoh'}</p>
-                        </div>
-                    ))
+                            );
+                        })}
+                    </div>
                 )}
             </div>
 
+            {/* Dialog */}
             <Dialog
                 open={isDialogOpen}
                 onOpenChange={(open) => {
@@ -367,35 +343,45 @@ export function NotesPanel() {
                     if (!open) resetForm();
                 }}
             >
-                <DialogContent className='sm:max-w-[500px]'>
+                <DialogContent className='sm:max-w-[460px]'>
                     <DialogHeader>
-                        <DialogTitle>{editingNoteId ? 'Eslatmani tahrirlash' : "Yangi eslatma qo'shish"}</DialogTitle>
+                        <DialogTitle className='text-base'>
+                            {editingNoteId ? 'Eslatmani tahrirlash' : "Yangi eslatma qo'shish"}
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className='grid gap-3 py-2'>
-                        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder='Sarlavha' />
-                        <DatePicker
-                            date={reminderDate}
-                            onDateChange={setReminderDate}
-                            placeholder='Eslatma sanasi'
-                        />
+                    <div className='grid gap-3 py-1'>
                         <Input
-                            type='time'
-                            value={reminderTime}
-                            onChange={(e) => setReminderTime(e.target.value)}
-                            placeholder='Eslatma soati'
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder='Sarlavha'
+                            className='h-9 text-sm'
                         />
+                        <div className='flex gap-2'>
+                            <DatePicker
+                                date={reminderDate}
+                                onDateChange={setReminderDate}
+                                placeholder='Sana'
+                            />
+                            <Input
+                                type='time'
+                                value={reminderTime}
+                                onChange={(e) => setReminderTime(e.target.value)}
+                                className='h-9 w-[110px] text-sm'
+                            />
+                        </div>
                         <Textarea
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                             placeholder='Izoh'
-                            rows={5}
+                            rows={3}
+                            className='text-sm'
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant='outline' onClick={() => setIsDialogOpen(false)}>
+                        <Button size='sm' variant='outline' onClick={() => setIsDialogOpen(false)}>
                             Bekor qilish
                         </Button>
-                        <Button onClick={onSave} disabled={isMutating || !title.trim() || !reminderDate || !reminderTime}>
+                        <Button size='sm' onClick={onSave} disabled={isMutating || !title.trim() || !reminderDate || !reminderTime}>
                             Saqlash
                         </Button>
                     </DialogFooter>

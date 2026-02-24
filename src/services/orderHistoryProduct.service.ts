@@ -59,4 +59,10 @@ export const orderHistoryProductService = {
 	byModel: async (orderHistoryId: number | string) => {
 		return api.get<any>(`/order-history/${orderHistoryId}/product-by-model`);
 	},
+	// Update given_count for a specific order-history-product
+	updateGivenCount: async (productId: number, givenCount: number) => {
+		return api.patch<OrderHistoryProductItem>(`/order-history-product/${productId}`, {
+			given_count: givenCount,
+		});
+	},
 };

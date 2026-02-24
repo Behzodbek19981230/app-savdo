@@ -25,10 +25,15 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
 	const auth = useAuthQuery();
 
+	const toValidFilialId = (value: unknown): number | null => {
+		const parsed = Number(value);
+		return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+	};
+
 	const [selectedFilialId, setSelectedFilialIdState] = useState<number | null>(() => {
 		try {
 			const raw = localStorage.getItem('selectedFilialId');
-			return raw ? Number(raw) : null;
+			return raw ? toValidFilialId(raw) : null;
 		} catch {
 			return null;
 		}
@@ -39,15 +44,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		if (!auth.user) return;
 		if (selectedFilialId) return;
 
-		const defaultFilial = auth.user.filials_detail?.[0]?.id || auth.user.companies?.[0] || null;
+		const defaultFilial = toValidFilialId(auth.user.filials_detail?.[0]?.id || auth.user.companies?.[0]);
 		if (defaultFilial) setSelectedFilialIdState(defaultFilial);
 	}, [auth.user]);
 
 	const setSelectedFilialId = (id: number | null) => {
-		setSelectedFilialIdState(id);
+		const validId = id === null ? null : toValidFilialId(id);
+		setSelectedFilialIdState(validId);
 		try {
-			if (id === null) localStorage.removeItem('selectedFilialId');
-			else localStorage.setItem('selectedFilialId', String(id));
+			if (validId === null) localStorage.removeItem('selectedFilialId');
+			else localStorage.setItem('selectedFilialId', String(validId));
 		} catch {
 			// ignore localStorage errors
 		}
