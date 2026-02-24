@@ -28,18 +28,28 @@ const ITEMS_PER_PAGE = 5;
 export default function OrderHistoryPage() {
 	const { selectedFilialId } = useAuthContext();
 	const [page, setPage] = useState(1);
+
+	// applied filters (used for querying)
 	const [search, setSearch] = useState('');
 	const [employee, setEmployee] = useState<number | null>(null);
 	const [status, setStatus] = useState<string>('all');
 	const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
 	const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 
+	// form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formEmployee, setFormEmployee] = useState<number | null>(null);
+	const [formStatus, setFormStatus] = useState<string>('all');
+	const [formDateFrom, setFormDateFrom] = useState<Date | undefined>(undefined);
+	const [formDateTo, setFormDateTo] = useState<Date | undefined>(undefined);
+
 	const { data: usersData } = useUsers({ limit: 1000, is_active: true });
 	const users = usersData?.results || [];
 
 	// Client autocomplete state
-	const [clientId, setClientId] = useState<number | null>(null);
-	const [clientSearch, setClientSearch] = useState('');
+	const [clientId, setClientId] = useState<number | null>(null); // applied client filter
+	const [formClientId, setFormClientId] = useState<number | null>(null); // form value
+	const [formClientSearch, setFormClientSearch] = useState('');
 	const [clientPage, setClientPage] = useState(1);
 	const [clientOptions, setClientOptions] = useState<Array<{ value: number; label: string }>>([]);
 
@@ -50,7 +60,7 @@ export default function OrderHistoryPage() {
 	} = useClients({
 		page: clientPage,
 		perPage: 50,
-		search: clientSearch || undefined,
+		search: formClientSearch || undefined,
 		filial: selectedFilialId ?? undefined,
 	});
 
@@ -75,10 +85,10 @@ export default function OrderHistoryPage() {
 	}, [clientsData]);
 
 	useEffect(() => {
-		// reset pages/options when search or filial changes
+		// reset pages/options when client search or filial changes
 		setClientPage(1);
 		setClientOptions([]);
-	}, [clientSearch, selectedFilialId]);
+	}, [formClientSearch, selectedFilialId]);
 
 	// Build params
 	const params: Record<string, unknown> = {
@@ -106,9 +116,7 @@ export default function OrderHistoryPage() {
 		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 	};
 
-	useEffect(() => {
-		setPage(1);
-	}, [search, employee, status, dateFrom, dateTo, selectedFilialId]);
+	// NOTE: We no longer auto-apply filters on change. Filters are applied when user clicks "Filter".
 
 	const navigate = useNavigate();
 
@@ -119,14 +127,13 @@ export default function OrderHistoryPage() {
 					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
 						<div>
 							<CardTitle>Buyurtma tarixi</CardTitle>
-							<CardDescription>Buyurtmalar ro'yxati</CardDescription>
 						</div>
 						<div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
 							<div className='w-full sm:w-auto'>
 								<Input
 									placeholder='Mijoz nomi yoki telefon'
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
+									value={formSearch}
+									onChange={(e) => setFormSearch(e.target.value)}
 									className='w-full sm:min-w-[220px]'
 								/>
 							</div>
@@ -134,12 +141,12 @@ export default function OrderHistoryPage() {
 							<div className='w-full sm:w-[260px]'>
 								<Autocomplete
 									options={clientOptions}
-									value={clientId ?? undefined}
-									onValueChange={(v) => setClientId(Number(v))}
+									value={formClientId ?? undefined}
+									onValueChange={(v) => setFormClientId(v ? Number(v) : null)}
 									placeholder='Mijozni tanlang'
 									searchPlaceholder='Mijoz qidirish...'
 									emptyText='Mijoz topilmadi'
-									onSearchChange={(q) => setClientSearch(q)}
+									onSearchChange={(q) => setFormClientSearch(q)}
 									onScrollToBottom={() => {
 										if (clientsHasMore) setClientPage((p) => p + 1);
 									}}
@@ -151,8 +158,8 @@ export default function OrderHistoryPage() {
 
 							<div className='w-full sm:w-auto'>
 								<Select
-									onValueChange={(v) => setEmployee(v && v !== '0' ? Number(v) : null)}
-									value={employee ? String(employee) : '0'}
+									onValueChange={(v) => setFormEmployee(v && v !== '0' ? Number(v) : null)}
+									value={formEmployee ? String(formEmployee) : '0'}
 								>
 									<SelectTrigger className='w-full sm:min-w-[180px]'>
 										<SelectValue placeholder='Barcha xodimlar' />
@@ -169,7 +176,7 @@ export default function OrderHistoryPage() {
 							</div>
 
 							<div className='w-full sm:w-auto'>
-								<Select onValueChange={(v) => setStatus(v)} value={status}>
+								<Select onValueChange={(v) => setFormStatus(v)} value={formStatus}>
 									<SelectTrigger className='w-full sm:min-w-[140px]'>
 										<SelectValue placeholder='Barcha holatlar' />
 									</SelectTrigger>
@@ -183,11 +190,50 @@ export default function OrderHistoryPage() {
 
 							<div className='w-full sm:w-auto'>
 								<DateRangePicker
-									dateFrom={dateFrom}
-									dateTo={dateTo}
-									onDateFromChange={(d) => setDateFrom(d)}
-									onDateToChange={(d) => setDateTo(d)}
+									dateFrom={formDateFrom}
+									dateTo={formDateTo}
+									onDateFromChange={(d) => setFormDateFrom(d)}
+									onDateToChange={(d) => setFormDateTo(d)}
 								/>
+							</div>
+							<div className='w-full sm:w-auto flex gap-2 items-center'>
+								<Button
+									onClick={() => {
+										// apply form filters
+										setSearch(formSearch);
+										setClientId(formClientId);
+										setEmployee(formEmployee);
+										setStatus(formStatus);
+										setDateFrom(formDateFrom);
+										setDateTo(formDateTo);
+										setPage(1);
+									}}
+								>
+									Filter
+								</Button>
+								<Button
+									variant='outline'
+									onClick={() => {
+										// clear both form and applied filters
+										setFormSearch('');
+										setFormClientId(null);
+										setFormEmployee(null);
+										setFormStatus('all');
+										setFormDateFrom(undefined);
+										setFormDateTo(undefined);
+
+										setSearch('');
+										setClientId(null);
+										setEmployee(null);
+										setStatus('all');
+										setDateFrom(undefined);
+										setDateTo(undefined);
+										setClientOptions([]);
+										setPage(1);
+									}}
+								>
+									Tozalash
+								</Button>
 							</div>
 						</div>
 					</div>

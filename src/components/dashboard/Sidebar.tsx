@@ -53,6 +53,8 @@ const adminSection: NavSection[] = [
 			{ icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
 			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
 			{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/order-history' },
+			{ icon: Star, label: 'Xarajatlar', path: '/expenses' },
+
 			// { icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
 			// { icon: TrendingUp, label: 'Sotuvlar', path: '/sales' },
 			// { icon: Users, label: 'Mijozlar', path: '/customers' },

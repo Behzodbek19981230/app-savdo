@@ -37,6 +37,7 @@ import Units from './pages/Units';
 import OrderHistory from './pages/OrderHistory';
 import ExpenseCategories from './pages/ExpenseCategories';
 import { OrderShowPage } from './pages/OrderHistoryShow';
+import ExpensesPage from './pages/Expenses';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -143,6 +144,10 @@ const protectedRoutes = [
 	{
 		path: '/order-history',
 		element: <OrderHistory />,
+	},
+	{
+		path: '/expenses',
+		element: <ExpensesPage />,
 	},
 	{
 		path: '/order-history/:id',
