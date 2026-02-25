@@ -135,6 +135,7 @@ export default function Products() {
 	const [filterModel, setFilterModel] = useState<string>('');
 	const [filterModelType, setFilterModelType] = useState<string>('');
 	const [filterType, setFilterType] = useState<string>('');
+	const [filterStatus, setFilterStatus] = useState<string>('');
 
 	// Filter search states
 	const [filterBranchSearch, setFilterBranchSearch] = useState('');
@@ -182,6 +183,7 @@ export default function Products() {
 			filterBranchCategory && filterBranchCategory !== 'all' ? parseInt(filterBranchCategory) : undefined,
 		model: filterModel && filterModel !== 'all' ? parseInt(filterModel) : undefined,
 		type: filterModelType && filterModelType !== 'all' ? parseInt(filterModelType) : undefined,
+		is_active: filterStatus && filterStatus !== 'all' ? (filterStatus === 'active' ? true : false) : undefined,
 	});
 
 	const selectedCategory = form.watch('category');
@@ -816,7 +818,7 @@ export default function Products() {
 					{/* Search */}
 
 					{/* Filters */}
-					<div className='mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3'>
+					<div className='mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3'>
 						<div className='relative'>
 							<Search className='absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
 							<Input
@@ -925,10 +927,36 @@ export default function Products() {
 							isLoadingMore={filterModelTypesInfinite.isFetchingNextPage}
 							isLoading={filterModelTypesInfinite.isLoading}
 						/>
+
+						{/* Status filter */}
+						<div>
+							<Select
+								value={filterStatus || undefined}
+								onValueChange={(val) => {
+									if (val) setFilterStatus(val);
+									else setFilterStatus('');
+									setCurrentPage(1);
+								}}
+							>
+								<SelectTrigger className='h-9 text-sm'>
+									<SelectValue placeholder='Status' />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value='all'>Barchasi</SelectItem>
+									<SelectItem value='active'>Faol</SelectItem>
+									<SelectItem value='inactive'>Nofaol</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 
 					{/* Active Filters Display */}
-					{(filterBranch || filterBranchCategory || filterModel || filterModelType || filterType) && (
+					{(filterBranch ||
+						filterBranchCategory ||
+						filterModel ||
+						filterModelType ||
+						filterType ||
+						filterStatus) && (
 						<div className='mb-4 flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg border'>
 							<span className='text-sm font-medium text-muted-foreground'>Faol filterlar:</span>
 							{filterBranch && filterBranch !== 'all' && (
@@ -1024,6 +1052,21 @@ export default function Products() {
 									</button>
 								</Badge>
 							)}
+							{filterStatus && filterStatus !== 'all' && (
+								<Badge variant='secondary' className='gap-1.5 pl-2 pr-1'>
+									<span className='text-xs'>Status:</span>
+									<span className='font-medium'>{filterStatus === 'active' ? 'Faol' : 'Nofaol'}</span>
+									<button
+										onClick={() => {
+											setFilterStatus('');
+											setCurrentPage(1);
+										}}
+										className='ml-0.5 hover:bg-destructive/20 rounded-sm p-0.5 transition-colors'
+									>
+										<X className='h-3 w-3' />
+									</button>
+								</Badge>
+							)}
 							<Button
 								variant='ghost'
 								size='sm'
@@ -1033,6 +1076,7 @@ export default function Products() {
 									setFilterModel('');
 									setFilterModelType('');
 									setFilterType('');
+									setFilterStatus('');
 									setCurrentPage(1);
 								}}
 								className='h-7 px-2 ml-auto'

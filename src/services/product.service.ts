@@ -173,6 +173,7 @@ export interface ProductQueryParams {
 	search?: string;
 	ordering?: string;
 	is_delete?: boolean;
+	is_active?: boolean;
 	category?: number;
 	model?: number;
 	model_type?: number;
