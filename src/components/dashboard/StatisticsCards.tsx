@@ -645,7 +645,7 @@ export function StatisticsCards() {
                         </div>
 
                         {/* Toggle button for full summary */}
-                        <div className='mt-4 flex justify-center'>
+                        {/* <div className='mt-4 flex justify-center'>
                             <button
                                 onClick={() => setShowFullSummary(!showFullSummary)}
                                 className='flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm'
@@ -662,7 +662,7 @@ export function StatisticsCards() {
                                     </>
                                 )}
                             </button>
-                        </div>
+                        </div> */}
                     </>
                 )}
             </div>

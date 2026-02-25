@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, Users, Filter, RotateCcw } from 'lucide-react';
+import { Loader2, Users, Filter, RotateCcw, Search, SearchIcon, X } from 'lucide-react';
 import { reportsService, TopClient } from '@/services/reports.service';
 import { useQuery } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
 
 export default function TopClientsPage() {
     const { selectedFilialId } = useAuthContext();
@@ -32,15 +34,19 @@ export default function TopClientsPage() {
     const [formDateFrom, setFormDateFrom] = useState<Date>(defaultDates.from);
     const [formDateTo, setFormDateTo] = useState<Date>(defaultDates.to);
 
+    // Search filter
+    const [searchQuery, setSearchQuery] = useState('');
+
     // Build params for API call (use applied filters)
     const params = {
         filial_id: selectedFilialId || 0,
         date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : '',
         date_to: dateTo ? dateTo.toISOString().split('T')[0] : '',
+        search: searchQuery.trim() || undefined,
     };
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['topClients', params.filial_id, params.date_from, params.date_to],
+        queryKey: ['topClients', params.filial_id, params.date_from, params.date_to, params.search],
         queryFn: () => reportsService.getTopClients(params),
         enabled: !!selectedFilialId && !!params.date_from && !!params.date_to,
     });
@@ -58,6 +64,7 @@ export default function TopClientsPage() {
         setFormDateTo(defaultDates.to);
         setDateFrom(defaultDates.from);
         setDateTo(defaultDates.to);
+        setSearchQuery('');
     };
 
     const formatCurrency = (value: string | number) => {
@@ -73,7 +80,19 @@ export default function TopClientsPage() {
             <Card>
                 <CardHeader>
                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-                        <h5 className='text-2xl font-bold'>Top mijozlar</h5>
+                        <div className='flex items-center gap-3'>
+                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Top mijozlar</CardTitle>
+
+                            <div className='relative w-[250px]'>
+                                <Search className='absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
+                                <Input
+                                    placeholder='Mijoz FIO boʻyicha qidirish...'
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className='pl-8 h-9 text-sm'
+                                />
+                            </div>
+                        </div>
                         <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
                             <div className='w-full sm:w-auto'>
                                 <DateRangePicker
@@ -89,22 +108,25 @@ export default function TopClientsPage() {
                                     onClick={handleFilter}
                                     className='bg-blue-600 hover:bg-blue-700 text-white'
                                 >
-                                    <Filter className='h-4 w-4' />
-                                    Filter
+                                    <SearchIcon className='h-4 w-4' />
+                                    Qidirish
                                 </Button>
                                 <Button
                                     variant='outline'
                                     onClick={handleClear}
                                     className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
                                 >
-                                    <RotateCcw className='h-4 w-4' />
+                                    <X className='h-4 w-4' />
                                     Tozalash
                                 </Button>
                             </div>
                         </div>
                     </div>
                 </CardHeader>
+                
                 <CardContent>
+
+
                     {isLoading ? (
                         <div className='flex items-center justify-center py-10'>
                             <Loader2 className='h-8 w-8 animate-spin text-primary' />
@@ -117,7 +139,9 @@ export default function TopClientsPage() {
                     ) : clients.length === 0 ? (
                         <div className='flex flex-col items-center justify-center py-10 text-center'>
                             <Users className='h-12 w-12 text-muted-foreground/50 mb-4' />
-                            <p className='text-muted-foreground'>Mijozlar topilmadi</p>
+                            <p className='text-muted-foreground'>
+                                {searchQuery ? 'Qidiruv boʻyicha mijozlar topilmadi' : 'Mijozlar topilmadi'}
+                            </p>
                         </div>
                     ) : (
                         <div className='rounded-md border overflow-x-auto'>

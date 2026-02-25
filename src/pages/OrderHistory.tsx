@@ -8,7 +8,7 @@ import { DateRangePicker } from '@/components/ui/date-picker';
 import { useOrderHistory } from '@/hooks/api/useOrderHistory';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/api/useUsers';
-import { Loader2, Eye, Package } from 'lucide-react';
+import { Loader2, Eye, Package, SearchIcon, X } from 'lucide-react';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { useClients } from '@/hooks/api/useClients';
 import { Link, useNavigate } from 'react-router-dom';
@@ -126,7 +126,7 @@ export default function OrderHistoryPage() {
                 <CardHeader>
                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
                         <div>
-                            <CardTitle>Buyurtma tarixi</CardTitle>
+                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Buyurtma tarixi</CardTitle>
                         </div>
                         <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
                             <div className='w-full sm:w-auto'>
@@ -208,8 +208,10 @@ export default function OrderHistoryPage() {
                                         setDateTo(formDateTo);
                                         setPage(1);
                                     }}
+                                    className='bg-blue-600 hover:bg-blue-700 text-white'
                                 >
-                                    Filter
+                                    <SearchIcon className='h-4 w-4' />
+                                    Qidirish
                                 </Button>
                                 <Button
                                     variant='outline'
@@ -231,7 +233,9 @@ export default function OrderHistoryPage() {
                                         setClientOptions([]);
                                         setPage(1);
                                     }}
+                                    className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
                                 >
+                                    <X className='h-4 w-4' />
                                     Tozalash
                                 </Button>
                             </div>

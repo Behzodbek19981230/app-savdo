@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, Filter, RotateCcw, ArrowLeft, User, ShoppingCart, Receipt } from 'lucide-react';
+import { Loader2, Filter, RotateCcw, ArrowLeft, User, ShoppingCart, Receipt, Search, SearchIcon, X } from 'lucide-react';
 import { reportsService, OrderDebtHistoryResponse } from '@/services/reports.service';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
 
 export default function OrderDebtHistoryPage() {
     const { selectedFilialId } = useAuthContext();
@@ -128,35 +129,43 @@ export default function OrderDebtHistoryPage() {
         <div className='space-y-6'>
             {/* Filter Section - Top */}
             <Card>
-                <CardContent className='p-4'>
-                    <div className='flex flex-col sm:flex-row gap-4 items-end'>
-                        <div className='flex-1'>
-                            <DateRangePicker
-                                dateFrom={formDateFrom}
-                                dateTo={formDateTo}
-                                onDateFromChange={(d) => setFormDateFrom(d)}
-                                onDateToChange={(d) => setFormDateTo(d)}
-                            />
+                <CardHeader>
+                    <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+                        <div className='flex items-center gap-3'>
+                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Kunlik hisobotlar</CardTitle>
+
+
                         </div>
-                        <div className='flex gap-2'>
-                            <Button
-                                onClick={handleFilter}
-                                className='bg-blue-600 hover:bg-blue-700 text-white'
-                            >
-                                <Filter className='h-4 w-4' />
-                                Filter
-                            </Button>
-                            <Button
-                                variant='outline'
-                                onClick={handleClear}
-                                className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
-                            >
-                                <RotateCcw className='h-4 w-4' />
-                                Tozalash
-                            </Button>
+                        <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
+                            <div className='w-full sm:w-auto'>
+                                <DateRangePicker
+                                    dateFrom={formDateFrom}
+                                    dateTo={formDateTo}
+                                    onDateFromChange={(d) => setFormDateFrom(d)}
+                                    onDateToChange={(d) => setFormDateTo(d)}
+                                />
+                            </div>
+
+                            <div className='w-full sm:w-auto flex gap-2 items-center'>
+                                <Button
+                                    onClick={handleFilter}
+                                    className='bg-blue-600 hover:bg-blue-700 text-white'
+                                >
+                                    <SearchIcon className='h-4 w-4' />
+                                    Qidirish
+                                </Button>
+                                <Button
+                                    variant='outline'
+                                    onClick={handleClear}
+                                    className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+                                >
+                                    <X className='h-4 w-4' />
+                                    Tozalash
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </CardContent>
+                </CardHeader>
             </Card>
 
             {/* Header Banner */}
@@ -174,16 +183,13 @@ export default function OrderDebtHistoryPage() {
             </div>
 
             {/* Buyurtmalar Section */}
-            <Accordion type='single' collapsible className='w-full'>
-                <AccordionItem value='orders' className='border rounded-lg mb-4 px-4'>
-                    <AccordionTrigger className='hover:no-underline py-4'>
-                        <div className='flex items-center gap-2'>
-                            <ShoppingCart className='h-6 w-6 text-primary' />
-                            <h2 className='text-2xl font-bold'>Buyurtmalar</h2>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        {/* Buyurtmalar Total Card */}
+            <div className='mb-6'>
+                <div className='flex items-center gap-2 mb-4'>
+                    <ShoppingCart className='h-6 w-6 text-primary' />
+                    <h2 className='text-xl font-bold'>Buyurtmalar</h2>
+                </div>
+
+                {/* Buyurtmalar Total Card */}
                 <Card className='mb-4'>
                     <CardContent className='p-6'>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -245,53 +251,60 @@ export default function OrderDebtHistoryPage() {
                     </CardContent>
                 </Card>
 
-                {orders.items.length === 0 ? (
-                    <Card>
-                        <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
-                            <p className='text-muted-foreground'>Buyurtmalar topilmadi</p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-                        {orders.items.map((item, index) => (
-                            <Card key={index} className='bg-blue-50 border-blue-200 hover:shadow-md transition-shadow'>
-                                <CardContent className='p-4'>
-                                    <div className='flex items-start gap-3'>
-                                        <div className='bg-primary rounded-full p-2 flex-shrink-0'>
-                                            <ShoppingCart className='h-4 w-4 text-primary-foreground' />
-                                        </div>
-                                        <div className='flex-1 min-w-0'>
-                                            <p className='font-medium text-sm mb-1 truncate'>{item.client_full_name}</p>
-                                            <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
-                                            <p className='text-xs text-muted-foreground mb-1'>Jami summa:</p>
-                                            <p className='text-base font-bold text-blue-600'>
-                                                {formatCurrency(parseFloat(item.summa_total_dollar || '0'))} $
-                                            </p>
-                                            <p className='text-xs text-muted-foreground mt-1'>
-                                                Mahsulot: {formatCurrency(parseFloat(item.all_product_summa || '0'))} $
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                {/* Items Accordion */}
+                <Accordion type='single' collapsible className='w-full'>
+                    <AccordionItem value='orders-items' className='border rounded-lg px-4'>
+                        <AccordionTrigger className='hover:no-underline py-3'>
+                            <span className='text-sm font-medium text-muted-foreground'>
+                                Buyurtmalar ro'yxati ({orders.items.length} ta)
+                            </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            {orders.items.length === 0 ? (
+                                <Card>
+                                    <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
+                                        <p className='text-muted-foreground'>Buyurtmalar topilmadi</p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                                    {orders.items.map((item, index) => (
+                                        <Card key={index} className='bg-blue-50 border-blue-200 hover:shadow-md transition-shadow'>
+                                            <CardContent className='p-4'>
+                                                <div className='flex items-start gap-3'>
+                                                    <div className='bg-primary rounded-full p-2 flex-shrink-0'>
+                                                        <ShoppingCart className='h-4 w-4 text-primary-foreground' />
+                                                    </div>
+                                                    <div className='flex-1 min-w-0'>
+                                                        <p className='font-medium text-sm mb-1 truncate'>{item.client_full_name}</p>
+                                                        <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
+                                                        <p className='text-xs text-muted-foreground mb-1'>Jami summa:</p>
+                                                        <p className='text-base font-bold text-blue-600'>
+                                                            {formatCurrency(parseFloat(item.summa_total_dollar || '0'))} $
+                                                        </p>
+                                                        <p className='text-xs text-muted-foreground mt-1'>
+                                                            Mahsulot: {formatCurrency(parseFloat(item.all_product_summa || '0'))} $
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
 
             {/* To'langan Qarzlar Section */}
-            <Accordion type='single' collapsible className='w-full'>
-                <AccordionItem value='repayments' className='border rounded-lg mb-4 px-4'>
-                    <AccordionTrigger className='hover:no-underline py-4'>
-                        <div className='flex items-center gap-2'>
-                            <User className='h-6 w-6 text-primary' />
-                            <h2 className='text-2xl font-bold'>To'langan Qarzlar</h2>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        {/* To'langan Qarzlar Total Card */}
+            <div className='mb-6'>
+                <div className='flex items-center gap-2 mb-4'>
+                    <User className='h-6 w-6 text-primary' />
+                    <h2 className='text-xl font-bold'>To'langan Qarzlar</h2>
+                </div>
+
+                {/* To'langan Qarzlar Total Card */}
                 <Card className='mb-4'>
                     <CardContent className='p-6'>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -318,8 +331,8 @@ export default function OrderDebtHistoryPage() {
                                     <span className='text-sm text-muted-foreground'>To'lanmagan summa ($):</span>
                                     <span className='text-base font-bold text-orange-600'>
                                         {formatCurrency(
-                                            parseFloat(orders.total.summa_total_dollar || '0') - 
-                                            Math.abs(parseFloat(repayments.total.summa_total_dollar || '0')) - 
+                                            parseFloat(orders.total.summa_total_dollar || '0') -
+                                            Math.abs(parseFloat(repayments.total.summa_total_dollar || '0')) -
                                             parseFloat(repayments.total.discount_amount || '0')
                                         )} $
                                     </span>
@@ -355,50 +368,57 @@ export default function OrderDebtHistoryPage() {
                     </CardContent>
                 </Card>
 
-                {repayments.items.length === 0 ? (
-                    <Card>
-                        <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
-                            <p className='text-muted-foreground'>To'langan qarzlar topilmadi</p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-                        {repayments.items.map((item, index) => (
-                            <Card key={index} className='bg-amber-50 border-amber-200 hover:shadow-md transition-shadow'>
-                                <CardContent className='p-4'>
-                                    <div className='flex items-start gap-3'>
-                                        <div className='bg-primary rounded-full p-2 flex-shrink-0'>
-                                            <User className='h-4 w-4 text-primary-foreground' />
-                                        </div>
-                                        <div className='flex-1 min-w-0'>
-                                            <p className='font-medium text-sm mb-1 truncate'>{item.client_full_name}</p>
-                                            <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
-                                            <p className='text-xs text-muted-foreground mb-1'>To'langan:</p>
-                                            <p className='text-base font-bold text-red-600'>
-                                                {formatCurrency(Math.abs(parseFloat(item.summa_total_dollar || '0')))} $
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                {/* Items Accordion */}
+                <Accordion type='single' collapsible className='w-full'>
+                    <AccordionItem value='repayments-items' className='border rounded-lg px-4'>
+                        <AccordionTrigger className='hover:no-underline py-3'>
+                            <span className='text-sm font-medium text-muted-foreground'>
+                                To'langan qarzlar ro'yxati ({repayments.items.length} ta)
+                            </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            {repayments.items.length === 0 ? (
+                                <Card>
+                                    <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
+                                        <p className='text-muted-foreground'>To'langan qarzlar topilmadi</p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                                    {repayments.items.map((item, index) => (
+                                        <Card key={index} className='bg-amber-50 border-amber-200 hover:shadow-md transition-shadow'>
+                                            <CardContent className='p-4'>
+                                                <div className='flex items-start gap-3'>
+                                                    <div className='bg-primary rounded-full p-2 flex-shrink-0'>
+                                                        <User className='h-4 w-4 text-primary-foreground' />
+                                                    </div>
+                                                    <div className='flex-1 min-w-0'>
+                                                        <p className='font-medium text-sm mb-1 truncate'>{item.client_full_name}</p>
+                                                        <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
+                                                        <p className='text-xs text-muted-foreground mb-1'>To'langan:</p>
+                                                        <p className='text-base font-bold text-red-600'>
+                                                            {formatCurrency(Math.abs(parseFloat(item.summa_total_dollar || '0')))} $
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
 
             {/* Xarajatlar Section */}
-            <Accordion type='single' collapsible className='w-full'>
-                <AccordionItem value='expenses' className='border rounded-lg mb-4 px-4'>
-                    <AccordionTrigger className='hover:no-underline py-4'>
-                        <div className='flex items-center gap-2'>
-                            <Receipt className='h-6 w-6 text-primary' />
-                            <h2 className='text-2xl font-bold'>Xarajatlar</h2>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        {/* Xarajatlar Total Card */}
+            <div className='mb-6'>
+                <div className='flex items-center gap-2 mb-4'>
+                    <Receipt className='h-6 w-6 text-primary' />
+                    <h2 className='text-xl font-bold'>Xarajatlar</h2>
+                </div>
+
+                {/* Xarajatlar Total Card */}
                 <Card className='mb-4'>
                     <CardContent className='p-6'>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -446,42 +466,52 @@ export default function OrderDebtHistoryPage() {
                     </CardContent>
                 </Card>
 
-                {expenses.items.length === 0 ? (
-                    <Card>
-                        <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
-                            <p className='text-muted-foreground'>Xarajatlar topilmadi</p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-                        {expenses.items.map((item, index) => (
-                            <Card key={index} className='bg-red-50 border-red-200 hover:shadow-md transition-shadow'>
-                                <CardContent className='p-4'>
-                                    <div className='flex items-start gap-3'>
-                                        <div className='bg-primary rounded-full p-2 flex-shrink-0'>
-                                            <Receipt className='h-4 w-4 text-primary-foreground' />
-                                        </div>
-                                        <div className='flex-1 min-w-0'>
-                                            <p className='font-medium text-sm mb-1 truncate'>{item.category_name}</p>
-                                            <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
-                                            <p className='text-xs text-muted-foreground mb-1'>Jami summa:</p>
-                                            <p className='text-base font-bold text-red-600'>
-                                                {formatCurrency(parseFloat(item.summa_total_dollar || '0'))} $
-                                            </p>
-                                            <div className='flex gap-2 text-xs text-muted-foreground mt-1'>
-                                                <span>D: {formatCurrency(parseFloat(item.summa_dollar || '0'))} $</span>
-                                                <span>S: {formatCurrency(parseFloat(item.summa_naqt || '0'))}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                {/* Items Accordion */}
+                <Accordion type='single' collapsible className='w-full'>
+                    <AccordionItem value='expenses-items' className='border rounded-lg px-4'>
+                        <AccordionTrigger className='hover:no-underline py-3'>
+                            <span className='text-sm font-medium text-muted-foreground'>
+                                Xarajatlar ro'yxati ({expenses.items.length} ta)
+                            </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            {expenses.items.length === 0 ? (
+                                <Card>
+                                    <CardContent className='flex flex-col items-center justify-center py-10 text-center'>
+                                        <p className='text-muted-foreground'>Xarajatlar topilmadi</p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                                    {expenses.items.map((item, index) => (
+                                        <Card key={index} className='bg-red-50 border-red-200 hover:shadow-md transition-shadow'>
+                                            <CardContent className='p-4'>
+                                                <div className='flex items-start gap-3'>
+                                                    <div className='bg-primary rounded-full p-2 flex-shrink-0'>
+                                                        <Receipt className='h-4 w-4 text-primary-foreground' />
+                                                    </div>
+                                                    <div className='flex-1 min-w-0'>
+                                                        <p className='font-medium text-sm mb-1 truncate'>{item.category_name}</p>
+                                                        <p className='text-xs text-muted-foreground mb-2'>{formatDate(item.date)}</p>
+                                                        <p className='text-xs text-muted-foreground mb-1'>Jami summa:</p>
+                                                        <p className='text-base font-bold text-red-600'>
+                                                            {formatCurrency(parseFloat(item.summa_total_dollar || '0'))} $
+                                                        </p>
+                                                        <div className='flex gap-2 text-xs text-muted-foreground mt-1'>
+                                                            <span>D: {formatCurrency(parseFloat(item.summa_dollar || '0'))} $</span>
+                                                            <span>S: {formatCurrency(parseFloat(item.summa_naqt || '0'))}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
         </div>
     );
 }

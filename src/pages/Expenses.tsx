@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Package, Plus, Pencil, Trash2, Filter, RotateCcw } from 'lucide-react';
+import { Loader2, Package, Plus, Pencil, Trash2, SearchIcon, X } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import moment from 'moment';
 import { Button } from '@/components/ui/button';
@@ -215,8 +215,8 @@ export default function ExpensesPage() {
                                     }}
                                     className='bg-blue-600 hover:bg-blue-700 text-white'
                                 >
-                                    <Filter className='h-4 w-4' />
-                                    Filter
+                                    <SearchIcon className='h-4 w-4' />
+                                    Qidirish
                                 </Button>
                                 <Button
                                     variant='outline'
@@ -233,7 +233,7 @@ export default function ExpensesPage() {
                                     }}
                                     className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
                                 >
-                                    <RotateCcw className='h-4 w-4' />
+                                    <X className='h-4 w-4' />
                                     Tozalash
                                 </Button>
                                 <Button

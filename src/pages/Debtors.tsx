@@ -1,30 +1,33 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, User, AlertCircle, Calendar, Filter } from 'lucide-react';
+import { Loader2, User, AlertCircle, Calendar, Search, SearchIcon, X } from 'lucide-react';
 import { reportsService, DebtorItem } from '@/services/reports.service';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
-import { useClients } from '@/hooks/api/useClients';
 
 export default function DebtorsPage() {
     const { selectedFilialId } = useAuthContext();
-    const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-
-    // Fetch clients for filter
-    const { data: clientsData } = useClients({
-        filial: selectedFilialId ?? undefined,
-        page_size: 1000,
-    });
-    const clients = clientsData?.results || [];
+    const [searchQuery, setSearchQuery] = useState('');
+    const [appliedSearch, setAppliedSearch] = useState('');
 
     const { data, isLoading } = useQuery({
-        queryKey: ['debtors', selectedFilialId, selectedClientId],
-        queryFn: () => reportsService.getDebtors(selectedFilialId || 0, selectedClientId || undefined),
+        queryKey: ['debtors', selectedFilialId, appliedSearch],
+        queryFn: () => reportsService.getDebtors(selectedFilialId || 0, appliedSearch || undefined),
         enabled: !!selectedFilialId,
     });
+
+    const handleFilter = () => {
+        setAppliedSearch(searchQuery);
+    };
+
+    const handleClear = () => {
+        setSearchQuery('');
+        setAppliedSearch('');
+    };
 
     const formatCurrency = (value: string | number | undefined) => {
         if (!value) return '0.00';
@@ -81,32 +84,37 @@ export default function DebtorsPage() {
             <Card>
                 <CardHeader>
                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-                        <div className='flex items-center gap-2'>
-                            <User className='h-6 w-6 text-primary' />
-                            <CardTitle>Qarzdorlar ro'yxati</CardTitle>
-                        </div>
-                        <div className='flex items-center gap-4'>
-                            <div className='w-full sm:w-auto'>
-                                <Select
-                                    value={selectedClientId ? String(selectedClientId) : '0'}
-                                    onValueChange={(value) => setSelectedClientId(value === '0' ? null : Number(value))}
-                                >
-                                    <SelectTrigger className='w-full sm:min-w-[250px]'>
-                                        <SelectValue placeholder='Barcha mijozlar' />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value='0'>Barcha mijozlar</SelectItem>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.id} value={String(client.id)}>
-                                                {client.full_name || client.phone_number || `#${client.id}`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                        <div className='flex items-center gap-3'>
+                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Qarzdorlar ro'yxati</CardTitle>
+
+                            <div className='relative w-[250px]'>
+                                <Search className='absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
+                                <Input
+                                    placeholder='Mijoz FIO boʻyicha qidirish...'
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className='pl-8 h-9 text-sm'
+                                />
                             </div>
-                            <Badge variant='secondary' className='text-sm font-semibold'>
-                                {count} ta
-                            </Badge>
+                        </div>
+                        <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
+                            <div className='w-full sm:w-auto flex gap-2 items-center'>
+                                <Button
+                                    onClick={handleFilter}
+                                    className='bg-blue-600 hover:bg-blue-700 text-white'
+                                >
+                                    <SearchIcon className='h-4 w-4' />
+                                    Qidirish
+                                </Button>
+                                <Button
+                                    variant='outline'
+                                    onClick={handleClear}
+                                    className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+                                >
+                                    <X className='h-4 w-4' />
+                                    Tozalash
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>

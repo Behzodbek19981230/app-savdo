@@ -5,6 +5,7 @@ export interface TopClientParams {
     filial_id: number;
     date_from: string;
     date_to: string;
+    search?: string;
 }
 
 export interface TopClient {
@@ -122,6 +123,9 @@ export const reportsService = {
         query.append('filial_id', String(params.filial_id));
         query.append('date_from', params.date_from);
         query.append('date_to', params.date_to);
+        if (params.search) {
+            query.append('search', params.search);
+        }
 
         const res = await api.get<TopClientResponse>(`${API_ENDPOINTS.reports.topClient}?${query.toString()}`);
         return res;
@@ -135,11 +139,11 @@ export const reportsService = {
         const res = await api.get<OrderDebtHistoryResponse>(`${API_ENDPOINTS.reports.orderDebtHistory}?${query.toString()}`);
         return res;
     },
-    getDebtors: async (filial_id: number, client_id?: number): Promise<DebtorsResponse> => {
+    getDebtors: async (filial_id: number, search?: string): Promise<DebtorsResponse> => {
         const query = new URLSearchParams();
         query.append('filial_id', String(filial_id));
-        if (client_id) {
-            query.append('client_id', String(client_id));
+        if (search) {
+            query.append('search', search);
         }
 
         const res = await api.get<DebtorsResponse>(`${API_ENDPOINTS.reports.debtors}?${query.toString()}`);
