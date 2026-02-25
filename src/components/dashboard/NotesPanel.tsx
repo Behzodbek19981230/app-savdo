@@ -404,17 +404,17 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                         <Button size='sm' variant='outline' onClick={() => setIsViewDialogOpen(false)}>
                             Yopish
                         </Button>
-                        {viewingNote && (
+                        {viewingNote && viewingNote.status !== 'done' && (
                             <Button
                                 size='sm'
                                 variant='outline'
                                 onClick={() => {
                                     setIsViewDialogOpen(false);
-                                    openEdit(viewingNote);
+                                    onDone(viewingNote);
                                 }}
                             >
-                                <Pencil className='h-3.5 w-3.5 mr-1.5' />
-                                Tahrirlash
+                                <Check className='h-3.5 w-3.5 mr-1.5' />
+                                Bajarildi
                             </Button>
                         )}
                     </DialogFooter>

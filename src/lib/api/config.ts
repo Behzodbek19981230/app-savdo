@@ -245,6 +245,13 @@ export const API_ENDPOINTS = {
 		delete: (id: string) => `/expense/${id}`,
 		groupByDate: '/expense/group-by-date',
 	},
+
+	// Reports endpoints (Hisobotlar)
+	reports: {
+		topClient: '/reports/top-client',
+		orderDebtHistory: '/reports/order-debt-history',
+		debtors: '/reports/debtors',
+	},
 } as const;
 
 // Request timeout (milliseconds)

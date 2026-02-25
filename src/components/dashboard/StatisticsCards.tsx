@@ -16,7 +16,7 @@ const baseCards = [
         bgGradient: 'from-blue-500 via-blue-400 to-cyan-400',
         iconBg: 'bg-blue-100',
         iconColor: 'text-blue-600',
-        href: '/order',
+        href: '/order-history',
     },
     {
         key: 'returns',
@@ -26,27 +26,27 @@ const baseCards = [
         bgGradient: 'from-orange-500 via-amber-500 to-yellow-500',
         iconBg: 'bg-orange-100',
         iconColor: 'text-orange-600',
-        href: '/tovar-qaytarish',
+        href: '/order-history/returns',
     },
     {
         key: 'income',
-        title: 'Tushum',
+        title: "To'langan qarzlar",
         icon: TrendingUp,
         trend: 'up' as const,
         bgGradient: 'from-emerald-500 via-green-500 to-teal-500',
         iconBg: 'bg-emerald-100',
         iconColor: 'text-emerald-600',
-        href: '/qarzlar',
+        href: '/debt-repayment',
     },
     {
         key: 'expense',
-        title: 'Chiqim',
+        title: 'Xarajatlar',
         icon: TrendingDown,
         trend: 'down' as const,
         bgGradient: 'from-rose-500 via-red-500 to-orange-500',
         iconBg: 'bg-rose-100',
         iconColor: 'text-rose-600',
-        href: '/xarajatlar',
+        href: '/expenses',
     },
 ];
 
@@ -224,16 +224,18 @@ export function StatisticsCards() {
     }, [data, filialId, year, month, now]);
 
     return (
-        <div className='space-y-6'>
-            <div className='bg-white rounded-2xl shadow p-4'>
-                <div className='flex items-center justify-between mb-4'>
-                    <h2 className='text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2'>
-                        <BarChart className='w-7 h-7 text-blue-600' />
-                        Statistika
-                    </h2>
-                    <div className='flex items-center gap-3'>
+        <div className='space-y-4'>
+            <div className='bg-white rounded-xl shadow-sm border border-gray-100/50 p-4'>
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4'>
+                    <div className='flex items-center gap-2'>
+                        <div className='p-2 bg-blue-50 rounded-lg'>
+                            <BarChart className='w-5 h-5 text-blue-600' />
+                        </div>
+                        <h2 className='text-xl font-bold text-gray-800'>Statistika</h2>
+                    </div>
+                    <div className='flex items-center gap-2'>
                         <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                            <SelectTrigger className='w-[120px] h-10'>
+                            <SelectTrigger className='w-[100px] h-9 text-sm'>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -248,7 +250,7 @@ export function StatisticsCards() {
                             value={month ? String(month) : '0'}
                             onValueChange={(v) => setMonth(Number(v) === 0 ? null : Number(v))}
                         >
-                            <SelectTrigger className='w-[150px] h-10'>
+                            <SelectTrigger className='w-[130px] h-9 text-sm'>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -268,94 +270,394 @@ export function StatisticsCards() {
                     </div>
                 ) : (
                     <>
-                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
                             {cards.map((card) => {
                                 const Icon = card.icon;
                                 return (
                                     <div
                                         key={card.key}
-                                        className='group relative bg-white rounded-3xl shadow transition-all duration-200 overflow-hidden border border-gray-100'
+                                        className='group relative bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100/50'
                                     >
                                         <div
-                                            className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} opacity-0 group-hover:opacity-5`}
+                                            className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} opacity-0 group-hover:opacity-3 transition-opacity`}
                                         />
-                                        <div className='relative p-6 pb-4'>
-                                            <div className='flex items-start justify-between mb-4'>
-                                                <div className={`${card.iconBg} p-3 rounded-2xl shadow-md`}>
-                                                    <Icon className={`w-6 h-6 ${card.iconColor}`} />
+                                        <div className='relative p-4'>
+                                            <div className='flex items-center justify-between mb-3'>
+                                                <div className='flex items-center gap-2.5'>
+                                                    <div className={`${card.iconBg} p-2 rounded-xl shadow-sm`}>
+                                                        <Icon className={`w-5 h-5 ${card.iconColor}`} />
+                                                    </div>
+                                                    <h3 className='text-base font-bold text-gray-800'>{card.title}</h3>
                                                 </div>
-                                                {card.trend === 'up' ? (
-                                                    <div className='flex items-center space-x-1 bg-emerald-50 px-2 py-1 rounded-lg'>
-                                                        <ArrowUpRight className='w-4 h-4 text-emerald-600' />
-                                                        <span className='text-xs font-semibold text-emerald-600'>
-                                                            +{Math.round(Math.random() * 10 + 5)}%
+
+                                                {card.key === 'sales' && data?.orders?.discount && (
+                                                    <div className='flex items-center bg-yellow-50/80 px-2 py-0.5 rounded-md border border-yellow-200/50'>
+                                                        <span className='text-[10px] font-semibold text-yellow-700'>
+                                                            {safeNum(data.orders.discount).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
                                                         </span>
                                                     </div>
-                                                ) : (
-                                                    <div className='flex items-center space-x-1 bg-rose-50 px-2 py-1 rounded-lg'>
-                                                        <ArrowDownRight className='w-4 h-4 text-rose-600' />
-                                                        <span className='text-xs font-semibold text-rose-600'>
-                                                            -{Math.round(Math.random() * 5 + 1)}%
+                                                )}
+                                                {card.key === 'returns' && data?.vozvrat?.discount && (
+                                                    <div className='flex items-center bg-yellow-50/80 px-2 py-0.5 rounded-md border border-yellow-200/50'>
+                                                        <span className='text-[10px] font-semibold text-yellow-700'>
+                                                            {safeNum(data.vozvrat.discount).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.key === 'income' && data?.debt_repayments?.discount && (
+                                                    <div className='flex items-center bg-yellow-50/80 px-2 py-0.5 rounded-md border border-yellow-200/50'>
+                                                        <span className='text-[10px] font-semibold text-yellow-700'>
+                                                            {safeNum(data.debt_repayments.discount).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.key === 'expense' && (
+                                                    <div className='flex items-center bg-rose-50/80 px-2 py-0.5 rounded-md border border-rose-200/50'>
+                                                        <span className='text-[10px] font-semibold text-rose-600'>
+                                                            Chiqim
                                                         </span>
                                                     </div>
                                                 )}
                                             </div>
-                                            <h3 className='text-lg font-bold text-gray-800 mb-1'>{card.title}</h3>
-                                            <p className='text-xs text-gray-500'>Tanlangan davr statistika</p>
                                         </div>
-                                        <div className='relative px-6 pb-4 space-y-3'>
-                                            <div className='flex justify-between items-center p-3 bg-gray-50 rounded-xl'>
-                                                <div className='flex items-center space-x-2'>
-                                                    <div className='w-2 h-2 bg-blue-500 rounded-full' />
-                                                    <span className='text-sm text-gray-600 font-medium'>Naqd</span>
-                                                </div>
-                                                <span className='font-bold text-gray-900'>
-                                                    {card.total.toLocaleString()} {card.currency}
-                                                </span>
-                                            </div>
-                                            <div className='flex justify-between items-center p-3 bg-gray-50 rounded-xl'>
-                                                <div className='flex items-center space-x-2'>
-                                                    <div className='w-2 h-2 bg-emerald-500 rounded-full' />
-                                                    <span className='text-sm text-gray-600 font-medium'>To'langan</span>
-                                                </div>
-                                                <span className='font-bold text-gray-900'>
-                                                    {card.paid.toLocaleString()} {card.currency}
-                                                </span>
-                                            </div>
-                                            <div className='flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border-2 border-blue-200 mt-4'>
-                                                <span className='font-bold text-gray-700'>Jami</span>
-                                                <span className='font-bold text-xl text-blue-700'>
-                                                    {card.balance.toLocaleString()} {card.currency}
-                                                </span>
-                                            </div>
+                                        <div className='relative px-4 pb-4 space-y-2'>
+                                            {/* Sales Card */}
+                                            {card.key === 'sales' && data?.orders?.payments && (
+                                                <>
+                                                    <div className='flex justify-between items-center p-2 bg-blue-50/60 rounded-lg border border-blue-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-blue-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Dollar</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.orders.payments.dollar).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-green-50/60 rounded-lg border border-green-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-green-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Naqd</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.orders.payments.cash).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-purple-50/60 rounded-lg border border-purple-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-purple-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Click</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.orders.payments.click).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-orange-50/60 rounded-lg border border-orange-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-orange-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Terminal</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.orders.payments.terminal).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-cyan-50/60 rounded-lg border border-cyan-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-cyan-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Transfer</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.orders.payments.transfer).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200/60 mt-2.5'>
+                                                        <span className='font-semibold text-xs text-gray-700'>Jami (USD)</span>
+                                                        <span className='font-bold text-base text-emerald-700'>
+                                                            {safeNum(data.orders.total_paid_usd).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Returns Card */}
+                                            {card.key === 'returns' && data?.vozvrat?.payments && (
+                                                <>
+                                                    <div className='flex justify-between items-center p-2 bg-blue-50/60 rounded-lg border border-blue-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-blue-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Dollar</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.vozvrat.payments.dollar).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-green-50/60 rounded-lg border border-green-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-green-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Naqd</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.vozvrat.payments.cash).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-purple-50/60 rounded-lg border border-purple-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-purple-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Click</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.vozvrat.payments.click).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-orange-50/60 rounded-lg border border-orange-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-orange-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Terminal</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.vozvrat.payments.terminal).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-cyan-50/60 rounded-lg border border-cyan-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-cyan-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Transfer</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.vozvrat.payments.transfer).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200/60 mt-2.5'>
+                                                        <span className='font-semibold text-xs text-gray-700'>Jami (USD)</span>
+                                                        <span className='font-bold text-base text-orange-700'>
+                                                            {safeNum(data.vozvrat.total_refunded_usd).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Expense Card */}
+                                            {card.key === 'expense' && data?.expenses?.payments && (
+                                                <>
+                                                    <div className='flex justify-between items-center p-2 bg-blue-50/60 rounded-lg border border-blue-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-blue-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Dollar</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.expenses.payments.dollar).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-green-50/60 rounded-lg border border-green-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-green-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Naqd</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.expenses.payments.cash).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-purple-50/60 rounded-lg border border-purple-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-purple-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Click</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.expenses.payments.click).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-orange-50/60 rounded-lg border border-orange-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-orange-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Terminal</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.expenses.payments.terminal).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-cyan-50/60 rounded-lg border border-cyan-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-cyan-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Transfer</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.expenses.payments.transfer).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-3 bg-gradient-to-r from-rose-50 to-red-50 rounded-lg border border-rose-200/60 mt-2.5'>
+                                                        <span className='font-semibold text-xs text-gray-700'>Jami (USD)</span>
+                                                        <span className='font-bold text-base text-rose-700'>
+                                                            {safeNum(data.expenses.total_usd).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Income Card - Debt Repayments */}
+                                            {card.key === 'income' && data?.debt_repayments?.payments && (
+                                                <>
+                                                    <div className='flex justify-between items-center p-2 bg-blue-50/60 rounded-lg border border-blue-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-blue-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Dollar</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.debt_repayments.payments.dollar).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-green-50/60 rounded-lg border border-green-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-green-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Naqd</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.debt_repayments.payments.cash).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-purple-50/60 rounded-lg border border-purple-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-purple-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Click</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.debt_repayments.payments.click).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-orange-50/60 rounded-lg border border-orange-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-orange-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Terminal</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.debt_repayments.payments.terminal).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-2 bg-cyan-50/60 rounded-lg border border-cyan-200/50'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <div className='w-1.5 h-1.5 bg-cyan-500 rounded-full' />
+                                                            <span className='text-xs text-gray-600 font-medium'>Transfer</span>
+                                                        </div>
+                                                        <span className='font-semibold text-sm text-gray-900'>
+                                                            {safeNum(data.debt_repayments.payments.transfer).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className='flex justify-between items-center p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200/60 mt-2.5'>
+                                                        <span className='font-semibold text-xs text-gray-700'>Jami (USD)</span>
+                                                        <span className='font-bold text-base text-emerald-700'>
+                                                            {safeNum(data.debt_repayments.total_paid_usd).toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}{' '}
+                                                            $
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                        <button
-                                            type='button'
-                                            className='relative w-full py-4 flex items-center justify-center space-x-2 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-cyan-50 transition-all duration-300 border-t border-gray-200 text-sm font-bold text-gray-700 hover:text-blue-700'
-                                            onClick={() => navigate(card.href)}
-                                        >
-                                            <Plus size={18} />
-                                            <span>Yangi kiritish</span>
-                                        </button>
+
                                     </div>
                                 );
                             })}
                         </div>
 
                         {/* Toggle button for full summary */}
-                        <div className='mt-6 flex justify-center'>
+                        <div className='mt-4 flex justify-center'>
                             <button
                                 onClick={() => setShowFullSummary(!showFullSummary)}
-                                className='flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold'
+                                className='flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm'
                             >
                                 {showFullSummary ? (
                                     <>
-                                        <ChevronUp size={20} />
+                                        <ChevronUp size={18} />
                                         <span>Batafsil ma'lumotlarni yashirish</span>
                                     </>
                                 ) : (
                                     <>
-                                        <ChevronDown size={20} />
+                                        <ChevronDown size={18} />
                                         <span>Batafsil ma'lumotlarni ko'rish</span>
                                     </>
                                 )}

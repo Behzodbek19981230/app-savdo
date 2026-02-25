@@ -38,179 +38,194 @@ import OrderHistory from './pages/OrderHistory';
 import ExpenseCategories from './pages/ExpenseCategories';
 import { OrderShowPage } from './pages/OrderHistoryShow';
 import ExpensesPage from './pages/Expenses';
+import TopClientsPage from './pages/TopClients';
+import OrderDebtHistoryPage from './pages/OrderDebtHistory';
+import DebtorsPage from './pages/Debtors';
 
 // React Query client configuration
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			retry: 1,
-			refetchOnWindowFocus: false,
-			staleTime: 60 * 1000, // 1 minute
-		},
-	},
+    defaultOptions: {
+        queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+            staleTime: 60 * 1000, // 1 minute
+        },
+    },
 });
 const RootRedirect = () => {
-	const isAuth = authService.isAuthenticated();
-	return <Navigate to={isAuth ? '/dashboard' : '/login'} replace />;
+    const isAuth = authService.isAuthenticated();
+    return <Navigate to={isAuth ? '/dashboard' : '/login'} replace />;
 };
 
 const publicRoutes = [
-	{
-		path: '/',
-		element: <RootRedirect />,
-	},
-	{
-		path: '/login',
-		element: <Login />,
-	},
+    {
+        path: '/',
+        element: <RootRedirect />,
+    },
+    {
+        path: '/login',
+        element: <Login />,
+    },
 ];
 const protectedRoutes = [
-	{
-		path: '/dashboard',
-		element: <Index />,
-	},
-	{
-		path: '/customers',
-		element: <Customers />,
-	},
-	{
-		path: '/products',
-		element: <Products />,
-	},
-	{
-		path: '/products/add',
-		element: <ProductAdd />,
-	},
-	{
-		path: '/products/:id',
-		element: <ProductShow />,
-	},
-	{
-		path: '/locations',
-		element: <Locations />,
-	},
-	{
-		path: '/product-categories',
-		element: <ProductCategories />,
-	},
-	{
-		path: '/product-branch-categories',
-		element: <ProductBranchCategories />,
-	},
-	{
-		path: '/product-models',
-		element: <ProductModels />,
-	},
-	{
-		path: '/model-sizes',
-		element: <ModelTypeAndSize defaultTab='model-size' />,
-	},
-	{
-		path: '/model-types',
-		element: <ModelTypeAndSize defaultTab='model-type' />,
-	},
-	{
-		path: '/role',
-		element: <Roles />,
-	},
-	{
-		path: '/user',
-		element: <Users />,
-	},
-	{
-		path: '/company',
-		element: <Companies />,
-	},
-	{
-		path: '/exchange-rates',
-		element: <ExchangeRates />,
-	},
-	{
-		path: '/purchase-invoices',
-		element: <PurchaseInvoices />,
-	},
-	{
-		path: '/karzinka',
-		element: <Korzinka />,
-	},
-	{
-		path: '/debt-repayment/karzinka',
-		element: <DebtKorzinka />,
-	},
-	{
-		path: '/debt-repayment/karzinka/:id',
-		element: <DebtKorzinka />,
-	},
-	{
-		path: '/order-history',
-		element: <OrderHistory />,
-	},
-	{
-		path: '/expenses',
-		element: <ExpensesPage />,
-	},
-	{
-		path: '/order-history/:id',
-		element: <OrderShowPage />,
-	},
-	{
-		path: '/purchase-invoices/add',
-		element: <PurchaseInvoiceAdd />,
-	},
-	{
-		path: '/purchase-invoices/:id',
-		element: <PurchaseInvoiceShow />,
-	},
-	{
-		path: '/suppliers',
-		element: <Suppliers />,
-	},
-	{
-		path: '/sklad',
-		element: <Sklad />,
-	},
-	{
-		path: '/units',
-		element: <Units />,
-	},
-	{
-		path: '/expense-categories',
-		element: <ExpenseCategories />,
-	},
+    {
+        path: '/dashboard',
+        element: <Index />,
+    },
+    {
+        path: '/customers',
+        element: <Customers />,
+    },
+    {
+        path: '/products',
+        element: <Products />,
+    },
+    {
+        path: '/products/add',
+        element: <ProductAdd />,
+    },
+    {
+        path: '/products/:id',
+        element: <ProductShow />,
+    },
+    {
+        path: '/locations',
+        element: <Locations />,
+    },
+    {
+        path: '/product-categories',
+        element: <ProductCategories />,
+    },
+    {
+        path: '/product-branch-categories',
+        element: <ProductBranchCategories />,
+    },
+    {
+        path: '/product-models',
+        element: <ProductModels />,
+    },
+    {
+        path: '/model-sizes',
+        element: <ModelTypeAndSize defaultTab='model-size' />,
+    },
+    {
+        path: '/model-types',
+        element: <ModelTypeAndSize defaultTab='model-type' />,
+    },
+    {
+        path: '/role',
+        element: <Roles />,
+    },
+    {
+        path: '/user',
+        element: <Users />,
+    },
+    {
+        path: '/company',
+        element: <Companies />,
+    },
+    {
+        path: '/exchange-rates',
+        element: <ExchangeRates />,
+    },
+    {
+        path: '/purchase-invoices',
+        element: <PurchaseInvoices />,
+    },
+    {
+        path: '/karzinka',
+        element: <Korzinka />,
+    },
+    {
+        path: '/debt-repayment/karzinka',
+        element: <DebtKorzinka />,
+    },
+    {
+        path: '/debt-repayment/karzinka/:id',
+        element: <DebtKorzinka />,
+    },
+    {
+        path: '/order-history',
+        element: <OrderHistory />,
+    },
+    {
+        path: '/expenses',
+        element: <ExpensesPage />,
+    },
+    {
+        path: '/order-history/:id',
+        element: <OrderShowPage />,
+    },
+    {
+        path: '/purchase-invoices/add',
+        element: <PurchaseInvoiceAdd />,
+    },
+    {
+        path: '/purchase-invoices/:id',
+        element: <PurchaseInvoiceShow />,
+    },
+    {
+        path: '/suppliers',
+        element: <Suppliers />,
+    },
+    {
+        path: '/sklad',
+        element: <Sklad />,
+    },
+    {
+        path: '/units',
+        element: <Units />,
+    },
+    {
+        path: '/expense-categories',
+        element: <ExpenseCategories />,
+    },
+    {
+        path: '/reports/top-clients',
+        element: <TopClientsPage />,
+    },
+    {
+        path: '/reports/order-debt-history',
+        element: <OrderDebtHistoryPage />,
+    },
+    {
+        path: '/reports/debtors',
+        element: <DebtorsPage />,
+    },
 ];
 
 const App = () => (
-	<QueryClientProvider client={queryClient}>
-		<ThemeProvider attribute='class' defaultTheme='light' enableSystem>
-			<TooltipProvider>
-				<Toaster />
-				<Sonner />
-				<BrowserRouter>
-					<AuthProvider>
-						<Routes>
-							{publicRoutes.map((route) => (
-								<Route key={route.path} path={route.path} element={route.element} />
-							))}
-							{protectedRoutes.map((route) => (
-								<Route
-									key={route.path}
-									path={route.path}
-									element={
-										<ProtectedRoute>
-											<DashboardLayout>{route.element}</DashboardLayout>
-										</ProtectedRoute>
-									}
-								/>
-							))}
+    <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute='class' defaultTheme='light' enableSystem>
+            <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                    <AuthProvider>
+                        <Routes>
+                            {publicRoutes.map((route) => (
+                                <Route key={route.path} path={route.path} element={route.element} />
+                            ))}
+                            {protectedRoutes.map((route) => (
+                                <Route
+                                    key={route.path}
+                                    path={route.path}
+                                    element={
+                                        <ProtectedRoute>
+                                            <DashboardLayout>{route.element}</DashboardLayout>
+                                        </ProtectedRoute>
+                                    }
+                                />
+                            ))}
 
-							{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-							<Route path='*' element={<NotFound />} />
-						</Routes>
-					</AuthProvider>
-				</BrowserRouter>
-			</TooltipProvider>
-		</ThemeProvider>
-	</QueryClientProvider>
+                            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                            <Route path='*' element={<NotFound />} />
+                        </Routes>
+                    </AuthProvider>
+                </BrowserRouter>
+            </TooltipProvider>
+        </ThemeProvider>
+    </QueryClientProvider>
 );
 
 export default App;
