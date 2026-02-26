@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
+import { PurchaseInvoiceType, PurchaseInvoiceTypeLabels } from '@/types/purchaseInvoice';
 import { useProductHistories } from '@/hooks/api/useProductHistory';
 import {
 	ArrowLeft,
@@ -102,8 +103,13 @@ export default function PurchaseInvoiceShow() {
 						</p>
 					</div>
 				</div>
-				<Badge variant={invoice.type === 0 ? 'default' : 'destructive'} className='text-sm'>
-					{invoice.type === 0 ? 'Tovar kirimi' : 'Vozvrat'}
+				<Badge
+					variant={invoice.type === PurchaseInvoiceType.EXTERNAL ? 'default' : 'default'}
+					className={`text-sm ${invoice.type === PurchaseInvoiceType.EXTERNAL ? 'bg-green-600' : 'bg-blue-600'}`}
+				>
+					{invoice.type === PurchaseInvoiceType.EXTERNAL
+						? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
+						: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
 				</Badge>
 			</div>
 

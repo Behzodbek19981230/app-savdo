@@ -5,11 +5,19 @@ export const ORDER_HISTORY_KEYS = {
 	all: ['order-history'] as const,
 	lists: () => [...ORDER_HISTORY_KEYS.all, 'list'] as const,
 	list: (params?: Record<string, unknown>) => [...ORDER_HISTORY_KEYS.lists(), params] as const,
+	debtorProduct: (params?: Record<string, unknown>) => [...ORDER_HISTORY_KEYS.all, 'debtor-product', params] as const,
 };
 
 export function useOrderHistory(params?: Record<string, unknown>) {
 	return useQuery({
 		queryKey: ORDER_HISTORY_KEYS.list(params),
 		queryFn: () => orderHistoryService.getList(params),
+	});
+}
+
+export function useOrderHistoryDebtorProduct(params?: Record<string, unknown>) {
+	return useQuery({
+		queryKey: ORDER_HISTORY_KEYS.debtorProduct(params),
+		queryFn: () => orderHistoryService.debtorProduct(params),
 	});
 }

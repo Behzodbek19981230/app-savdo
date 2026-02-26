@@ -41,6 +41,7 @@ import ExpensesPage from './pages/Expenses';
 import TopClientsPage from './pages/TopClients';
 import OrderDebtHistoryPage from './pages/OrderDebtHistory';
 import DebtorsPage from './pages/Debtors';
+import SupplierAccountPage from './pages/SupplierAccount';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -161,12 +162,20 @@ const protectedRoutes = [
         element: <PurchaseInvoiceAdd />,
     },
     {
+        path: '/purchase-invoices/add/:id',
+        element: <PurchaseInvoiceAdd />,
+    },
+    {
         path: '/purchase-invoices/:id',
         element: <PurchaseInvoiceShow />,
     },
     {
         path: '/suppliers',
         element: <Suppliers />,
+    },
+    {
+        path: '/supplier-account',
+        element: <SupplierAccountPage />,
     },
     {
         path: '/sklad',

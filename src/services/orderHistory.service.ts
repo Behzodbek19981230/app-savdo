@@ -80,6 +80,10 @@ export const orderHistoryService = {
 	getList: async (params?: Record<string, unknown>) => {
 		return api.get<OrderHistoryListResponse>('/order-history', { params });
 	},
+	// Fetch debtor product order histories
+	debtorProduct: async (params?: Record<string, unknown>) => {
+		return api.get<OrderHistoryListResponse>('/order-history/debtor-product', { params });
+	},
 	// Fetch korzinka (cart) order histories
 	korzinka: async (params?: Record<string, unknown>) => {
 		return api.get<any>('/order-history/karzinka', { params });

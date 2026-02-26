@@ -70,6 +70,7 @@ const adminSection: NavSection[] = [
             { icon: ArrowUpCircle, label: 'Kirim (Qabul)', path: '/purchase-invoices' },
             // { icon: ArrowDownCircle, label: 'Chiqim (Ombordan)', path: '/chiqim' },
             { icon: Building2, label: "Ta'minotchilar", path: '/suppliers' },
+            { icon: DollarSign, label: "Mening qarzlarim", path: '/supplier-account' },
         ],
     },
     {
