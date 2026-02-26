@@ -11,7 +11,7 @@ import { useUsers } from '@/hooks/api/useUsers';
 import { Loader2, Eye, Package, SearchIcon, X } from 'lucide-react';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { useClients } from '@/hooks/api/useClients';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import moment from 'moment';
 import {
     Pagination,
@@ -390,8 +390,30 @@ function OrderHistoryFilters({
 
 export default function OrderHistoryPage() {
     const { selectedFilialId } = useAuthContext();
-    const [activeTab, setActiveTab] = useState('sales');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabFromUrl = searchParams.get('tab') || 'sales';
+    const [activeTab, setActiveTab] = useState(tabFromUrl);
     const [page, setPage] = useState(1);
+
+    // Update URL when tab changes (only if different from URL)
+    useEffect(() => {
+        const currentTab = searchParams.get('tab') || 'sales';
+        if (activeTab !== currentTab) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('tab', activeTab);
+            setSearchParams(newParams, { replace: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab]);
+
+    // Update tab when URL changes (only on mount or when URL changes externally)
+    useEffect(() => {
+        const urlTab = searchParams.get('tab') || 'sales';
+        if ((urlTab === 'sales' || urlTab === 'debtor') && urlTab !== activeTab) {
+            setActiveTab(urlTab);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     // applied filters (used for querying)
     const [search, setSearch] = useState('');

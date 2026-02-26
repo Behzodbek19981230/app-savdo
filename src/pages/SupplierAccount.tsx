@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -642,8 +643,30 @@ function SupplierAccountFilters({
 
 export default function SupplierAccountPage() {
     const { selectedFilialId } = useAuthContext();
-    const [activeTab, setActiveTab] = useState('account');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabFromUrl = searchParams.get('tab') || 'account';
+    const [activeTab, setActiveTab] = useState(tabFromUrl);
     const [page, setPage] = useState(1);
+
+    // Update URL when tab changes (only if different from URL)
+    useEffect(() => {
+        const currentTab = searchParams.get('tab') || 'account';
+        if (activeTab !== currentTab) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('tab', activeTab);
+            setSearchParams(newParams, { replace: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab]);
+
+    // Update tab when URL changes (only on mount or when URL changes externally)
+    useEffect(() => {
+        const urlTab = searchParams.get('tab') || 'account';
+        if ((urlTab === 'account' || urlTab === 'repayment') && urlTab !== activeTab) {
+            setActiveTab(urlTab);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     // applied filters (used for querying)
     const [search, setSearch] = useState('');
