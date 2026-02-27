@@ -6,6 +6,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useAuth as useAuthQuery } from '@/hooks/api/useAuth';
 import type { User } from '@/services';
+import { startNotesWs, stopNotesWs } from '@/services/notesWs.service';
 
 interface AuthContextType {
 	user: User | undefined;
@@ -46,6 +47,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 		const defaultFilial = toValidFilialId(auth.user.filials_detail?.[0]?.id || auth.user.companies?.[0]);
 		if (defaultFilial) setSelectedFilialIdState(defaultFilial);
+	}, [auth.user]);
+
+	// Start notes websocket when authenticated, stop on logout
+	useEffect(() => {
+		if (auth.user) {
+			startNotesWs();
+			return () => {
+				stopNotesWs();
+			};
+		}
+		// ensure stopped when no user
+		stopNotesWs();
 	}, [auth.user]);
 
 	const setSelectedFilialId = (id: number | null) => {
