@@ -158,10 +158,10 @@ function SupplierAccountTable({
                                         <TableCell>
                                             {it.supplier_detail?.name || `#${it.supplier || '-'}`}
                                         </TableCell>
-                                        <TableCell className='text-right text-blue-600 font-semibold'>
+                                        <TableCell className='text-right text-blue-600 dark:text-blue-400 font-semibold'>
                                             {formatCurrency(it.total_turnover)}
                                         </TableCell>
-                                        <TableCell className='text-right text-red-600 font-semibold'>
+                                        <TableCell className='text-right text-red-600 dark:text-red-400 font-semibold'>
                                             {formatCurrency(it.filial_debt)}
                                         </TableCell>
                                         <TableCell>
@@ -272,7 +272,7 @@ function SupplierAccountTable({
                                     <TableCell className='text-right'>
                                         {formatCurrency(it.total_debt)}
                                     </TableCell>
-                                    <TableCell className='text-right text-blue-600 font-semibold'>
+                                    <TableCell className='text-right text-blue-600 dark:text-blue-400 font-semibold'>
                                         {formatCurrency(it.summa_total_dollar)}
                                     </TableCell>
                                     <TableCell className='text-right'>{formatCurrency(it.summa_dollar)}</TableCell>
@@ -464,7 +464,7 @@ function SupplierAccountTable({
                                                     {it.purchase_invoice_detail?.invoice_number || `#${it.purchase_invoice || '-'}`}
                                                 </TableCell>
                                             )}
-                                            <TableCell className='text-right text-blue-600 font-semibold'>
+                                            <TableCell className='text-right text-blue-600 dark:text-blue-400 font-semibold'>
                                                 {formatCurrency(it.summa_total_dollar)}
                                             </TableCell>
                                             <TableCell className='text-right'>{formatCurrency(it.summa_dollar)}</TableCell>
@@ -624,14 +624,14 @@ function SupplierAccountFilters({
                 />
             </div>
             <div className='w-full sm:w-auto flex gap-2 items-center'>
-                <Button onClick={onFilter} className='bg-blue-600 hover:bg-blue-700 text-white'>
+                <Button onClick={onFilter} className='bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white'>
                     <SearchIcon className='h-4 w-4' />
                     Qidirish
                 </Button>
                 <Button
                     variant='outline'
                     onClick={onClear}
-                    className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+                    className='border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-orange-700 dark:hover:text-orange-300'
                 >
                     <X className='h-4 w-4' />
                     Tozalash
@@ -1044,16 +1044,16 @@ export default function SupplierAccountPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className='grid w-full grid-cols-2 bg-gray-100 p-1'>
+                        <TabsList className='grid w-full grid-cols-2 bg-gray-100 dark:bg-muted p-1'>
                             <TabsTrigger
                                 value='account'
-                                className='data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
+                                className='data-[state=active]:bg-blue-600 dark:data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
                             >
                                 Mening qarzlarim
                             </TabsTrigger>
                             <TabsTrigger
                                 value='repayment'
-                                className='data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
+                                className='data-[state=active]:bg-blue-600 dark:data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
                             >
                                 To'langan qarzlar
                             </TabsTrigger>
