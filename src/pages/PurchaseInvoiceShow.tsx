@@ -4,13 +4,24 @@
  * Faktura va unga tegishli mahsulotlar tarixi
  */
 
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { usePurchaseInvoice, useDeletePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
 import { PurchaseInvoiceType, PurchaseInvoiceTypeLabels } from '@/types/purchaseInvoice';
 import { useProductHistories } from '@/hooks/api/useProductHistory';
 import {
@@ -24,6 +35,9 @@ import {
 	DollarSign,
 	FileText,
 	Hash,
+	ShoppingCart,
+	Trash2,
+	Loader2,
 } from 'lucide-react';
 import moment from 'moment';
 
@@ -31,9 +45,11 @@ export default function PurchaseInvoiceShow() {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const invoiceId = Number(id);
+	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
 	// Faktura ma'lumotlari
 	const { data: invoice, isLoading: isInvoiceLoading } = usePurchaseInvoice(invoiceId);
+	const deleteMutation = useDeletePurchaseInvoice();
 
 	// Mahsulotlar tarixi (faktura bo'yicha)
 	const { data: productHistoriesData, isLoading: isProductsLoading } = useProductHistories({
@@ -60,6 +76,16 @@ export default function PurchaseInvoiceShow() {
 		return sum + p.count * (price || 0);
 	}, 0);
 	const totalCount = productHistories.reduce((sum, p) => sum + p.count, 0);
+
+	const handleBekorQilish = async () => {
+		try {
+			await deleteMutation.mutateAsync(invoiceId);
+			navigate('/purchase-invoices');
+		} catch {
+			// xato toast hook orqali chiqadi
+		}
+		setIsCancelDialogOpen(false);
+	};
 
 	if (isInvoiceLoading) {
 		return (
@@ -100,17 +126,43 @@ export default function PurchaseInvoiceShow() {
 						<h1 className='text-xl font-bold tracking-tight'>Faktura #{invoice.id}</h1>
 						<p className='text-muted-foreground'>
 							{moment(invoice.date).format('DD.MM.YYYY')} sanasida kiritilgan
+							{invoice.is_karzinka && (
+								<span className='ml-2 text-amber-600 font-medium'>— Karzinkada (tasdiqlanmagan)</span>
+							)}
 						</p>
 					</div>
 				</div>
-				<Badge
-					variant={invoice.type === PurchaseInvoiceType.EXTERNAL ? 'default' : 'default'}
-					className={`text-sm ${invoice.type === PurchaseInvoiceType.EXTERNAL ? 'bg-green-600' : 'bg-blue-600'}`}
-				>
-					{invoice.type === PurchaseInvoiceType.EXTERNAL
-						? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
-						: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
-				</Badge>
+				<div className='flex items-center gap-2'>
+					{invoice.is_karzinka && (
+						<Badge variant='outline' className='text-sm border-amber-500 text-amber-700 bg-amber-50'>
+							<ShoppingCart className='h-3.5 w-3.5 mr-1' />
+							Karzinka
+						</Badge>
+					)}
+					<Badge
+						variant={invoice.type === PurchaseInvoiceType.EXTERNAL ? 'default' : 'default'}
+						className={`text-sm ${invoice.type === PurchaseInvoiceType.EXTERNAL ? 'bg-green-600' : 'bg-blue-600'}`}
+					>
+						{invoice.type === PurchaseInvoiceType.EXTERNAL
+							? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
+							: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
+					</Badge>
+					{invoice.is_karzinka && (
+						<Button
+							variant='destructive'
+							size='sm'
+							onClick={() => setIsCancelDialogOpen(true)}
+							disabled={deleteMutation.isPending}
+						>
+							{deleteMutation.isPending ? (
+								<Loader2 className='h-4 w-4 animate-spin' />
+							) : (
+								<Trash2 className='h-4 w-4 mr-1' />
+							)}
+							Bekor qilish
+						</Button>
+					)}
+				</div>
 			</div>
 
 			{/* Faktura ma'lumotlari */}
@@ -120,6 +172,12 @@ export default function PurchaseInvoiceShow() {
 						<FileText className='h-5 w-5 text-blue-600' />
 						Faktura ma'lumotlari
 					</CardTitle>
+					{invoice.is_karzinka && (
+						<CardDescription className='flex items-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2'>
+							<ShoppingCart className='h-4 w-4 shrink-0' />
+							Bu faktura karzinkada — hali tasdiqlanmagan. Mahsulotlar qo‘shilgan, amalga oshirish yoki "Bekor qilish" orqali o‘chirish mumkin.
+						</CardDescription>
+					)}
 				</CardHeader>
 				<CardContent>
 					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -174,7 +232,10 @@ export default function PurchaseInvoiceShow() {
 							</div>
 							<div>
 								<p className='text-sm text-muted-foreground'>Xodim</p>
-								<p className='font-medium'>{invoice.employee_detail?.fullname || '-'}</p>
+								<p className='font-medium'>
+									{invoice.employee_detail?.fullname ||
+										(invoice.is_karzinka ? 'Kiritilmagan (karzinka)' : '-')}
+								</p>
 							</div>
 						</div>
 
@@ -377,6 +438,29 @@ export default function PurchaseInvoiceShow() {
 					)}
 				</CardContent>
 			</Card>
+
+			{/* Bekor qilish (o'chirish) tasdiq oynasi */}
+			<AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Karzinkani bekor qilish</AlertDialogTitle>
+						<AlertDialogDescription>
+							Bu faktura butunlay o‘chiriladi. Amalni davom ettirasizmi?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Yo‘q</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleBekorQilish}
+							disabled={deleteMutation.isPending}
+							className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+						>
+							{deleteMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+							Ha, o‘chirish
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

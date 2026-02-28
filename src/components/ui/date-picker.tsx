@@ -15,6 +15,7 @@ interface DatePickerProps {
 	onDateChange?: (date: Date | undefined) => void;
 	placeholder?: string;
 	disabled?: boolean;
+	minDate?: Date;
 	className?: string;
 }
 
@@ -23,6 +24,7 @@ export function DatePicker({
 	onDateChange,
 	placeholder = 'Sanani tanlang',
 	disabled = false,
+	minDate,
 	className,
 }: DatePickerProps) {
 	return (
@@ -42,7 +44,14 @@ export function DatePicker({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className='w-auto p-0' align='start'>
-				<Calendar mode='single' selected={date} onSelect={onDateChange} initialFocus locale={uz} />
+				<Calendar
+					mode='single'
+					selected={date}
+					onSelect={onDateChange}
+					initialFocus
+					locale={uz}
+					disabled={typeof minDate !== 'undefined' ? { before: minDate } : undefined}
+				/>
 			</PopoverContent>
 		</Popover>
 	);

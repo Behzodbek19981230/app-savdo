@@ -75,7 +75,6 @@ export const getNotesWsUrl = () => {
 	const apiBaseUrl = import.meta.env.VITE_FILE_BASE_URL || '';
 	const fallbackBase = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
 	const wsBaseUrl = toWsBaseUrl(apiBaseUrl || fallbackBase).replace(/\/+$/, '');
-	const token = localStorage.getItem('smartAccessToken');
 	const wsUrl = `${wsBaseUrl}/ws/notes/notifications/`;
 
 	// if (!token)

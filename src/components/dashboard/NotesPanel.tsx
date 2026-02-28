@@ -103,6 +103,10 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
 	const [reminderDate, setReminderDate] = useState<Date | undefined>(initialReminder);
 	const [reminderTime, setReminderTime] = useState(toTimeValue(initialReminder));
 
+	// Prevent selecting past dates when creating a new note
+	const startOfToday = new Date();
+	startOfToday.setHours(0, 0, 0, 0);
+
 	useEffect(() => {
 		if (data) setNotes(data);
 	}, [data]);
@@ -412,9 +416,6 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
 						{!viewingNote?.text && <p className='text-sm text-muted-foreground italic'>Izoh mavjud emas</p>}
 					</div>
 					<DialogFooter>
-						<Button size='sm' variant='outline' onClick={() => setIsViewDialogOpen(false)}>
-							Yopish
-						</Button>
 						{viewingNote && viewingNote.status !== 'done' && (
 							<Button
 								size='sm'
@@ -428,6 +429,14 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
 								Bajarildi
 							</Button>
 						)}
+						<Button
+							size='sm'
+							variant='outline'
+							className='ml-auto'
+							onClick={() => setIsViewDialogOpen(false)}
+						>
+							Yopish
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
@@ -454,7 +463,12 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
 							className='h-9 text-sm'
 						/>
 						<div className='flex gap-2'>
-							<DatePicker date={reminderDate} onDateChange={setReminderDate} placeholder='Sana' />
+							<DatePicker
+								date={reminderDate}
+								onDateChange={setReminderDate}
+								placeholder='Sana'
+								minDate={editingNoteId ? undefined : startOfToday}
+							/>
 							<Input
 								type='time'
 								value={reminderTime}

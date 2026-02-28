@@ -168,6 +168,7 @@ export default function PurchaseInvoiceAdd() {
 	const [isCreatingUnit, setIsCreatingUnit] = useState(false);
 	const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 	const [pendingInvoiceData, setPendingInvoiceData] = useState<InvoiceFormData | null>(null);
+	const [isInvoiceEditing, setIsInvoiceEditing] = useState(false);
 	const { selectedFilialId } = useAuthContext();
 
 	// Load existing invoice if id is provided
@@ -1120,109 +1121,232 @@ export default function PurchaseInvoiceAdd() {
 								Faktura ma'lumotlari
 							</CardTitle>
 							{existingInvoice && (
-								<Badge
-									className={
-										existingInvoice.type === PurchaseInvoiceType.EXTERNAL
-											? 'bg-green-600'
-											: 'bg-blue-600'
-									}
-								>
-									{existingInvoice.type === PurchaseInvoiceType.EXTERNAL
-										? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
-										: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
-								</Badge>
+								<div className='flex items-center gap-2'>
+									<Badge
+										className={
+											existingInvoice.type === PurchaseInvoiceType.EXTERNAL
+												? 'bg-green-600'
+												: 'bg-blue-600'
+										}
+									>
+										{existingInvoice.type === PurchaseInvoiceType.EXTERNAL
+											? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
+											: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
+									</Badge>
+									{!isInvoiceEditing ? (
+										<Button size='sm' variant='ghost' onClick={() => setIsInvoiceEditing(true)}>
+											Tahrirlash
+										</Button>
+									) : (
+										<div className='flex gap-2'>
+											<Button
+												size='sm'
+												variant='outline'
+												onClick={async () => {
+													try {
+														const values = invoiceForm.getValues();
+														await updatePurchaseInvoice.mutateAsync({
+															id: Number(id),
+															data: {
+																type: values.type,
+																filial: values.filial,
+																sklad: values.sklad,
+																date: values.date,
+																employee: values.employee,
+																supplier: values.supplier,
+																sklad_outgoing: values.sklad_outgoing,
+															},
+														});
+														setIsInvoiceEditing(false);
+													} catch {}
+												}}
+											>
+												Saqlash
+											</Button>
+											<Button
+												size='sm'
+												variant='ghost'
+												onClick={() => {
+													invoiceForm.reset({
+														type: existingInvoice.type as PurchaseInvoiceType,
+														supplier: existingInvoice.supplier || 0,
+														sklad_outgoing:
+															((existingInvoice as any).sklad_outgoing as number) || 0,
+														filial: existingInvoice.filial,
+														sklad: existingInvoice.sklad,
+														date: existingInvoice.date,
+														employee: existingInvoice.employee,
+													});
+													setIsInvoiceEditing(false);
+												}}
+											>
+												Bekor
+											</Button>
+										</div>
+									)}
+								</div>
 							)}
 						</div>
 					</CardHeader>
 					<CardContent>
-						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
-							{/* Sana */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-blue-100 rounded-lg'>
-									<Calendar className='h-4 w-4 text-blue-600' />
+						<Form {...invoiceForm}>
+							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+								{/* Sana */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-blue-100 rounded-lg'>
+										<Calendar className='h-4 w-4 text-blue-600' />
+									</div>
+									<div>
+										{isInvoiceEditing ? (
+											<FormField
+												control={invoiceForm.control}
+												name='date'
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Sana</FormLabel>
+														<FormControl>
+															<DatePicker
+																date={
+																	field.value
+																		? moment(field.value, 'YYYY-MM-DD').toDate()
+																		: undefined
+																}
+																onDateChange={(d) =>
+																	field.onChange(
+																		d ? moment(d).format('YYYY-MM-DD') : '',
+																	)
+																}
+																placeholder='Sana'
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										) : (
+											<>
+												<p className='text-sm text-muted-foreground'>Sana</p>
+												<p className='font-medium'>
+													{existingInvoice
+														? moment(existingInvoice.date).format('DD.MM.YYYY')
+														: '-'}
+												</p>
+											</>
+										)}
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Sana</p>
-									<p className='font-medium'>
-										{existingInvoice ? moment(existingInvoice.date).format('DD.MM.YYYY') : '-'}
-									</p>
-								</div>
-							</div>
 
-							{/* Ta'minotchi / Ombor-chiqim */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-green-100 rounded-lg'>
-									<Truck className='h-4 w-4 text-green-600' />
+								{/* Ta'minotchi / Ombor-chiqim */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-green-100 rounded-lg'>
+										<Truck className='h-4 w-4 text-green-600' />
+									</div>
+									<div>
+										<p className='text-sm text-muted-foreground'>
+											{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
+												? 'Qaysi ombordan'
+												: "Ta'minotchi"}
+										</p>
+										<p className='font-medium'>
+											{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
+												? (existingInvoice as any).sklad_outgoing_detail?.name || '-'
+												: existingInvoice?.supplier_detail?.name || '-'}
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>
-										{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
-											? 'Qaysi ombordan'
-											: "Ta'minotchi"}
-									</p>
-									<p className='font-medium'>
-										{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
-											? (existingInvoice as any).sklad_outgoing_detail?.name || '-'
-											: existingInvoice?.supplier_detail?.name || '-'}
-									</p>
-								</div>
-							</div>
 
-							{/* Filial */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-purple-100 rounded-lg'>
-									<Building2 className='h-4 w-4 text-purple-600' />
+								{/* Filial */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-purple-100 rounded-lg'>
+										<Building2 className='h-4 w-4 text-purple-600' />
+									</div>
+									<div>
+										<p className='text-sm text-muted-foreground'>Filial</p>
+										<p className='font-medium'>{existingInvoice?.filial_detail?.name || '-'}</p>
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Filial</p>
-									<p className='font-medium'>{existingInvoice?.filial_detail?.name || '-'}</p>
-								</div>
-							</div>
 
-							{/* Ombor */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-orange-100 rounded-lg'>
-									<Warehouse className='h-4 w-4 text-orange-600' />
+								{/* Ombor */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-orange-100 rounded-lg'>
+										<Warehouse className='h-4 w-4 text-orange-600' />
+									</div>
+									<div>
+										{isInvoiceEditing ? (
+											<FormField
+												control={invoiceForm.control}
+												name='sklad'
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Ombor</FormLabel>
+														<FormControl>
+															<Select
+																onValueChange={(val) => field.onChange(Number(val))}
+																value={field.value ? String(field.value) : '0'}
+															>
+																<SelectTrigger className='w-[220px]'>
+																	<SelectValue placeholder='Omborni tanlang' />
+																</SelectTrigger>
+																<SelectContent>
+																	{sklads.map((s) => (
+																		<SelectItem key={s.id} value={String(s.id)}>
+																			{s.name}
+																		</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										) : (
+											<>
+												<p className='text-sm text-muted-foreground'>Ombor</p>
+												<p className='font-medium'>
+													{existingInvoice?.sklad_detail?.name || '-'}
+												</p>
+											</>
+										)}
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Ombor</p>
-									<p className='font-medium'>{existingInvoice?.sklad_detail?.name || '-'}</p>
-								</div>
-							</div>
 
-							{/* Xodim */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-cyan-100 rounded-lg'>
-									<User className='h-4 w-4 text-cyan-600' />
+								{/* Xodim */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-cyan-100 rounded-lg'>
+										<User className='h-4 w-4 text-cyan-600' />
+									</div>
+									<div>
+										<p className='text-sm text-muted-foreground'>Xodim</p>
+										<p className='font-medium'>
+											{existingInvoice?.employee_detail?.fullname || '-'}
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Xodim</p>
-									<p className='font-medium'>{existingInvoice?.employee_detail?.fullname || '-'}</p>
-								</div>
-							</div>
 
-							{/* Mahsulotlar soni */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-indigo-100 rounded-lg'>
-									<Hash className='h-4 w-4 text-indigo-600' />
+								{/* Mahsulotlar soni */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-indigo-100 rounded-lg'>
+										<Hash className='h-4 w-4 text-indigo-600' />
+									</div>
+									<div>
+										<p className='text-sm text-muted-foreground'>Mahsulotlar soni</p>
+										<p className='font-medium'>{productHistories.length} ta</p>
+									</div>
 								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Mahsulotlar soni</p>
-									<p className='font-medium'>{productHistories.length} ta</p>
-								</div>
-							</div>
 
-							{/* Dollar kursi */}
-							<div className='flex items-start gap-3'>
-								<div className='p-2 bg-emerald-100 rounded-lg'>
-									<DollarSign className='h-4 w-4 text-emerald-600' />
-								</div>
-								<div>
-									<p className='text-sm text-muted-foreground'>Dollar kursi</p>
-									<p className='font-medium'>{formatCurrency(dollarRate)} so'm</p>
+								{/* Dollar kursi */}
+								<div className='flex items-start gap-3'>
+									<div className='p-2 bg-emerald-100 rounded-lg'>
+										<DollarSign className='h-4 w-4 text-emerald-600' />
+									</div>
+									<div>
+										<p className='text-sm text-muted-foreground'>Dollar kursi</p>
+										<p className='font-medium'>{formatCurrency(dollarRate)} so'm</p>
+									</div>
 								</div>
 							</div>
-						</div>
+						</Form>
 					</CardContent>
 				</Card>
 
