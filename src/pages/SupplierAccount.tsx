@@ -25,7 +25,7 @@ import {
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Package, SearchIcon, X, Plus, Edit, Trash2 } from 'lucide-react';
 import { Autocomplete } from '@/components/ui/autocomplete';
-import { useSuppliers } from '@/hooks/api/useSupplier';
+import { useSuppliers, useSupplier } from '@/hooks/api/useSupplier';
 import { useUsers } from '@/hooks/api/useUsers';
 import { useExchangeRates } from '@/hooks/api/useExchangeRate';
 import moment from 'moment';
@@ -72,19 +72,18 @@ const supplierAccountSchema = z.object({
 
 type SupplierAccountFormData = z.infer<typeof supplierAccountSchema>;
 
-// Schema for Supplier Debt Repayment
+// Schema for Supplier Debt Repayment (employee = joriy user avtomatik, tanlash kerak emas)
 const supplierDebtRepaymentSchema = z.object({
     supplier: z.coerce.number().positive('Ta\'minotchi tanlanishi shart'),
-    employee: z.coerce.number().positive('Xodim tanlanishi shart'),
+    employee: z.coerce.number().min(0).optional(),
     date: z.date({ required_error: 'Sana tanlanishi shart' }),
-    total_debt_old: z.coerce.number().min(0, 'Eski qarz kiritilishi shart'),
-    total_debt: z.coerce.number().min(0, 'Jami qarz kiritilishi shart'),
     summa_total_dollar: z.coerce.number().min(0, 'Jami to\'lov kiritilishi shart'),
     summa_dollar: z.coerce.number().min(0, 'Dollar to\'lovi kiritilishi shart'),
     summa_naqt: z.coerce.number().min(0, 'Naqt to\'lovi kiritilishi shart'),
     summa_kilik: z.coerce.number().min(0, 'Kesibek to\'lovi kiritilishi shart'),
     summa_terminal: z.coerce.number().min(0, 'Terminal to\'lovi kiritilishi shart'),
     summa_transfer: z.coerce.number().min(0, 'Transfer to\'lovi kiritilishi shart'),
+    // total_debt_old va total_debt formada kerak emas, API ga 0 yuboriladi
 });
 
 type SupplierDebtRepaymentFormData = z.infer<typeof supplierDebtRepaymentSchema>;
@@ -101,6 +100,7 @@ function SupplierAccountTable({
     activeTab,
     onEdit,
     onDelete,
+    hideActions = false,
 }: {
     dateGroups?: any[];
     items?: any[];
@@ -112,6 +112,7 @@ function SupplierAccountTable({
     activeTab: string;
     onEdit: (item: any) => void;
     onDelete: (item: any) => void;
+    hideActions?: boolean;
 }) {
     if (isLoading) {
         return (
@@ -148,7 +149,7 @@ function SupplierAccountTable({
                                     <TableHead>Ta'minotchi</TableHead>
                                     <TableHead className='text-right'>Jami aylanma ($)</TableHead>
                                     <TableHead className='text-right'>Filial qarzi ($)</TableHead>
-                                    <TableHead className='w-[100px]'>Amallar</TableHead>
+                                    {!hideActions && <TableHead className='w-[100px]'>Amallar</TableHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -164,26 +165,28 @@ function SupplierAccountTable({
                                         <TableCell className='text-right text-red-600 dark:text-red-400 font-semibold'>
                                             {formatCurrency(it.filial_debt)}
                                         </TableCell>
-                                        <TableCell>
-                                            <div className='flex items-center gap-2'>
-                                                <Button
-                                                    variant='ghost'
-                                                    size='sm'
-                                                    onClick={() => onEdit(it)}
-                                                    className='h-8 w-8 p-0'
-                                                >
-                                                    <Edit className='h-4 w-4' />
-                                                </Button>
-                                                <Button
-                                                    variant='ghost'
-                                                    size='sm'
-                                                    onClick={() => onDelete(it)}
-                                                    className='h-8 w-8 p-0 text-destructive hover:text-destructive'
-                                                >
-                                                    <Trash2 className='h-4 w-4' />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                                        {!hideActions && (
+                                            <TableCell>
+                                                <div className='flex items-center gap-2'>
+                                                    <Button
+                                                        variant='ghost'
+                                                        size='sm'
+                                                        onClick={() => onEdit(it)}
+                                                        className='h-8 w-8 p-0'
+                                                    >
+                                                        <Edit className='h-4 w-4' />
+                                                    </Button>
+                                                    <Button
+                                                        variant='ghost'
+                                                        size='sm'
+                                                        onClick={() => onDelete(it)}
+                                                        className='h-8 w-8 p-0 text-destructive hover:text-destructive'
+                                                    >
+                                                        <Trash2 className='h-4 w-4' />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -369,7 +372,7 @@ function SupplierAccountTable({
                             <TableHead className='text-right'>Plastik</TableHead>
                             <TableHead className='text-right'>Terminal</TableHead>
                             <TableHead className='text-right'>Transfer</TableHead>
-                            <TableHead className='w-[100px]'>Amallar</TableHead>
+                            {!hideActions && <TableHead className='w-[100px]'>Amallar</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -438,7 +441,7 @@ function SupplierAccountTable({
                                         <TableCell className='text-right font-semibold'>
                                             {formatCurrency(totalTransfer)}
                                         </TableCell>
-                                        <TableCell></TableCell>
+                                        {!hideActions && <TableCell></TableCell>}
                                     </TableRow>
                                     {/* Items */}
                                     {group.items.map((it: any, idx: number) => (
@@ -476,26 +479,28 @@ function SupplierAccountTable({
                                             <TableCell className='text-right'>
                                                 {formatCurrency(it.summa_transfer)}
                                             </TableCell>
-                                            <TableCell>
-                                                <div className='flex items-center gap-2'>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='sm'
-                                                        onClick={() => onEdit(it)}
-                                                        className='h-8 w-8 p-0'
-                                                    >
-                                                        <Edit className='h-4 w-4' />
-                                                    </Button>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='sm'
-                                                        onClick={() => onDelete(it)}
-                                                        className='h-8 w-8 p-0 text-destructive hover:text-destructive'
-                                                    >
-                                                        <Trash2 className='h-4 w-4' />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                                            {!hideActions && (
+                                                <TableCell>
+                                                    <div className='flex items-center gap-2'>
+                                                        <Button
+                                                            variant='ghost'
+                                                            size='sm'
+                                                            onClick={() => onEdit(it)}
+                                                            className='h-8 w-8 p-0'
+                                                        >
+                                                            <Edit className='h-4 w-4' />
+                                                        </Button>
+                                                        <Button
+                                                            variant='ghost'
+                                                            size='sm'
+                                                            onClick={() => onDelete(it)}
+                                                            className='h-8 w-8 p-0 text-destructive hover:text-destructive'
+                                                        >
+                                                            <Trash2 className='h-4 w-4' />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     ))}
                                 </>
@@ -642,7 +647,7 @@ function SupplierAccountFilters({
 }
 
 export default function SupplierAccountPage() {
-    const { selectedFilialId } = useAuthContext();
+    const { selectedFilialId, user } = useAuthContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const tabFromUrl = searchParams.get('tab') || 'account';
     const [activeTab, setActiveTab] = useState(tabFromUrl);
@@ -709,8 +714,6 @@ export default function SupplierAccountPage() {
             supplier: 0,
             employee: 0,
             date: new Date(),
-            total_debt_old: 0,
-            total_debt: 0,
             summa_total_dollar: 0,
             summa_dollar: 0,
             summa_naqt: 0,
@@ -719,6 +722,17 @@ export default function SupplierAccountPage() {
             summa_transfer: 0,
         },
     });
+
+    const selectedSupplierIdForDebt = repaymentForm.watch('supplier') || 0;
+    const { data: selectedSupplierDetail } = useSupplier(
+        selectedSupplierIdForDebt > 0 ? selectedSupplierIdForDebt : 0,
+    );
+    const supplierDebtDisplay = selectedSupplierDetail && selectedSupplierIdForDebt > 0
+        ? (selectedSupplierDetail as { total_debt?: number; filial_debt?: number; debt?: number }).total_debt
+            ?? (selectedSupplierDetail as { total_debt?: number; filial_debt?: number; debt?: number }).filial_debt
+            ?? (selectedSupplierDetail as { total_debt?: number; filial_debt?: number; debt?: number }).debt
+            ?? null
+        : null;
 
     const {
         data: suppliersData,
@@ -788,8 +802,6 @@ export default function SupplierAccountPage() {
                 supplier: repaymentData.supplier || 0,
                 employee: repaymentData.employee || 0,
                 date: repaymentData.date ? new Date(repaymentData.date) : new Date(),
-                total_debt_old: repaymentData.total_debt_old || 0,
-                total_debt: repaymentData.total_debt || 0,
                 summa_total_dollar: parseFloat(repaymentData.summa_total_dollar || '0'),
                 summa_dollar: parseFloat(repaymentData.summa_dollar || '0'),
                 summa_naqt: parseFloat(repaymentData.summa_naqt || '0'),
@@ -915,10 +927,8 @@ export default function SupplierAccountPage() {
         setEditingRepaymentId(null);
         repaymentForm.reset({
             supplier: 0,
-            employee: 0,
+            employee: user?.id ?? 0,
             date: new Date(),
-            total_debt_old: 0,
-            total_debt: 0,
             summa_total_dollar: 0,
             summa_dollar: 0,
             summa_naqt: 0,
@@ -959,10 +969,10 @@ export default function SupplierAccountPage() {
         try {
             const payload = {
                 supplier: values.supplier,
-                employee: values.employee,
+                employee: values.employee ?? user?.id ?? 0,
                 date: moment(values.date).format('YYYY-MM-DD'),
-                total_debt_old: values.total_debt_old,
-                total_debt: values.total_debt,
+                total_debt_old: 0,
+                total_debt: 0,
                 summa_total_dollar: values.summa_total_dollar,
                 summa_dollar: values.summa_dollar,
                 summa_naqt: values.summa_naqt,
@@ -1036,10 +1046,12 @@ export default function SupplierAccountPage() {
                             onFilter={handleFilter}
                             onClear={handleClear}
                         />
-                        <Button onClick={activeTab === 'account' ? handleOpenAccountDialog : handleOpenRepaymentDialog} size='sm'>
-                            <Plus className='h-4 w-4 mr-2' />
-                            Qo'shish
-                        </Button>
+                        {activeTab === 'repayment' && (
+                            <Button onClick={handleOpenRepaymentDialog} size='sm'>
+                                <Plus className='h-4 w-4 mr-2' />
+                                Qo'shish
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -1058,19 +1070,35 @@ export default function SupplierAccountPage() {
                                 To'langan qarzlar
                             </TabsTrigger>
                         </TabsList>
-                        <TabsContent value='account' className='mt-4'>
-                            <SupplierAccountTable
-                                dateGroups={accountDateGroups}
-                                items={accountItems}
-                                isLoading={isLoading}
-                                lastPage={lastPage}
-                                page={page}
-                                setPage={setPage}
-                                formatCurrency={formatCurrency}
-                                activeTab={activeTab}
-                                onEdit={handleEditAccount}
-                                onDelete={handleDelete}
-                            />
+                        <TabsContent value='account' className='mt-4 space-y-4'>
+                            {(() => {
+                                const totalDebt = accountItems.length > 0
+                                    ? accountItems.reduce((s: number, it: any) => s + parseFloat(String(it.filial_debt || 0)), 0)
+                                    : accountDateGroups.reduce((s: number, g: any) => s + ((g?.items || []).reduce((si: number, it: any) => si + parseFloat(String(it.filial_debt || 0)), 0)), 0);
+                                return (
+                                    <>
+                                        <div className='rounded-lg border bg-muted/30 p-4'>
+                                            <span className='text-muted-foreground'>Jami qarz: </span>
+                                            <span className='text-xl font-bold text-red-600 dark:text-red-400'>
+                                                {formatCurrency(totalDebt)} $
+                                            </span>
+                                        </div>
+                                        <SupplierAccountTable
+                                            dateGroups={accountDateGroups}
+                                            items={accountItems}
+                                            isLoading={isLoading}
+                                            lastPage={lastPage}
+                                            page={page}
+                                            setPage={setPage}
+                                            formatCurrency={formatCurrency}
+                                            activeTab={activeTab}
+                                            onEdit={handleEditAccount}
+                                            onDelete={handleDelete}
+                                            hideActions={true}
+                                        />
+                                    </>
+                                );
+                            })()}
                         </TabsContent>
                         <TabsContent value='repayment' className='mt-4'>
                             <SupplierAccountTable
@@ -1194,50 +1222,30 @@ export default function SupplierAccountPage() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Ta'minotchi <span className='text-destructive'>*</span></FormLabel>
-                                            <Select
-                                                onValueChange={(value) => field.onChange(Number(value))}
-                                                value={field.value ? String(field.value) : ''}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Ta'minotchini tanlang" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {supplierOptions.map((s) => (
-                                                        <SelectItem key={s.value} value={String(s.value)}>
-                                                            {s.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={repaymentForm.control}
-                                    name='employee'
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Xodim <span className='text-destructive'>*</span></FormLabel>
-                                            <Select
-                                                onValueChange={(value) => field.onChange(Number(value))}
-                                                value={field.value ? String(field.value) : ''}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder='Xodimni tanlang' />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {users.map((u) => (
-                                                        <SelectItem key={u.id} value={String(u.id)}>
-                                                            {u.full_name || u.username}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <div className='flex flex-wrap items-center gap-2'>
+                                                <Select
+                                                    onValueChange={(value) => field.onChange(Number(value))}
+                                                    value={field.value ? String(field.value) : ''}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger className='w-[220px]'>
+                                                            <SelectValue placeholder="Ta'minotchini tanlang" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {supplierOptions.map((s) => (
+                                                            <SelectItem key={s.value} value={String(s.value)}>
+                                                                {s.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {supplierDebtDisplay != null && (
+                                                    <span className='text-sm text-muted-foreground'>
+                                                        Qarzi: <span className='font-semibold text-foreground'>${Number(supplierDebtDisplay).toFixed(2)}</span>
+                                                    </span>
+                                                )}
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -1256,42 +1264,6 @@ export default function SupplierAccountPage() {
                                     </FormItem>
                                 )}
                             />
-                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                <FormField
-                                    control={repaymentForm.control}
-                                    name='total_debt_old'
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Eski qarz <span className='text-destructive'>*</span></FormLabel>
-                                            <FormControl>
-                                                <NumberInput
-                                                    value={String(field.value ?? 0)}
-                                                    onChange={(val) => field.onChange(val === '' ? 0 : parseFloat(val))}
-                                                    placeholder='0.00'
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={repaymentForm.control}
-                                    name='total_debt'
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Jami qarz <span className='text-destructive'>*</span></FormLabel>
-                                            <FormControl>
-                                                <NumberInput
-                                                    value={String(field.value ?? 0)}
-                                                    onChange={(val) => field.onChange(val === '' ? 0 : parseFloat(val))}
-                                                    placeholder='0.00'
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                 <FormField
                                     control={repaymentForm.control}

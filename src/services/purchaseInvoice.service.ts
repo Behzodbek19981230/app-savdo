@@ -41,6 +41,10 @@ export const purchaseInvoiceService = {
 		return api.patch<PurchaseInvoice>(API_ENDPOINTS.purchaseInvoices.update(id.toString()), data);
 	},
 
+	donePurchaseInvoice: async (id: number, data: UpdatePurchaseInvoicePayload) => {
+		return api.patch<PurchaseInvoice>(API_ENDPOINTS.purchaseInvoices.done(id.toString()), data);
+	},
+
 	deletePurchaseInvoice: async (id: number) => {
 		return api.delete(API_ENDPOINTS.purchaseInvoices.delete(id.toString()));
 	},

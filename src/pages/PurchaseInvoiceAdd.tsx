@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import NumberInput from '@/components/ui/NumberInput';
@@ -28,12 +29,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { DatePicker } from '@/components/ui/date-picker';
-import { useCreatePurchaseInvoice, usePurchaseInvoice, useUpdatePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
-import { useCreateProductHistory, useProductHistories } from '@/hooks/api/useProductHistory';
+import {
+	useCreatePurchaseInvoice,
+	usePurchaseInvoice,
+	useUpdatePurchaseInvoice,
+	useDonePurchaseInvoice,
+	purchaseInvoiceKeys,
+} from '@/hooks/api/usePurchaseInvoice';
+import { useCreateProductHistory, useProductHistories, useUpdateProductHistory } from '@/hooks/api/useProductHistory';
 import { useSuppliers, useCreateSupplier } from '@/hooks/api/useSupplier';
 import { useSklads } from '@/hooks/api/useSklad';
 import { useCompanies } from '@/hooks/api/useCompanies';
 import { PurchaseInvoiceType, PurchaseInvoiceTypeLabels, CreatePurchaseInvoicePayload } from '@/types/purchaseInvoice';
+import type { ProductHistory } from '@/types/productHistory';
 import { useProducts } from '@/hooks/api/useProducts';
 import {
 	useProductCategories,
@@ -72,9 +80,14 @@ import {
 	FileText,
 	Hash,
 	CheckCircle2,
+	ShoppingCart,
+	Pencil,
+	Eye,
+	ShoppingBag,
 } from 'lucide-react';
 import moment from 'moment';
 import { Textarea } from '@/components/ui/textarea';
+import { showError } from '@/lib/toast';
 
 // Faktura form schema
 const invoiceSchema = z
@@ -168,7 +181,13 @@ export default function PurchaseInvoiceAdd() {
 	const [isCreatingUnit, setIsCreatingUnit] = useState(false);
 	const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 	const [pendingInvoiceData, setPendingInvoiceData] = useState<InvoiceFormData | null>(null);
-	const [isInvoiceEditing, setIsInvoiceEditing] = useState(false);
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [editingProduct, setEditingProduct] = useState<ProductHistory | null>(null);
+	const [viewingProduct, setViewingProduct] = useState<ProductHistory | null>(null);
+	const [productEditForm, setProductEditForm] = useState<{
+		count: number;
+		real_price: number;
+	} | null>(null);
 	const { selectedFilialId } = useAuthContext();
 
 	// Load existing invoice if id is provided
@@ -268,6 +287,34 @@ export default function PurchaseInvoiceAdd() {
 			total_debt: 0,
 		},
 	});
+
+	// Edit modal ochilganda faqat sana va ombor (invoiceForm) existingInvoice dan to'ldiriladi
+	useEffect(() => {
+		if (isEditModalOpen && existingInvoice) {
+			invoiceForm.reset({
+				type: existingInvoice.type as PurchaseInvoiceType,
+				supplier: existingInvoice.supplier || 0,
+				sklad_outgoing: ((existingInvoice as unknown as Record<string, unknown>).sklad_outgoing as number) || 0,
+				filial: existingInvoice.filial,
+				sklad: existingInvoice.sklad,
+				date: existingInvoice.date,
+				employee: existingInvoice.employee,
+			});
+		}
+	}, [isEditModalOpen, existingInvoice, invoiceForm]);
+
+	// Mahsulot tahrirlash modal ochilganda faqat miqdor va narx to'ldiriladi
+	const toNum = (v: number | string) => (typeof v === 'string' ? parseFloat(v) || 0 : (v ?? 0));
+	useEffect(() => {
+		if (editingProduct) {
+			setProductEditForm({
+				count: editingProduct.count,
+				real_price: toNum(editingProduct.real_price),
+			});
+		} else {
+			setProductEditForm(null);
+		}
+	}, [editingProduct]);
 
 	// Watch payment form values for auto-calculation
 	const givenSummaDollar = paymentForm.watch('given_summa_dollar') || 0;
@@ -644,7 +691,9 @@ export default function PurchaseInvoiceAdd() {
 	// Mutations
 	const createPurchaseInvoice = useCreatePurchaseInvoice();
 	const updatePurchaseInvoice = useUpdatePurchaseInvoice();
+	const donePurchaseInvoice = useDonePurchaseInvoice();
 	const createProductHistory = useCreateProductHistory();
+	const updateProductHistory = useUpdateProductHistory();
 	const createSupplier = useCreateSupplier();
 	const createModel = useCreateProductModel();
 	const createProductCategory = useCreateProductCategory();
@@ -1015,8 +1064,8 @@ export default function PurchaseInvoiceAdd() {
 			}
 
 			if (id && existingInvoice) {
-				// Mavjud fakturani yangilash
-				await updatePurchaseInvoice.mutateAsync({
+				// Mavjud fakturani tasdiqlash (done API)
+				await donePurchaseInvoice.mutateAsync({
 					id: Number(id),
 					data: payload,
 				});
@@ -1066,6 +1115,33 @@ export default function PurchaseInvoiceAdd() {
 		setPendingInvoiceData(null);
 	};
 
+	// Id bo'lganda yuklanish va topilmadi
+	if (id && isLoadingInvoice) {
+		return (
+			<div className='space-y-6'>
+				<div className='flex items-center gap-4'>
+					<Skeleton className='h-10 w-10' />
+					<Skeleton className='h-8 w-64' />
+				</div>
+				<Skeleton className='h-48 w-full' />
+				<Skeleton className='h-96 w-full' />
+			</div>
+		);
+	}
+	if (id && !existingInvoice) {
+		return (
+			<div className='flex flex-col items-center justify-center py-20'>
+				<FileText className='h-16 w-16 text-muted-foreground/50 mb-4' />
+				<h2 className='text-xl font-semibold mb-2'>Faktura topilmadi</h2>
+				<p className='text-muted-foreground mb-4'>Ushbu ID bilan faktura mavjud emas</p>
+				<Button onClick={() => navigate('/purchase-invoices')}>
+					<ArrowLeft className='mr-2 h-4 w-4' />
+					Orqaga qaytish
+				</Button>
+			</div>
+		);
+	}
+
 	return (
 		<div className='space-y-6'>
 			{/* Header */}
@@ -1090,6 +1166,33 @@ export default function PurchaseInvoiceAdd() {
 						<ArrowLeft className='h-4 w-4 mr-2' />
 						Orqaga
 					</Button>
+					{existingInvoice && (
+						<Button variant='outline' size='sm' onClick={() => setIsEditModalOpen(true)}>
+							<Pencil className='h-4 w-4 mr-2' />
+							Tahrirlash
+						</Button>
+					)}
+					{existingInvoice && (
+						<>
+							{existingInvoice.is_karzinka && (
+								<Badge
+									variant='outline'
+									className='text-sm border-amber-500 text-amber-700 bg-amber-50'
+								>
+									<ShoppingCart className='h-3.5 w-3.5 mr-1' />
+									Karzinka
+								</Badge>
+							)}
+							<Badge
+								variant='default'
+								className={`text-sm ${existingInvoice.type === PurchaseInvoiceType.EXTERNAL ? 'bg-green-600' : 'bg-blue-600'}`}
+							>
+								{existingInvoice.type === PurchaseInvoiceType.EXTERNAL
+									? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
+									: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
+							</Badge>
+						</>
+					)}
 					<Button
 						disabled={productHistories.length === 0 || isSubmitting}
 						onClick={invoiceForm.handleSubmit(handleSubmit, (errors) => {
@@ -1112,241 +1215,375 @@ export default function PurchaseInvoiceAdd() {
 			</div>
 
 			<div className='space-y-6'>
-				{/* Faktura ma'lumotlari - statik ko'rinish */}
+				{/* Faktura ma'lumotlari - existingInvoice bo'lsa Show sahifasidagidek faqat o'qiladigan */}
 				<Card>
 					<CardHeader className='pb-4'>
-						<div className='flex items-center justify-between'>
-							<CardTitle className='flex items-center gap-2 text-lg'>
-								<FileText className='h-5 w-5 text-blue-600' />
-								Faktura ma'lumotlari
-							</CardTitle>
-							{existingInvoice && (
-								<div className='flex items-center gap-2'>
-									<Badge
-										className={
-											existingInvoice.type === PurchaseInvoiceType.EXTERNAL
-												? 'bg-green-600'
-												: 'bg-blue-600'
-										}
-									>
-										{existingInvoice.type === PurchaseInvoiceType.EXTERNAL
-											? PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]
-											: PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
-									</Badge>
-									{!isInvoiceEditing ? (
-										<Button size='sm' variant='ghost' onClick={() => setIsInvoiceEditing(true)}>
-											Tahrirlash
-										</Button>
-									) : (
-										<div className='flex gap-2'>
-											<Button
-												size='sm'
-												variant='outline'
-												onClick={async () => {
-													try {
-														const values = invoiceForm.getValues();
-														await updatePurchaseInvoice.mutateAsync({
-															id: Number(id),
-															data: {
-																type: values.type,
-																filial: values.filial,
-																sklad: values.sklad,
-																date: values.date,
-																employee: values.employee,
-																supplier: values.supplier,
-																sklad_outgoing: values.sklad_outgoing,
-															},
-														});
-														setIsInvoiceEditing(false);
-													} catch {}
-												}}
-											>
-												Saqlash
-											</Button>
-											<Button
-												size='sm'
-												variant='ghost'
-												onClick={() => {
-													invoiceForm.reset({
-														type: existingInvoice.type as PurchaseInvoiceType,
-														supplier: existingInvoice.supplier || 0,
-														sklad_outgoing:
-															((existingInvoice as any).sklad_outgoing as number) || 0,
-														filial: existingInvoice.filial,
-														sklad: existingInvoice.sklad,
-														date: existingInvoice.date,
-														employee: existingInvoice.employee,
-													});
-													setIsInvoiceEditing(false);
-												}}
-											>
-												Bekor
-											</Button>
-										</div>
-									)}
-								</div>
-							)}
-						</div>
+						<CardTitle className='flex items-center gap-2 text-lg'>
+							<FileText className='h-5 w-5 text-blue-600' />
+							Faktura ma'lumotlari
+						</CardTitle>
+						{existingInvoice?.is_karzinka && (
+							<CardDescription className='flex items-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2'>
+								<ShoppingCart className='h-4 w-4 shrink-0' />
+								Bu faktura karzinkada — hali tasdiqlanmagan. Mahsulotlar qo'shilgan, amalga oshirish
+								yoki "Bekor qilish" orqali o'chirish mumkin.
+							</CardDescription>
+						)}
 					</CardHeader>
 					<CardContent>
-						<Form {...invoiceForm}>
-							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
-								{/* Sana */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-blue-100 rounded-lg'>
-										<Calendar className='h-4 w-4 text-blue-600' />
+						{existingInvoice ? (
+							<>
+								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-blue-100 rounded-lg'>
+											<Calendar className='h-4 w-4 text-blue-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Sana</p>
+											<p className='font-medium'>
+												{moment(existingInvoice.date).format('DD.MM.YYYY')}
+											</p>
+										</div>
 									</div>
-									<div>
-										{isInvoiceEditing ? (
-											<FormField
-												control={invoiceForm.control}
-												name='date'
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Sana</FormLabel>
-														<FormControl>
-															<DatePicker
-																date={
-																	field.value
-																		? moment(field.value, 'YYYY-MM-DD').toDate()
-																		: undefined
-																}
-																onDateChange={(d) =>
-																	field.onChange(
-																		d ? moment(d).format('YYYY-MM-DD') : '',
-																	)
-																}
-																placeholder='Sana'
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										) : (
-											<>
-												<p className='text-sm text-muted-foreground'>Sana</p>
-												<p className='font-medium'>
-													{existingInvoice
-														? moment(existingInvoice.date).format('DD.MM.YYYY')
-														: '-'}
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-green-100 rounded-lg'>
+											<Truck className='h-4 w-4 text-green-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>
+												{existingInvoice.type === PurchaseInvoiceType.INTERNAL
+													? 'Qaysi ombor'
+													: "Ta'minotchi"}
+											</p>
+											<p className='font-medium'>
+												{existingInvoice.type === PurchaseInvoiceType.INTERNAL
+													? (existingInvoice as unknown as { sklad_outgoing_detail?: { name: string } })
+															.sklad_outgoing_detail?.name || '-'
+													: existingInvoice.supplier_detail?.name || '-'}
+											</p>
+										</div>
+									</div>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-purple-100 rounded-lg'>
+											<Building2 className='h-4 w-4 text-purple-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Filial</p>
+											<p className='font-medium'>{existingInvoice.filial_detail?.name || '-'}</p>
+										</div>
+									</div>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-orange-100 rounded-lg'>
+											<Warehouse className='h-4 w-4 text-orange-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Ombor</p>
+											<p className='font-medium'>{existingInvoice.sklad_detail?.name || '-'}</p>
+										</div>
+									</div>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-cyan-100 rounded-lg'>
+											<User className='h-4 w-4 text-cyan-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Xodim</p>
+											<p className='font-medium'>
+												{existingInvoice.employee_detail?.full_name ||
+													(existingInvoice.is_karzinka ? 'Kiritilmagan (karzinka)' : '-')}
+											</p>
+										</div>
+									</div>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-indigo-100 rounded-lg'>
+											<Hash className='h-4 w-4 text-indigo-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Mahsulotlar soni</p>
+											<p className='font-medium'>{existingInvoice.product_count} ta</p>
+										</div>
+									</div>
+									<div className='flex items-start gap-3'>
+										<div className='p-2 bg-emerald-100 rounded-lg'>
+											<DollarSign className='h-4 w-4 text-emerald-600' />
+										</div>
+										<div>
+											<p className='text-sm text-muted-foreground'>Jami summa</p>
+											<p className='font-medium text-emerald-600'>
+												${formatDollar(existingInvoice.all_product_summa)}
+											</p>
+										</div>
+									</div>
+								</div>
+
+								{/* To'lov ma'lumotlari */}
+								{(existingInvoice.given_summa_dollar > 0 ||
+									existingInvoice.given_summa_naqt > 0 ||
+									existingInvoice.given_summa_terminal > 0 ||
+									existingInvoice.given_summa_transfer > 0) && (
+									<div className='mt-6 pt-6 border-t'>
+										<h4 className='font-medium mb-4'>To'lov ma'lumotlari</h4>
+										<div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
+											{existingInvoice.given_summa_dollar > 0 && (
+												<div className='p-3 bg-green-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Dollar</p>
+													<p className='font-semibold text-green-600'>
+														${formatDollar(existingInvoice.given_summa_dollar)}
+													</p>
+												</div>
+											)}
+											{existingInvoice.given_summa_naqt > 0 && (
+												<div className='p-3 bg-blue-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Naqd</p>
+													<p className='font-semibold text-blue-600'>
+														{formatCurrency(existingInvoice.given_summa_naqt)} so'm
+													</p>
+												</div>
+											)}
+											{existingInvoice.given_summa_terminal > 0 && (
+												<div className='p-3 bg-purple-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Terminal</p>
+													<p className='font-semibold text-purple-600'>
+														{formatCurrency(existingInvoice.given_summa_terminal)} so'm
+													</p>
+												</div>
+											)}
+											{existingInvoice.given_summa_transfer > 0 && (
+												<div className='p-3 bg-orange-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Transfer</p>
+													<p className='font-semibold text-orange-600'>
+														{formatCurrency(existingInvoice.given_summa_transfer)} so'm
+													</p>
+												</div>
+											)}
+										</div>
+									</div>
+								)}
+
+								{/* Qarz ma'lumotlari */}
+								{(existingInvoice.total_debt_old > 0 ||
+									existingInvoice.total_debt > 0 ||
+									existingInvoice.total_debt_today > 0) && (
+									<div className='mt-6 pt-6 border-t'>
+										<h4 className='font-medium mb-4'>Qarz ma'lumotlari</h4>
+										<div className='grid grid-cols-2 sm:grid-cols-3 gap-4'>
+											<div className='p-3 bg-gray-50 rounded-lg'>
+												<p className='text-xs text-muted-foreground'>Eski qarz</p>
+												<p className='font-semibold'>
+													${formatDollar(existingInvoice.total_debt_old)}
 												</p>
-											</>
-										)}
-									</div>
-								</div>
-
-								{/* Ta'minotchi / Ombor-chiqim */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-green-100 rounded-lg'>
-										<Truck className='h-4 w-4 text-green-600' />
-									</div>
-									<div>
-										<p className='text-sm text-muted-foreground'>
-											{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
-												? 'Qaysi ombordan'
-												: "Ta'minotchi"}
-										</p>
-										<p className='font-medium'>
-											{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
-												? (existingInvoice as any).sklad_outgoing_detail?.name || '-'
-												: existingInvoice?.supplier_detail?.name || '-'}
-										</p>
-									</div>
-								</div>
-
-								{/* Filial */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-purple-100 rounded-lg'>
-										<Building2 className='h-4 w-4 text-purple-600' />
-									</div>
-									<div>
-										<p className='text-sm text-muted-foreground'>Filial</p>
-										<p className='font-medium'>{existingInvoice?.filial_detail?.name || '-'}</p>
-									</div>
-								</div>
-
-								{/* Ombor */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-orange-100 rounded-lg'>
-										<Warehouse className='h-4 w-4 text-orange-600' />
-									</div>
-									<div>
-										{isInvoiceEditing ? (
-											<FormField
-												control={invoiceForm.control}
-												name='sklad'
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Ombor</FormLabel>
-														<FormControl>
-															<Select
-																onValueChange={(val) => field.onChange(Number(val))}
-																value={field.value ? String(field.value) : '0'}
-															>
-																<SelectTrigger className='w-[220px]'>
-																	<SelectValue placeholder='Omborni tanlang' />
-																</SelectTrigger>
-																<SelectContent>
-																	{sklads.map((s) => (
-																		<SelectItem key={s.id} value={String(s.id)}>
-																			{s.name}
-																		</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										) : (
-											<>
-												<p className='text-sm text-muted-foreground'>Ombor</p>
-												<p className='font-medium'>
-													{existingInvoice?.sklad_detail?.name || '-'}
+											</div>
+											<div className='p-3 bg-red-50 rounded-lg'>
+												<p className='text-xs text-muted-foreground'>Qolgan qarz</p>
+												<p className='font-semibold text-red-600'>
+													${formatDollar(existingInvoice.total_debt)}
 												</p>
-											</>
+											</div>
+											<div className='p-3 bg-amber-50 rounded-lg'>
+												<p className='text-xs text-muted-foreground'>Bugungi qarz</p>
+												<p className='font-semibold text-amber-600'>
+													${formatDollar(existingInvoice.total_debt_today)}
+												</p>
+											</div>
+										</div>
+									</div>
+								)}
+							</>
+						) : (
+							<Form {...invoiceForm}>
+								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+									<FormField
+										control={invoiceForm.control}
+										name='date'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Sana</FormLabel>
+												<FormControl>
+													<DatePicker
+														date={
+															field.value
+																? moment(field.value, 'YYYY-MM-DD').toDate()
+																: undefined
+														}
+														onDateChange={(d) =>
+															field.onChange(d ? moment(d).format('YYYY-MM-DD') : '')
+														}
+														placeholder='Sana'
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
 										)}
-									</div>
+									/>
+									<FormField
+										control={invoiceForm.control}
+										name='type'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Turi</FormLabel>
+												<Select
+													onValueChange={(v) => field.onChange(v as PurchaseInvoiceType)}
+													value={field.value}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder='Tanlang' />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={PurchaseInvoiceType.EXTERNAL}>
+															{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]}
+														</SelectItem>
+														<SelectItem value={PurchaseInvoiceType.INTERNAL}>
+															{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
+														</SelectItem>
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{invoiceType === PurchaseInvoiceType.EXTERNAL && (
+										<FormField
+											control={invoiceForm.control}
+											name='supplier'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Ta'minotchi</FormLabel>
+													<Select
+														onValueChange={(v) => field.onChange(Number(v))}
+														value={field.value ? String(field.value) : ''}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue placeholder='Tanlang' />
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															{suppliers.map((s) => (
+																<SelectItem key={s.id} value={String(s.id)}>
+																	{s.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
+									{invoiceType === PurchaseInvoiceType.INTERNAL && (
+										<FormField
+											control={invoiceForm.control}
+											name='sklad_outgoing'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Qaysi ombor</FormLabel>
+													<Select
+														onValueChange={(v) => field.onChange(Number(v))}
+														value={field.value ? String(field.value) : ''}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue placeholder='Tanlang' />
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															{sklads.map((s) => (
+																<SelectItem key={s.id} value={String(s.id)}>
+																	{s.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
+									<FormField
+										control={invoiceForm.control}
+										name='filial'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Filial</FormLabel>
+												<Select
+													onValueChange={(v) => field.onChange(Number(v))}
+													value={field.value ? String(field.value) : ''}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder='Tanlang' />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{companies.map((c) => (
+															<SelectItem key={c.id} value={String(c.id)}>
+																{c.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={invoiceForm.control}
+										name='sklad'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Ombor</FormLabel>
+												<Select
+													onValueChange={(v) => field.onChange(Number(v))}
+													value={field.value ? String(field.value) : '0'}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder='Omborni tanlang' />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{sklads.map((s) => (
+															<SelectItem key={s.id} value={String(s.id)}>
+																{s.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={invoiceForm.control}
+										name='employee'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Xodim</FormLabel>
+												<Select
+													onValueChange={(v) => field.onChange(Number(v))}
+													value={field.value ? String(field.value) : ''}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder='Tanlang' />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{users.map((u) => (
+															<SelectItem key={u.id} value={String(u.id)}>
+																{u.full_name || u.username}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 								</div>
-
-								{/* Xodim */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-cyan-100 rounded-lg'>
-										<User className='h-4 w-4 text-cyan-600' />
-									</div>
-									<div>
-										<p className='text-sm text-muted-foreground'>Xodim</p>
-										<p className='font-medium'>
-											{existingInvoice?.employee_detail?.fullname || '-'}
-										</p>
-									</div>
-								</div>
-
-								{/* Mahsulotlar soni */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-indigo-100 rounded-lg'>
-										<Hash className='h-4 w-4 text-indigo-600' />
-									</div>
-									<div>
-										<p className='text-sm text-muted-foreground'>Mahsulotlar soni</p>
-										<p className='font-medium'>{productHistories.length} ta</p>
-									</div>
-								</div>
-
-								{/* Dollar kursi */}
-								<div className='flex items-start gap-3'>
-									<div className='p-2 bg-emerald-100 rounded-lg'>
-										<DollarSign className='h-4 w-4 text-emerald-600' />
-									</div>
-									<div>
-										<p className='text-sm text-muted-foreground'>Dollar kursi</p>
-										<p className='font-medium'>{formatCurrency(dollarRate)} so'm</p>
-									</div>
-								</div>
-							</div>
-						</Form>
+							</Form>
+						)}
 					</CardContent>
 				</Card>
 
@@ -1387,14 +1624,18 @@ export default function PurchaseInvoiceAdd() {
 									<Table>
 										<TableHeader>
 											<TableRow>
-												<TableHead>#</TableHead>
-												<TableHead>Mahsulot</TableHead>
+												<TableHead className='w-[50px]'>#</TableHead>
 												<TableHead>Bo'lim</TableHead>
 												<TableHead>Kategoriya turi</TableHead>
-												<TableHead>Model</TableHead>
+												<TableHead>Brend</TableHead>
+												<TableHead>Mahsulot</TableHead>
+												<TableHead>O'lcham</TableHead>
+												<TableHead>Filial</TableHead>
 												<TableHead className='text-right'>Miqdori</TableHead>
 												<TableHead className='text-right'>Narxi ($)</TableHead>
+												<TableHead className='text-right'>Min narx ($)</TableHead>
 												<TableHead className='text-right'>Jami ($)</TableHead>
+												{existingInvoice && <TableHead className='w-[70px]'>Amallar</TableHead>}
 											</TableRow>
 										</TableHeader>
 										<TableBody>
@@ -1405,25 +1646,70 @@ export default function PurchaseInvoiceAdd() {
 														: p.real_price;
 												return (
 													<TableRow key={`history-${p.id}`}>
-														<TableCell>{index + 1}</TableCell>
+														<TableCell className='text-muted-foreground'>
+															{index + 1}
+														</TableCell>
+														<TableCell>{p.branch_detail?.name || '-'}</TableCell>
+														<TableCell>{p.branch_category_detail?.name ?? '-'}</TableCell>
+														<TableCell>{p.model_detail?.name || '-'}</TableCell>
 														<TableCell className='font-medium'>
 															{p.type_detail?.name || '-'}
 														</TableCell>
-														<TableCell>{p.branch_detail?.name || '-'}</TableCell>
-														<TableCell>{p.branch_category_detail?.name ?? '—'}</TableCell>
-														<TableCell>{p.model_detail?.name || '-'}</TableCell>
+														<TableCell>{p.size_detail?.size ?? '-'}</TableCell>
+														<TableCell>{p.filial_detail?.name || '-'}</TableCell>
 														<TableCell className='text-right'>{p.count}</TableCell>
 														<TableCell className='text-right'>
 															$
 															{formatDollar(
 																typeof p.real_price === 'string'
 																	? parseFloat(p.real_price)
-																	: p.real_price,
+																	: (p.real_price ?? 0),
+															)}
+														</TableCell>
+														<TableCell className='text-right'>
+															$
+															{formatDollar(
+																typeof p.min_price === 'string'
+																	? parseFloat(p.min_price)
+																	: (p.min_price ?? 0),
 															)}
 														</TableCell>
 														<TableCell className='text-right font-semibold'>
 															${formatDollar(p.count * (realPrice || 0))}
 														</TableCell>
+														{existingInvoice && (
+															<TableCell>
+																{existingInvoice.is_karzinka && (
+																	<Button
+																		variant='ghost'
+																		size='icon'
+																		className='h-8 w-8'
+																		onClick={() => setViewingProduct(p)}
+																		title="Ko'rish"
+																	>
+																		<ShoppingBag className='h-4 w-4 text-blue-600' />
+																	</Button>
+																)}
+																<Button
+																	variant='ghost'
+																	size='icon'
+																	className='h-8 w-8'
+																	onClick={() => setViewingProduct(p)}
+																	title="Ko'rish"
+																>
+																	<Eye className='h-4 w-4' />
+																</Button>
+																<Button
+																	variant='ghost'
+																	size='icon'
+																	className='h-8 w-8'
+																	onClick={() => setEditingProduct(p)}
+																	title='Tahrirlash'
+																>
+																	<Pencil className='h-4 w-4' />
+																</Button>
+															</TableCell>
+														)}
 													</TableRow>
 												);
 											})}
@@ -1433,12 +1719,18 @@ export default function PurchaseInvoiceAdd() {
 
 								{/* Jami */}
 								<div className='mt-4 flex justify-end'>
-									<div className='bg-muted p-4 rounded-lg'>
-										<div className='flex items-center gap-4'>
+									<div className='bg-muted p-4 rounded-lg min-w-[250px]'>
+										<div className='flex items-center justify-between gap-4 mb-2'>
 											<span className='text-muted-foreground'>Mahsulotlar:</span>
 											<Badge variant='outline'>{productHistories.length} ta</Badge>
 										</div>
-										<div className='flex items-center gap-4 mt-2'>
+										<div className='flex items-center justify-between gap-4 mb-2'>
+											<span className='text-muted-foreground'>Jami miqdor:</span>
+											<span className='font-medium'>
+												{formatCurrency(productHistories.reduce((sum, p) => sum + p.count, 0))}
+											</span>
+										</div>
+										<div className='flex items-center justify-between gap-4 pt-2 border-t'>
 											<span className='text-muted-foreground'>Jami summa:</span>
 											<span className='text-xl font-bold text-green-600'>
 												$
@@ -1906,12 +2198,18 @@ export default function PurchaseInvoiceAdd() {
 					{pendingInvoiceData && (
 						<Form {...paymentForm}>
 							<form onSubmit={paymentForm.handleSubmit(handlePaymentSubmit)} className='space-y-4'>
-								{/* Ta'minotchi, Sana, Qarz */}
+								{/* Ta'minotchi / Qaysi ombor, Sana, Qarz */}
 								<div className='grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg'>
 									<div>
-										<p className='text-sm text-muted-foreground mb-1'>Ta'minotchi</p>
+										<p className='text-sm text-muted-foreground mb-1'>
+											{pendingInvoiceData.type === PurchaseInvoiceType.INTERNAL
+												? 'Qaysi ombor'
+												: "Ta'minotchi"}
+										</p>
 										<p className='font-semibold'>
-											{suppliers.find((s) => s.id === pendingInvoiceData.supplier)?.name || '-'}
+											{pendingInvoiceData.type === PurchaseInvoiceType.INTERNAL
+												? sklads.find((s) => s.id === pendingInvoiceData.sklad_outgoing)?.name || '-'
+												: suppliers.find((s) => s.id === pendingInvoiceData.supplier)?.name || '-'}
 										</p>
 									</div>
 									<div>
@@ -2099,6 +2397,280 @@ export default function PurchaseInvoiceAdd() {
 								</DialogFooter>
 							</form>
 						</Form>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Karzinka: mahsulotni faqat ko'rish (tahrirlash mumkin emas) */}
+			<Dialog
+				open={!!viewingProduct}
+				onOpenChange={(open) => {
+					if (!open) setViewingProduct(null);
+				}}
+			>
+				<DialogContent className='sm:max-w-[420px]'>
+					<DialogHeader>
+						<DialogTitle>Mahsulot ma'lumotlari</DialogTitle>
+						<DialogDescription>
+							Karzinkada mahsulotni tahrirlash mumkin emas — faqat ko'rish.
+						</DialogDescription>
+					</DialogHeader>
+					{viewingProduct && (
+						<div className='space-y-4'>
+							<div className='rounded-lg border p-4 space-y-2 text-sm'>
+								<p>
+									<span className='text-muted-foreground'>Mahsulot:</span>{' '}
+									{viewingProduct.type_detail?.name} — {viewingProduct.model_detail?.name}
+									{viewingProduct.size_detail?.size != null &&
+										` (${viewingProduct.size_detail.size})`}
+								</p>
+								<p>
+									<span className='text-muted-foreground'>Miqdori:</span> {viewingProduct.count}
+								</p>
+								<p>
+									<span className='text-muted-foreground'>Xaqiqiy narxi:</span> $
+									{formatDollar(
+										typeof viewingProduct.real_price === 'string'
+											? parseFloat(viewingProduct.real_price)
+											: (viewingProduct.real_price ?? 0),
+									)}
+								</p>
+								<p>
+									<span className='text-muted-foreground'>Dona narxi:</span> $
+									{formatDollar(
+										typeof viewingProduct.unit_price === 'string'
+											? parseFloat(viewingProduct.unit_price)
+											: (viewingProduct.unit_price ?? 0),
+									)}
+								</p>
+								<p>
+									<span className='text-muted-foreground'>Optom narxi:</span> $
+									{formatDollar(
+										typeof viewingProduct.wholesale_price === 'string'
+											? parseFloat(viewingProduct.wholesale_price)
+											: (viewingProduct.wholesale_price ?? 0),
+									)}
+								</p>
+								<p>
+									<span className='text-muted-foreground'>Min narx:</span> $
+									{formatDollar(
+										typeof viewingProduct.min_price === 'string'
+											? parseFloat(viewingProduct.min_price)
+											: (viewingProduct.min_price ?? 0),
+									)}
+								</p>
+								{viewingProduct.note && (
+									<p>
+										<span className='text-muted-foreground'>Izoh:</span> {viewingProduct.note}
+									</p>
+								)}
+							</div>
+							<DialogFooter>
+								<Button variant='outline' onClick={() => setViewingProduct(null)}>
+									Yopish
+								</Button>
+							</DialogFooter>
+						</div>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Yakunlangan mahsulotni tahrirlash modal (faqat karzinka emas fakturalar uchun) */}
+			<Dialog
+				open={!!editingProduct}
+				onOpenChange={(open) => {
+					if (!open) setEditingProduct(null);
+				}}
+			>
+				<DialogContent className='sm:max-w-[480px]'>
+					<DialogHeader>
+						<DialogTitle>Mahsulotni tahrirlash</DialogTitle>
+						<DialogDescription>
+							{editingProduct && (
+								<span>
+									{editingProduct.type_detail?.name} — {editingProduct.model_detail?.name}
+									{editingProduct.size_detail?.size != null &&
+										` (${editingProduct.size_detail.size})`}
+								</span>
+							)}
+						</DialogDescription>
+					</DialogHeader>
+					{editingProduct && productEditForm && (
+						<form
+							className='space-y-4'
+							onSubmit={(e) => {
+								e.preventDefault();
+								updateProductHistory.mutateAsync(
+									{
+										id: editingProduct.id,
+										data: {
+											count: productEditForm.count,
+											real_price: productEditForm.real_price,
+										},
+									},
+									{
+										onSuccess: () => {
+											setEditingProduct(null);
+											if (id) {
+												queryClient.invalidateQueries({
+													queryKey: purchaseInvoiceKeys.detail(Number(id)),
+												});
+											}
+										},
+									},
+								);
+							}}
+						>
+							<p className='text-sm text-muted-foreground'>
+								Faqat miqdor va narxni o'zgartirish mumkin. Boshqa ma'lumotlar o'zgartirilmaydi.
+							</p>
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+								<div>
+									<label className='text-sm font-medium mb-2 block'>Miqdori</label>
+									<Input
+										type='number'
+										min={1}
+										value={productEditForm.count}
+										onChange={(e) =>
+											setProductEditForm((prev) =>
+												prev ? { ...prev, count: parseInt(e.target.value, 10) || 0 } : null,
+											)
+										}
+									/>
+								</div>
+								<div>
+									<label className='text-sm font-medium mb-2 block'>Narxi ($)</label>
+									<div className='flex'>
+										<NumberInput
+											value={String(productEditForm.real_price)}
+											onChange={(v) =>
+												setProductEditForm((prev) =>
+													prev ? { ...prev, real_price: v === '' ? 0 : parseFloat(v) } : null,
+												)
+											}
+											placeholder='0.00'
+											className='rounded-r-none'
+										/>
+										<span className='inline-flex items-center px-2 bg-green-100 border border-l-0 rounded-r-md text-sm text-green-700'>
+											$
+										</span>
+									</div>
+								</div>
+							</div>
+							<DialogFooter className='pt-4'>
+								<Button type='button' variant='outline' onClick={() => setEditingProduct(null)}>
+									Bekor
+								</Button>
+								<Button type='submit' disabled={updateProductHistory.isPending}>
+									{updateProductHistory.isPending && (
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+									)}
+									Saqlash
+								</Button>
+							</DialogFooter>
+						</form>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Faktura tahrirlash modal — faqat sana va ombor */}
+			<Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+				<DialogContent className='sm:max-w-[420px]'>
+					<DialogHeader>
+						<DialogTitle>Faktura ma'lumotlarini tahrirlash</DialogTitle>
+						<DialogDescription>
+							Faqat sana va omborni o'zgartirish mumkin. Boshqa ma'lumotlar o'zgartirilmaydi.
+						</DialogDescription>
+					</DialogHeader>
+					{existingInvoice && (
+						<form
+							className='space-y-4'
+							onSubmit={(e) => {
+								e.preventDefault();
+								const inv = invoiceForm.getValues();
+								updatePurchaseInvoice.mutateAsync(
+									{
+										id: Number(id),
+										data: {
+											date: inv.date,
+											sklad: inv.sklad,
+										},
+									},
+									{
+										onSuccess: () => {
+											setIsEditModalOpen(false);
+										},
+									},
+								);
+							}}
+						>
+							<Form {...invoiceForm}>
+								<div className='grid grid-cols-1 gap-4'>
+									<FormField
+										control={invoiceForm.control}
+										name='date'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Sana</FormLabel>
+												<FormControl>
+													<DatePicker
+														date={
+															field.value
+																? moment(field.value, 'YYYY-MM-DD').toDate()
+																: undefined
+														}
+														onDateChange={(d) =>
+															field.onChange(d ? moment(d).format('YYYY-MM-DD') : '')
+														}
+														placeholder='Sana'
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={invoiceForm.control}
+										name='sklad'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Ombor</FormLabel>
+												<Select
+													onValueChange={(v) => field.onChange(Number(v))}
+													value={field.value ? String(field.value) : '0'}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder='Omborni tanlang' />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{sklads.map((s) => (
+															<SelectItem key={s.id} value={String(s.id)}>
+																{s.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</Form>
+
+							<DialogFooter className='pt-4'>
+								<Button type='button' variant='outline' onClick={() => setIsEditModalOpen(false)}>
+									Bekor
+								</Button>
+								<Button type='submit' disabled={updatePurchaseInvoice.isPending}>
+									{updatePurchaseInvoice.isPending && (
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+									)}
+									Saqlash
+								</Button>
+							</DialogFooter>
+						</form>
 					)}
 				</DialogContent>
 			</Dialog>

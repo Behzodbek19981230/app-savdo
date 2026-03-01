@@ -192,14 +192,21 @@ export default function PurchaseInvoiceShow() {
 							</div>
 						</div>
 
-						{/* Ta'minotchi */}
+						{/* Ta'minotchi / Qaysi ombor (ichki kirimda) */}
 						<div className='flex items-start gap-3'>
 							<div className='p-2 bg-green-100 rounded-lg'>
 								<Truck className='h-4 w-4 text-green-600' />
 							</div>
 							<div>
-								<p className='text-sm text-muted-foreground'>Ta'minotchi</p>
-								<p className='font-medium'>{invoice.supplier_detail?.name || '-'}</p>
+								<p className='text-sm text-muted-foreground'>
+									{invoice.type === PurchaseInvoiceType.INTERNAL ? 'Qaysi ombor' : "Ta'minotchi"}
+								</p>
+								<p className='font-medium'>
+									{invoice.type === PurchaseInvoiceType.INTERNAL
+										? (invoice as unknown as { sklad_outgoing_detail?: { name: string } })
+												.sklad_outgoing_detail?.name || '-'
+										: invoice.supplier_detail?.name || '-'}
+								</p>
 							</div>
 						</div>
 
@@ -369,8 +376,6 @@ export default function PurchaseInvoiceShow() {
 												<TableHead>Filial</TableHead>
 											<TableHead className='text-right'>Miqdori</TableHead>
 											<TableHead className='text-right'>Narxi ($)</TableHead>
-											<TableHead className='text-right'>Dona narxi ($)</TableHead>
-											<TableHead className='text-right'>Optom narxi ($)</TableHead>
 											<TableHead className='text-right'>Min narx ($)</TableHead>
 											<TableHead className='text-right'>Jami ($)</TableHead>
 										</TableRow>
@@ -395,12 +400,6 @@ export default function PurchaseInvoiceShow() {
 													<TableCell className='text-right'>{p.count}</TableCell>
 													<TableCell className='text-right'>
 														${formatDollar(p.real_price)}
-													</TableCell>
-													<TableCell className='text-right'>
-														${formatDollar(p.unit_price)}
-													</TableCell>
-													<TableCell className='text-right'>
-														${formatDollar(p.wholesale_price)}
 													</TableCell>
 													<TableCell className='text-right'>
 														${formatDollar(p.min_price)}

@@ -43,6 +43,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
 	usePurchaseInvoices,
@@ -66,6 +67,7 @@ import {
 	Package,
 	ArrowDownCircle,
 	Edit,
+	ShoppingBag,
 } from 'lucide-react';
 import moment from 'moment';
 
@@ -83,9 +85,10 @@ const newInvoiceSchema = z.object({
 
 type NewInvoiceFormData = z.infer<typeof newInvoiceSchema>;
 
-type InvoiceTabType = PurchaseInvoiceType.EXTERNAL | PurchaseInvoiceType.INTERNAL;
+type InvoiceTabType = PurchaseInvoiceType.EXTERNAL | PurchaseInvoiceType.INTERNAL | 'all';
 
 const TAB_PARAM = 'type';
+const TAB_ALL = 'all';
 
 export default function PurchaseInvoices() {
 	const navigate = useNavigate();
@@ -96,7 +99,7 @@ export default function PurchaseInvoices() {
 	const activeTab: InvoiceTabType =
 		typeParam === PurchaseInvoiceType.INTERNAL || typeParam === PurchaseInvoiceType.EXTERNAL
 			? typeParam
-			: PurchaseInvoiceType.EXTERNAL;
+			: TAB_ALL;
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [sortField, setSortField] = useState<SortField>(null);
@@ -106,6 +109,8 @@ export default function PurchaseInvoices() {
 	const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
 	const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 	const [isNewInvoiceDialogOpen, setIsNewInvoiceDialogOpen] = useState(false);
+	const [supplierFilterId, setSupplierFilterId] = useState<number | undefined>(undefined);
+	const [skladOutgoingFilterId, setSkladOutgoingFilterId] = useState<number | undefined>(undefined);
 
 	// Supplier autocomplete state
 	const [supplierPage, setSupplierPage] = useState(1);
@@ -151,6 +156,20 @@ export default function PurchaseInvoices() {
 		is_delete: false,
 		filial: selectedFilialId ?? undefined,
 	});
+
+	// Filter ro'yxatlari (ta'minotchi / ombor bo'yicha)
+	const { data: suppliersListData } = useSuppliers({
+		limit: 300,
+		is_delete: false,
+		filial: selectedFilialId ?? undefined,
+	});
+	const { data: skladsListData } = useSklads({
+		perPage: 300,
+		is_delete: false,
+		filial: selectedFilialId ?? undefined,
+	});
+	const filterSuppliers = (suppliersListData as { results?: { id: number; name: string }[] })?.results || [];
+	const filterSklads = (skladsListData as { results?: { id: number; name: string }[] })?.results || [];
 
 	const suppliersResults = (suppliersData as any)?.results || [];
 	const suppliersPagination = (suppliersData as any)?.pagination;
@@ -201,7 +220,9 @@ export default function PurchaseInvoices() {
 		page: currentPage,
 		perPage: ITEMS_PER_PAGE,
 		ordering,
-		type: activeTab,
+		type: activeTab === TAB_ALL ? undefined : activeTab,
+		supplier: activeTab === PurchaseInvoiceType.EXTERNAL ? supplierFilterId : undefined,
+		sklad_outgoing: activeTab === PurchaseInvoiceType.INTERNAL ? skladOutgoingFilterId : undefined,
 		date_from: dateFrom ? moment(dateFrom).format('YYYY-MM-DD') : undefined,
 		date_to: dateTo ? moment(dateTo).format('YYYY-MM-DD') : undefined,
 		filial: selectedFilialId ?? undefined,
@@ -273,8 +294,10 @@ export default function PurchaseInvoices() {
 	};
 
 	const handleTabChange = (value: string) => {
-		setSearchParams({ [TAB_PARAM]: value }, { replace: true });
+		setSearchParams(value === TAB_ALL ? {} : { [TAB_PARAM]: value }, { replace: true });
 		setCurrentPage(1);
+		setSupplierFilterId(undefined);
+		setSkladOutgoingFilterId(undefined);
 	};
 
 	const openNewInvoiceDialog = () => {
@@ -321,7 +344,13 @@ export default function PurchaseInvoices() {
 							</div>
 						</div>
 						<Tabs value={activeTab} onValueChange={handleTabChange}>
-							<TabsList className='grid w-full grid-cols-2 h-11 bg-muted p-1'>
+							<TabsList className='grid w-full grid-cols-3 h-11 bg-muted p-1'>
+								<TabsTrigger
+									value={TAB_ALL}
+									className='data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm'
+								>
+									Barchasi
+								</TabsTrigger>
 								<TabsTrigger
 									value={PurchaseInvoiceType.EXTERNAL}
 									className='data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm'
@@ -336,6 +365,56 @@ export default function PurchaseInvoices() {
 								</TabsTrigger>
 							</TabsList>
 						</Tabs>
+
+						{/* Tab bo'yicha filter: Tashqi = Ta'minotchi, Ichki = Qaysi ombor */}
+						{activeTab === PurchaseInvoiceType.EXTERNAL && (
+							<div className='flex flex-wrap items-center gap-2'>
+								<span className='text-sm text-muted-foreground'>Ta'minotchi:</span>
+								<Select
+									value={supplierFilterId !== undefined ? String(supplierFilterId) : 'all'}
+									onValueChange={(v) => {
+										setSupplierFilterId(v === 'all' ? undefined : Number(v));
+										setCurrentPage(1);
+									}}
+								>
+									<SelectTrigger className='w-[220px]'>
+										<SelectValue placeholder="Ta'minotchini tanlang" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='all'>Barchasi</SelectItem>
+										{filterSuppliers.map((s) => (
+											<SelectItem key={s.id} value={String(s.id)}>
+												{s.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+						{activeTab === PurchaseInvoiceType.INTERNAL && (
+							<div className='flex flex-wrap items-center gap-2'>
+								<span className='text-sm text-muted-foreground'>Qaysi ombor:</span>
+								<Select
+									value={skladOutgoingFilterId !== undefined ? String(skladOutgoingFilterId) : 'all'}
+									onValueChange={(v) => {
+										setSkladOutgoingFilterId(v === 'all' ? undefined : Number(v));
+										setCurrentPage(1);
+									}}
+								>
+									<SelectTrigger className='w-[220px]'>
+										<SelectValue placeholder='Omborni tanlang' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='all'>Barchasi</SelectItem>
+										{filterSklads.map((s) => (
+											<SelectItem key={s.id} value={String(s.id)}>
+												{s.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
 					</div>
 				</CardHeader>
 				<CardContent>
@@ -372,7 +451,13 @@ export default function PurchaseInvoices() {
 													{getSortIcon('date')}
 												</div>
 											</TableHead>
-											<TableHead>Ta'minotchi</TableHead>
+											<TableHead>
+												{activeTab === PurchaseInvoiceType.INTERNAL
+													? 'Qaysi ombor'
+													: activeTab === PurchaseInvoiceType.EXTERNAL
+														? "Ta'minotchi"
+														: "Ta'minotchi / Qaysi ombor"}
+											</TableHead>
 											<TableHead>Filial</TableHead>
 											<TableHead>Ombor</TableHead>
 											<TableHead className='text-right'>Mahsulotlar</TableHead>
@@ -397,7 +482,10 @@ export default function PurchaseInvoices() {
 												</TableCell>
 												<TableCell>{moment(invoice.date).format('DD.MM.YYYY')}</TableCell>
 												<TableCell>
-													{invoice.supplier_detail?.name || `#${invoice.supplier}`}
+													{invoice.type === PurchaseInvoiceType.INTERNAL
+														? (invoice as unknown as { sklad_outgoing_detail?: { name: string } })
+																.sklad_outgoing_detail?.name || '-'
+														: invoice.supplier_detail?.name || `#${invoice.supplier}` || '-'}
 												</TableCell>
 												<TableCell>
 													{invoice.filial_detail?.name || `#${invoice.filial}`}
@@ -434,9 +522,20 @@ export default function PurchaseInvoices() {
 																}
 																title='Tahrirlash'
 															>
-																<Edit className='h-4 w-4' />
+																<ShoppingBag className='h-4 w-4 text-blue-600' />
 															</Button>
 														)}
+														<Button
+															variant='ghost'
+															size='icon'
+															className='h-8 w-8 text-blue-600 hover:text-blue-700'
+															onClick={() =>
+																navigate(`/purchase-invoices/add/${invoice.id}`)
+															}
+															title='Tahrirlash'
+														>
+															<Edit className='h-4 w-4' />
+														</Button>
 														<Button
 															variant='ghost'
 															size='icon'
@@ -538,14 +637,21 @@ export default function PurchaseInvoices() {
 			<Dialog open={isNewInvoiceDialogOpen} onOpenChange={setIsNewInvoiceDialogOpen}>
 				<DialogContent className='sm:max-w-[500px]'>
 					<DialogHeader>
-						<DialogTitle>Yangi kirim yaratish</DialogTitle>
+						<DialogTitle>
+						{(activeTab === TAB_ALL ? PurchaseInvoiceType.EXTERNAL : activeTab) === PurchaseInvoiceType.INTERNAL
+							? 'Ichki kirim'
+							: 'Tashqi kirim'}{' '}
+						yaratish
+					</DialogTitle>
 						<DialogDescription>Faktura uchun asosiy ma'lumotlarni kiriting</DialogDescription>
 					</DialogHeader>
 					<Form {...newInvoiceForm}>
 						<form
 							onSubmit={newInvoiceForm.handleSubmit(async (values) => {
+								const invoiceType =
+									activeTab === TAB_ALL ? PurchaseInvoiceType.EXTERNAL : activeTab;
 								// Validate by tab: Tashqi = supplier, Ichki = sklad_outgoing
-								if (activeTab === PurchaseInvoiceType.EXTERNAL) {
+								if (invoiceType === PurchaseInvoiceType.EXTERNAL) {
 									if (!values.supplier || values.supplier <= 0) {
 										newInvoiceForm.setError('supplier', {
 											message: "Ta'minotchi tanlanishi shart",
@@ -555,7 +661,7 @@ export default function PurchaseInvoices() {
 								} else {
 									if (!values.sklad_outgoing || values.sklad_outgoing <= 0) {
 										newInvoiceForm.setError('sklad_outgoing', {
-											message: "Qaysi ombordan tanlanishi shart",
+											message: 'Qaysi ombordan tanlanishi shart',
 										});
 										return;
 									}
@@ -569,7 +675,7 @@ export default function PurchaseInvoices() {
 									}
 
 									const payload: CreatePurchaseInvoicePayload = {
-										type: activeTab,
+										type: invoiceType,
 										date: values.date,
 										sklad: firstSkladId,
 										employee: user?.id || 0,
@@ -577,7 +683,7 @@ export default function PurchaseInvoices() {
 										is_karzinka: true,
 									};
 
-									if (activeTab === PurchaseInvoiceType.EXTERNAL) {
+									if (invoiceType === PurchaseInvoiceType.EXTERNAL) {
 										payload.supplier = values.supplier!;
 									} else {
 										payload.sklad_outgoing = values.sklad_outgoing!;
@@ -613,7 +719,7 @@ export default function PurchaseInvoices() {
 									</FormItem>
 								)}
 							/>
-							{activeTab === PurchaseInvoiceType.EXTERNAL ? (
+							{(activeTab === TAB_ALL ? PurchaseInvoiceType.EXTERNAL : activeTab) === PurchaseInvoiceType.EXTERNAL ? (
 								<FormField
 									control={newInvoiceForm.control}
 									name='supplier'
@@ -653,9 +759,9 @@ export default function PurchaseInvoices() {
 													options={skladOptions}
 													value={field.value ? Number(field.value) : undefined}
 													onValueChange={(v) => field.onChange(v ? Number(v) : 0)}
-													placeholder="Omborni tanlang"
-													searchPlaceholder="Ombor qidirish..."
-													emptyText="Ombor topilmadi"
+													placeholder='Omborni tanlang'
+													searchPlaceholder='Ombor qidirish...'
+													emptyText='Ombor topilmadi'
 													onSearchChange={(q) => setSkladSearch(q)}
 													onScrollToBottom={() => {
 														if (skladsHasMore) setSkladPage(skladPage + 1);

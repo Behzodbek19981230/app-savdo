@@ -179,6 +179,7 @@ export const API_ENDPOINTS = {
 		byId: (id: string) => `/purchase-invoice/${id}`,
 		create: '/purchase-invoice',
 		update: (id: string) => `/purchase-invoice/${id}`,
+		done: (id: string) => `/purchase-invoice/${id}/done`,
 		delete: (id: string) => `/purchase-invoice/${id}`,
 	},
 

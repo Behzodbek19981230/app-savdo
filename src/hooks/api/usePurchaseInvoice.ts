@@ -87,6 +87,22 @@ export const useUpdatePurchaseInvoice = () => {
 	});
 };
 
+export const useDonePurchaseInvoice = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, data }: { id: number; data: UpdatePurchaseInvoicePayload }) =>
+			purchaseInvoiceService.donePurchaseInvoice(id, data),
+		onSuccess: (_, { id }) => {
+			queryClient.invalidateQueries({ queryKey: purchaseInvoiceKeys.lists() });
+			queryClient.invalidateQueries({ queryKey: purchaseInvoiceKeys.detail(id) });
+			toast.success('Faktura tasdiqlandi');
+		},
+		onError: (error: unknown) => {
+			toast.error('Xatolik yuz berdi', { description: formatErrorMessage(error) });
+		},
+	});
+};
+
 export const useDeletePurchaseInvoice = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
