@@ -15,6 +15,7 @@ export interface ExchangeRate {
 	id: number;
 	dollar: number;
 	filial: number;
+	is_active?: boolean;
 	updated_by_detail?: User;
 	updated_time?: string;
 }

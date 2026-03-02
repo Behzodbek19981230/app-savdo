@@ -25,6 +25,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Autocomplete } from '@/components/ui/autocomplete';
@@ -34,6 +44,7 @@ import {
 	usePurchaseInvoice,
 	useUpdatePurchaseInvoice,
 	useDonePurchaseInvoice,
+	useDeletePurchaseInvoice,
 	purchaseInvoiceKeys,
 } from '@/hooks/api/usePurchaseInvoice';
 import { useCreateProductHistory, useProductHistories, useUpdateProductHistory } from '@/hooks/api/useProductHistory';
@@ -188,10 +199,12 @@ export default function PurchaseInvoiceAdd() {
 		count: number;
 		real_price: number;
 	} | null>(null);
+	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 	const { selectedFilialId } = useAuthContext();
 
 	// Load existing invoice if id is provided
 	const { data: existingInvoice, isLoading: isLoadingInvoice } = usePurchaseInvoice(id ? Number(id) : undefined);
+	const deletePurchaseInvoice = useDeletePurchaseInvoice();
 
 	// Load product histories for existing invoice
 	const { data: productHistoriesData, isLoading: isProductHistoriesLoading } = useProductHistories(
@@ -1020,6 +1033,18 @@ export default function PurchaseInvoiceAdd() {
 		await saveInvoice(values);
 	};
 
+	// Bekor qilish (o'chirish) funksiyasi
+	const handleBekorQilish = async () => {
+		if (!id || !existingInvoice) return;
+		try {
+			await deletePurchaseInvoice.mutateAsync(Number(id));
+			navigate('/purchase-invoices');
+		} catch {
+			// xato toast hook orqali chiqadi
+		}
+		setIsCancelDialogOpen(false);
+	};
+
 	// Fakturani saqlash funksiyasi
 	const saveInvoice = async (values: InvoiceFormData, paymentData?: PaymentFormData) => {
 		setIsSubmitting(true);
@@ -1172,6 +1197,17 @@ export default function PurchaseInvoiceAdd() {
 							Tahrirlash
 						</Button>
 					)}
+					{existingInvoice && existingInvoice.is_karzinka && (
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={() => setIsCancelDialogOpen(true)}
+							className='text-destructive hover:text-destructive'
+						>
+							<Trash2 className='h-4 w-4 mr-2' />
+							Bekor qilish
+						</Button>
+					)}
 					{existingInvoice && (
 						<>
 							{existingInvoice.is_karzinka && (
@@ -1234,6 +1270,7 @@ export default function PurchaseInvoiceAdd() {
 						{existingInvoice ? (
 							<>
 								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+									{/* Sana */}
 									<div className='flex items-start gap-3'>
 										<div className='p-2 bg-blue-100 rounded-lg'>
 											<Calendar className='h-4 w-4 text-blue-600' />
@@ -1245,24 +1282,8 @@ export default function PurchaseInvoiceAdd() {
 											</p>
 										</div>
 									</div>
-									<div className='flex items-start gap-3'>
-										<div className='p-2 bg-green-100 rounded-lg'>
-											<Truck className='h-4 w-4 text-green-600' />
-										</div>
-										<div>
-											<p className='text-sm text-muted-foreground'>
-												{existingInvoice.type === PurchaseInvoiceType.INTERNAL
-													? 'Qaysi ombor'
-													: "Ta'minotchi"}
-											</p>
-											<p className='font-medium'>
-												{existingInvoice.type === PurchaseInvoiceType.INTERNAL
-													? (existingInvoice as unknown as { sklad_outgoing_detail?: { name: string } })
-															.sklad_outgoing_detail?.name || '-'
-													: existingInvoice.supplier_detail?.name || '-'}
-											</p>
-										</div>
-									</div>
+
+									{/* Filial */}
 									<div className='flex items-start gap-3'>
 										<div className='p-2 bg-purple-100 rounded-lg'>
 											<Building2 className='h-4 w-4 text-purple-600' />
@@ -1272,15 +1293,55 @@ export default function PurchaseInvoiceAdd() {
 											<p className='font-medium'>{existingInvoice.filial_detail?.name || '-'}</p>
 										</div>
 									</div>
-									<div className='flex items-start gap-3'>
-										<div className='p-2 bg-orange-100 rounded-lg'>
-											<Warehouse className='h-4 w-4 text-orange-600' />
-										</div>
-										<div>
-											<p className='text-sm text-muted-foreground'>Ombor</p>
-											<p className='font-medium'>{existingInvoice.sklad_detail?.name || '-'}</p>
-										</div>
-									</div>
+
+									{/* Ichki kirim uchun: Qaysi ombordan va Qaysi omborga */}
+									{existingInvoice.type === PurchaseInvoiceType.INTERNAL ? (
+										<>
+											<div className='flex items-start gap-3'>
+												<div className='p-2 bg-green-100 rounded-lg'>
+													<Truck className='h-4 w-4 text-green-600' />
+												</div>
+												<div>
+													<p className='text-sm text-muted-foreground'>Qaysi ombordan</p>
+													<p className='font-medium'>
+														{(existingInvoice as unknown as { sklad_outgoing_detail?: { name: string } })
+															.sklad_outgoing_detail?.name || '-'}
+													</p>
+												</div>
+											</div>
+											<div className='flex items-start gap-3'>
+												<div className='p-2 bg-orange-100 rounded-lg'>
+													<Warehouse className='h-4 w-4 text-orange-600' />
+												</div>
+												<div>
+													<p className='text-sm text-muted-foreground'>Qaysi omborga</p>
+													<p className='font-medium'>{existingInvoice.sklad_detail?.name || '-'}</p>
+												</div>
+											</div>
+										</>
+									) : (
+										<>
+											{/* Tashqi kirim uchun: Ta'minotchi va Ombor */}
+											<div className='flex items-start gap-3'>
+												<div className='p-2 bg-green-100 rounded-lg'>
+													<Truck className='h-4 w-4 text-green-600' />
+												</div>
+												<div>
+													<p className='text-sm text-muted-foreground'>Ta'minotchi</p>
+													<p className='font-medium'>{existingInvoice.supplier_detail?.name || '-'}</p>
+												</div>
+											</div>
+											<div className='flex items-start gap-3'>
+												<div className='p-2 bg-orange-100 rounded-lg'>
+													<Warehouse className='h-4 w-4 text-orange-600' />
+												</div>
+												<div>
+													<p className='text-sm text-muted-foreground'>Ombor</p>
+													<p className='font-medium'>{existingInvoice.sklad_detail?.name || '-'}</p>
+												</div>
+											</div>
+										</>
+									)}
 									<div className='flex items-start gap-3'>
 										<div className='p-2 bg-cyan-100 rounded-lg'>
 											<User className='h-4 w-4 text-cyan-600' />
@@ -1358,6 +1419,32 @@ export default function PurchaseInvoiceAdd() {
 										</div>
 									</div>
 								)}
+
+								{/* Qancha to'lanmagan - faqat tashqi kirim uchun */}
+								{existingInvoice.type === PurchaseInvoiceType.EXTERNAL && existingInvoice.all_product_summa > 0 && (() => {
+									const allProductSumma = parseFloat(String(existingInvoice.all_product_summa || 0));
+									const givenSummaTotal = parseFloat(String(existingInvoice.given_summa_total_dollar || 0));
+									const remaining = allProductSumma - givenSummaTotal;
+									return remaining > 0 ? (
+										<div className='mt-6 pt-6 border-t'>
+											<h4 className='font-medium mb-4'>Qancha to'lanmagan</h4>
+											<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+												<div className='p-3 bg-emerald-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Jami to'langan</p>
+													<p className='font-semibold text-emerald-600'>
+														${formatDollar(givenSummaTotal)}
+													</p>
+												</div>
+												<div className='p-3 bg-red-50 rounded-lg'>
+													<p className='text-xs text-muted-foreground'>Qancha to'lanmagan</p>
+													<p className='font-semibold text-red-600'>
+														${formatDollar(remaining)}
+													</p>
+												</div>
+											</div>
+										</div>
+									) : null;
+								})()}
 
 								{/* Qarz ma'lumotlari */}
 								{(existingInvoice.total_debt_old > 0 ||
@@ -2714,6 +2801,29 @@ export default function PurchaseInvoiceAdd() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			{/* Bekor qilish (o'chirish) tasdiq oynasi */}
+			<AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Karzinkani bekor qilish</AlertDialogTitle>
+						<AlertDialogDescription>
+							Bu faktura butunlay o'chiriladi. Amalni davom ettirasizmi?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Yo'q</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleBekorQilish}
+							disabled={deletePurchaseInvoice.isPending}
+							className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+						>
+							{deletePurchaseInvoice.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+							Ha, o'chirish
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

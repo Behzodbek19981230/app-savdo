@@ -149,9 +149,7 @@ export function OrderShowPage() {
     const [data, setData] = useState<OrderProductsByModelResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const printRef = useRef<HTMLDivElement | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
+
 
     const handleBack = () => window.history.back();
 
@@ -294,23 +292,23 @@ export function OrderShowPage() {
     return (
         <div ref={printRef} className='h-full overflow-y-auto p-4 sm:p-6'>
             {/* Order History Ma'lumotlari */}
-            <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-3 sm:p-4 mb-4'>
-                <div className='flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700'>
+            <div className='bg-white dark:bg-card rounded-lg shadow-md dark:shadow-md border border-border p-3 sm:p-4 mb-4'>
+                <div className='flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 pb-2 border-b border-border'>
                     {/* Left: client name + phone */}
                     <div className='flex items-center gap-3 min-w-0'>
                         <div className='min-w-0'>
-                            <div className='text-sm font-semibold text-gray-800 dark:text-slate-100 truncate'>
+                            <div className='text-sm font-semibold text-gray-800 dark:text-foreground truncate'>
                                 {order_history.client_detail?.full_name || "Noma'lum"}
                             </div>
-                            <div className='text-xs text-gray-500 dark:text-gray-300 truncate'>
+                            <div className='text-xs text-gray-500 dark:text-muted-foreground truncate'>
                                 {order_history.client_detail?.phone_number || ''}
                             </div>
                         </div>
                     </div>
 
                     {/* Center: timestamp (hidden on very small screens) */}
-                    <div className='hidden sm:block text-xs text-gray-500 dark:text-gray-400'>
-                        <div className='text-xs text-gray-500 dark:text-gray-400'>Qo'shilgan vaqti:</div>
+                    <div className='hidden sm:block text-xs text-gray-500 dark:text-muted-foreground'>
+                        <div className='text-xs text-gray-500 dark:text-muted-foreground'>Qo'shilgan vaqti:</div>
 
                         {new Date(order_history.created_time).toLocaleTimeString('ru-RU', {
                             day: '2-digit',
@@ -382,55 +380,55 @@ export function OrderShowPage() {
 
                 <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3'>
                     {/* Kassir */}
-                    <div className='bg-gradient-to-br from-green-50 to-emerald-50 p-2 rounded border border-green-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-green-600 mb-1 uppercase tracking-wide'>Kassir</p>
-                        <p className='font-bold text-gray-800 dark:text-slate-100 text-sm mb-0.5'>
+                    <div className='bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-500/20 dark:to-emerald-500/20 p-2 rounded border border-green-200 dark:border-green-500/30'>
+                        <p className='text-[10px] font-semibold text-green-600 dark:text-green-400 mb-1 uppercase tracking-wide'>Kassir</p>
+                        <p className='font-bold text-gray-800 dark:text-foreground text-sm mb-0.5'>
                             {order_history.created_by_detail?.full_name || "Noma'lum"}
                         </p>
-                        <p className='text-xs text-gray-600 dark:text-gray-300'>
+                        <p className='text-xs text-gray-600 dark:text-muted-foreground'>
                             {order_history.created_by_detail?.phone_number || ''}
                         </p>
                     </div>
 
                     {/* Filial */}
-                    <div className='bg-gradient-to-br from-amber-50 to-orange-50 p-2 rounded border border-amber-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-amber-600 mb-1 uppercase tracking-wide'>Filial</p>
-                        <p className='font-bold text-gray-800 dark:text-slate-100 text-sm'>
+                    <div className='bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/20 dark:to-orange-500/20 p-2 rounded border border-amber-200 dark:border-amber-500/30'>
+                        <p className='text-[10px] font-semibold text-amber-600 dark:text-amber-400 mb-1 uppercase tracking-wide'>Filial</p>
+                        <p className='font-bold text-gray-800 dark:text-foreground text-sm'>
                             {order_history.order_filial_detail?.name || "Noma'lum"}
                         </p>
                     </div>
 
                     {/* Valyuta kursi */}
-                    <div className='bg-gradient-to-br from-cyan-50 to-teal-50 p-2 rounded border border-cyan-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-cyan-600 mb-1 uppercase tracking-wide'>
+                    <div className='bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-500/20 dark:to-teal-500/20 p-2 rounded border border-cyan-200 dark:border-cyan-500/30'>
+                        <p className='text-[10px] font-semibold text-cyan-600 dark:text-cyan-400 mb-1 uppercase tracking-wide'>
                             Valyuta kursi
                         </p>
-                        <p className='font-bold text-gray-800 dark:text-slate-100 text-sm'>
+                        <p className='font-bold text-gray-800 dark:text-foreground text-sm'>
                             1 USD = {Number(usdRate).toLocaleString()} UZS
                         </p>
                     </div>
 
                     {/* Status */}
-                    <div className='bg-gradient-to-br from-gray-50 to-slate-50 p-2 rounded border border-gray-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide'>
+                    <div className='bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-500/20 dark:to-slate-500/20 p-2 rounded border border-gray-200 dark:border-gray-500/30'>
+                        <p className='text-[10px] font-semibold text-gray-600 dark:text-muted-foreground mb-1 uppercase tracking-wide'>
                             Status
                         </p>
                         <div className='space-y-0.5'>
                             <div className='flex items-center gap-1.5'>
                                 <span
-                                    className={`w-1.5 h-1.5 rounded-full ${order_history.status_order_dukon ? 'bg-green-500' : 'bg-gray-300'
+                                    className={`w-1.5 h-1.5 rounded-full ${order_history.status_order_dukon ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                                         }`}
                                 ></span>
-                                <span className='text-xs text-gray-700 dark:text-gray-200'>
+                                <span className='text-xs text-gray-700 dark:text-foreground'>
                                     Dukon: {order_history.status_order_dukon ? 'Tayyor' : 'Kutilmoqda'}
                                 </span>
                             </div>
                             <div className='flex items-center gap-1.5'>
                                 <span
-                                    className={`w-1.5 h-1.5 rounded-full ${order_history.status_order_sklad ? 'bg-green-500' : 'bg-gray-300'
+                                    className={`w-1.5 h-1.5 rounded-full ${order_history.status_order_sklad ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                                         }`}
                                 ></span>
-                                <span className='text-xs text-gray-700 dark:text-gray-200'>
+                                <span className='text-xs text-gray-700 dark:text-foreground'>
                                     Sklad: {order_history.status_order_sklad ? 'Tayyor' : 'Kutilmoqda'}
                                 </span>
                             </div>
@@ -438,26 +436,26 @@ export function OrderShowPage() {
                     </div>
 
                     {/* Jami summa */}
-                    <div className='bg-gradient-to-br from-indigo-50 to-blue-50 p-2 rounded border-2 border-indigo-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-indigo-600 mb-1 uppercase tracking-wide'>
+                    <div className='bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/20 dark:to-blue-500/20 p-2 rounded border-2 border-indigo-300 dark:border-indigo-500/30'>
+                        <p className='text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 mb-1 uppercase tracking-wide'>
                             Jami summa
                         </p>
-                        <p className='font-bold text-indigo-700 dark:text-indigo-200 text-base mb-0.5'>
+                        <p className='font-bold text-indigo-700 dark:text-indigo-300 text-base mb-0.5'>
                             {(Number(order_history.all_product_summa || 0) / usdRate).toFixed(2)} USD
                         </p>
-                        <p className='text-xs font-semibold text-indigo-600 dark:text-indigo-200'>
+                        <p className='text-xs font-semibold text-indigo-600 dark:text-indigo-300'>
                             {Number(order_history.all_product_summa || 0).toLocaleString()} UZS
                         </p>
                     </div>
 
                     {/* Chegirma */}
-                    <div className='bg-gradient-to-br from-rose-50 to-red-50 p-2 rounded border border-rose-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-rose-600 mb-1 uppercase tracking-wide'>Chegirma</p>
-                        <p className='font-bold text-rose-700 dark:text-rose-200 text-base'>
+                    <div className='bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-500/20 dark:to-red-500/20 p-2 rounded border border-rose-200 dark:border-rose-500/30'>
+                        <p className='text-[10px] font-semibold text-rose-600 dark:text-rose-400 mb-1 uppercase tracking-wide'>Chegirma</p>
+                        <p className='font-bold text-rose-700 dark:text-rose-300 text-base'>
                             {Number(order_history.discount_amount || 0).toLocaleString()} UZS
                         </p>
                         {Number(order_history.discount_amount || 0) > 0 && (
-                            <p className='text-[10px] text-rose-600 mt-0.5'>
+                            <p className='text-[10px] text-rose-600 dark:text-rose-400 mt-0.5'>
                                 {(
                                     (Number(order_history.discount_amount) /
                                         Number(order_history.all_product_summa || 1)) *
@@ -472,11 +470,11 @@ export function OrderShowPage() {
                     {/* To'lanishi kerak va Jami to'landi yonma-yon */}
                     {(Number(order_history.all_product_summa || 0) - Number(order_history.discount_amount || 0) > 0 ||
                         totalPaidUZS > 0) && (
-                            <div className='bg-gradient-to-br from-emerald-50 to-green-50 p-2 rounded border-2 border-emerald-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                                <p className='text-[10px] font-semibold text-emerald-600 mb-1 uppercase tracking-wide'>
+                            <div className='bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-500/20 dark:to-green-500/20 p-2 rounded border-2 border-emerald-300 dark:border-emerald-500/30'>
+                                <p className='text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide'>
                                     To'lanishi kerak
                                 </p>
-                                <p className='font-bold text-emerald-700 dark:text-emerald-200 text-base mb-0.5'>
+                                <p className='font-bold text-emerald-700 dark:text-emerald-300 text-base mb-0.5'>
                                     {(
                                         (Number(order_history.all_product_summa || 0) -
                                             Number(order_history.discount_amount || 0)) /
@@ -484,7 +482,7 @@ export function OrderShowPage() {
                                     ).toFixed(2)}{' '}
                                     USD
                                 </p>
-                                <p className='text-xs font-semibold text-emerald-600 dark:text-emerald-200'>
+                                <p className='text-xs font-semibold text-emerald-600 dark:text-emerald-300'>
                                     {(
                                         Number(order_history.all_product_summa || 0) -
                                         Number(order_history.discount_amount || 0)
@@ -495,42 +493,42 @@ export function OrderShowPage() {
                         )}
 
                     {/* Jami to'landi */}
-                    <div className='bg-gradient-to-br from-indigo-50 to-blue-50 p-2 rounded border-2 border-indigo-300 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                        <p className='text-[10px] font-semibold text-indigo-600 mb-1 uppercase tracking-wide'>
+                    <div className='bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/20 dark:to-blue-500/20 p-2 rounded border-2 border-indigo-300 dark:border-indigo-500/30'>
+                        <p className='text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 mb-1 uppercase tracking-wide'>
                             Jami to'landi
                         </p>
                         <div className='text-right'>
-                            <div className='font-bold text-lg sm:text-xl text-indigo-700'>
+                            <div className='font-bold text-lg sm:text-xl text-indigo-700 dark:text-indigo-300'>
                                 {totalPaidUSD ? totalPaidUSD.toFixed(2) : '0.00'} USD
                             </div>
-                            <div className='text-sm sm:text-base text-gray-500'>
+                            <div className='text-sm sm:text-base text-gray-500 dark:text-muted-foreground'>
                                 {totalPaidUZS.toLocaleString()} UZS
                             </div>
                         </div>
                     </div>
                     {/* Qarz ma'lumotlari */}
-                    <div className='bg-gradient-to-br from-red-50 to-pink-50 p-2 rounded border border-red-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 '>
-                        <p className='text-[10px] font-semibold text-red-600 mb-2 uppercase tracking-wide'>
+                    <div className='bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-500/20 dark:to-pink-500/20 p-2 rounded border border-red-200 dark:border-red-500/30'>
+                        <p className='text-[10px] font-semibold text-red-600 dark:text-red-400 mb-2 uppercase tracking-wide'>
                             Qarz ma'lumotlari
                         </p>
-                        <p className='font-bold text-red-700 dark:text-red-200 text-base'>
+                        <p className='font-bold text-red-700 dark:text-red-300 text-base'>
                             {Number(order_history.client_detail?.total_debt || 0).toFixed(2)} USD
                         </p>
-                        <p className='text-xs text-red-600 dark:text-red-200 mt-0.5'>
+                        <p className='text-xs text-red-600 dark:text-red-300 mt-0.5'>
                             {(Number(order_history.client_detail?.total_debt || 0) * usdRate).toLocaleString()} UZS
                         </p>
                     </div>
 
                     {/* Foyda */}
                     {Number(order_history.all_profit_dollar || 0) > 0 && (
-                        <div className='bg-gradient-to-br from-lime-50 to-green-50 p-2 rounded border border-lime-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700'>
-                            <p className='text-[10px] font-semibold text-lime-600 mb-1 uppercase tracking-wide dark:text-lime-200'>
+                        <div className='bg-gradient-to-br from-lime-50 to-green-50 dark:from-lime-500/20 dark:to-green-500/20 p-2 rounded border border-lime-200 dark:border-lime-500/30'>
+                            <p className='text-[10px] font-semibold text-lime-600 dark:text-lime-400 mb-1 uppercase tracking-wide'>
                                 Foyda
                             </p>
-                            <p className='font-bold text-lime-700 dark:text-lime-200 text-base'>
+                            <p className='font-bold text-lime-700 dark:text-lime-300 text-base'>
                                 {Number(order_history.all_profit_dollar).toFixed(2)} USD
                             </p>
-                            <p className='text-xs text-lime-600 dark:text-lime-200 mt-0.5'>
+                            <p className='text-xs text-lime-600 dark:text-lime-300 mt-0.5'>
                                 {(Number(order_history.all_profit_dollar) * usdRate).toLocaleString()} UZS
                             </p>
                         </div>
@@ -538,12 +536,12 @@ export function OrderShowPage() {
 
                     {/* To'lov usullari */}
                     <div className='md:col-span-2 lg:col-span-3 xl:col-span-5'>
-                        <p className='text-[10px] font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide'>
+                        <p className='text-[10px] font-semibold text-gray-600 dark:text-muted-foreground mb-2 uppercase tracking-wide'>
                             To'lov usullari
                         </p>
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2'>
                             {Number(order_history.summa_dollar || 0) > 0 && (
-                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200'>
+                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200 dark:border-border'>
                                     <div className='bg-gradient-to-r from-green-700 to-emerald-800 text-white p-1.5 sm:p-2 flex justify-between items-center'>
                                         <div className='flex items-center space-x-1.5'>
                                             <div className='bg-green-100 p-1 rounded'>
@@ -552,13 +550,13 @@ export function OrderShowPage() {
                                             <span className='font-medium text-[10px] sm:text-xs'>US dollar naqd</span>
                                         </div>
                                     </div>
-                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-slate-800'>
+                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-card'>
                                         <div className='text-right flex items-center justify-end gap-1'>
-                                            <p className='font-semibold text-sm text-gray-800 dark:text-slate-100'>
+                                            <p className='font-semibold text-sm text-gray-800 dark:text-foreground'>
                                                 {Number(order_history.summa_dollar).toFixed(2)}
                                             </p>
-                                            <span className='text-[10px] font-medium text-gray-500'>USD</span>
-                                            <p className='text-[10px] text-gray-600 dark:text-gray-300 mt-0.5'>
+                                            <span className='text-[10px] font-medium text-gray-500 dark:text-muted-foreground'>USD</span>
+                                            <p className='text-[10px] text-gray-600 dark:text-muted-foreground mt-0.5'>
                                                 ({Number(order_history.summa_dollar) * usdRate} UZS)
                                             </p>
                                         </div>
@@ -566,7 +564,7 @@ export function OrderShowPage() {
                                 </div>
                             )}
                             {Number(order_history.summa_naqt || 0) > 0 && (
-                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200'>
+                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200 dark:border-border'>
                                     <div className='bg-gradient-to-r from-lime-500 to-green-600 text-white p-1.5 sm:p-2 flex justify-between items-center'>
                                         <div className='flex items-center space-x-1.5'>
                                             <div className='bg-lime-100 p-1 rounded'>
@@ -575,19 +573,19 @@ export function OrderShowPage() {
                                             <span className='font-medium text-[10px] sm:text-xs'>Naqd</span>
                                         </div>
                                     </div>
-                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-slate-800'>
+                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-card'>
                                         <div className='text-right flex items-center justify-end gap-1'>
-                                            <p className='font-semibold text-sm text-gray-800 dark:text-slate-100'>
+                                            <p className='font-semibold text-sm text-gray-800 dark:text-foreground'>
                                                 {Number(order_history.summa_naqt).toLocaleString()}
                                             </p>
-                                            <span className='text-[10px] font-medium text-gray-500'>UZS</span>
+                                            <span className='text-[10px] font-medium text-gray-500 dark:text-muted-foreground'>UZS</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {Number(order_history.summa_transfer || 0) > 0 && (
-                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200'>
+                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200 dark:border-border'>
                                     <div className='bg-gradient-to-r from-blue-400 to-cyan-500 text-white p-1.5 sm:p-2 flex justify-between items-center'>
                                         <div className='flex items-center space-x-1.5'>
                                             <div className='bg-blue-100 p-1 rounded'>
@@ -596,18 +594,18 @@ export function OrderShowPage() {
                                             <span className='font-medium text-[10px] sm:text-xs'>Plastik perevod</span>
                                         </div>
                                     </div>
-                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-slate-800'>
+                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-card'>
                                         <div className='text-right flex items-center justify-end gap-1'>
-                                            <p className='font-semibold text-sm text-gray-800 dark:text-slate-100'>
+                                            <p className='font-semibold text-sm text-gray-800 dark:text-foreground'>
                                                 {Number(order_history.summa_transfer).toLocaleString()}
                                             </p>
-                                            <span className='text-[10px] font-medium text-gray-500'>UZS</span>
+                                            <span className='text-[10px] font-medium text-gray-500 dark:text-muted-foreground'>UZS</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
                             {Number(order_history.summa_terminal || 0) > 0 && (
-                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200'>
+                                <div className='border rounded-lg overflow-hidden shadow-sm border-indigo-200 dark:border-border'>
                                     <div className='bg-gradient-to-r from-blue-400 to-cyan-500 text-white p-1.5 sm:p-2 flex justify-between items-center'>
                                         <div className='flex items-center space-x-1.5'>
                                             <div className='bg-blue-100 p-1 rounded'>
@@ -616,12 +614,12 @@ export function OrderShowPage() {
                                             <span className='font-medium text-[10px] sm:text-xs'>Terminal</span>
                                         </div>
                                     </div>
-                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-slate-800'>
+                                    <div className='p-1.5 sm:p-2 bg-white dark:bg-card'>
                                         <div className='text-right flex items-center justify-end gap-1'>
-                                            <p className='font-semibold text-sm text-gray-800 dark:text-slate-100'>
+                                            <p className='font-semibold text-sm text-gray-800 dark:text-foreground'>
                                                 {Number(order_history.summa_terminal).toLocaleString()}
                                             </p>
-                                            <span className='text-[10px] font-medium text-gray-500'>UZS</span>
+                                            <span className='text-[10px] font-medium text-gray-500 dark:text-muted-foreground'>UZS</span>
                                         </div>
                                     </div>
                                 </div>
@@ -631,23 +629,23 @@ export function OrderShowPage() {
 
                     {/* Qaytim */}
                     {(Number(order_history.zdacha_dollar || 0) > 0 || Number(order_history.zdacha_som || 0) > 0) && (
-                        <div className='bg-gradient-to-br from-yellow-50 to-amber-50 p-2 rounded border border-yellow-200 md:col-span-2 lg:col-span-3 xl:col-span-5'>
-                            <p className='text-[10px] font-semibold text-yellow-600 mb-2 uppercase tracking-wide'>
+                        <div className='bg-gradient-to-br from-yellow-50 to-amber-50 dark:bg-muted/50 p-2 rounded border border-yellow-200 dark:border-border md:col-span-2 lg:col-span-3 xl:col-span-5'>
+                            <p className='text-[10px] font-semibold text-yellow-600 dark:text-yellow-400 mb-2 uppercase tracking-wide'>
                                 Qaytim
                             </p>
                             <div className='grid grid-cols-2 gap-2'>
                                 {Number(order_history.zdacha_dollar || 0) > 0 && (
-                                    <div className='bg-white dark:bg-slate-800 p-2 rounded border border-yellow-100 dark:border-slate-700'>
-                                        <p className='text-[10px] text-gray-500 mb-0.5'>Qaytim dollarda</p>
-                                        <p className='font-bold text-gray-800 text-xs'>
+                                    <div className='bg-white dark:bg-card p-2 rounded border border-yellow-100 dark:border-border'>
+                                        <p className='text-[10px] text-gray-500 dark:text-muted-foreground mb-0.5'>Qaytim dollarda</p>
+                                        <p className='font-bold text-gray-800 dark:text-foreground text-xs'>
                                             {Number(order_history.zdacha_dollar).toFixed(2)} USD
                                         </p>
                                     </div>
                                 )}
                                 {Number(order_history.zdacha_som || 0) > 0 && (
-                                    <div className='bg-white dark:bg-slate-800 p-2 rounded border border-yellow-100 dark:border-slate-700'>
-                                        <p className='text-[10px] text-gray-500 mb-0.5'>Qaytim so'mda</p>
-                                        <p className='font-bold text-gray-800 text-xs'>
+                                    <div className='bg-white dark:bg-card p-2 rounded border border-yellow-100 dark:border-border'>
+                                        <p className='text-[10px] text-gray-500 dark:text-muted-foreground mb-0.5'>Qaytim so'mda</p>
+                                        <p className='font-bold text-gray-800 dark:text-foreground text-xs'>
                                             {Number(order_history.zdacha_som).toLocaleString()} UZS
                                         </p>
                                     </div>
@@ -658,11 +656,11 @@ export function OrderShowPage() {
 
                     {/* Izoh */}
                     {order_history.note && (
-                        <div className='bg-gradient-to-br from-slate-50 to-gray-50 p-2 rounded border border-slate-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 md:col-span-2 lg:col-span-3 xl:col-span-5'>
-                            <p className='text-[10px] font-semibold text-slate-600 mb-1 uppercase tracking-wide'>
+                        <div className='bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-500/20 dark:to-gray-500/20 p-2 rounded border border-slate-200 dark:border-slate-500/30 md:col-span-2 lg:col-span-3 xl:col-span-5'>
+                            <p className='text-[10px] font-semibold text-slate-600 dark:text-muted-foreground mb-1 uppercase tracking-wide'>
                                 Izoh
                             </p>
-                            <p className='text-xs text-gray-800 dark:text-slate-100 whitespace-pre-wrap'>
+                            <p className='text-xs text-gray-800 dark:text-foreground whitespace-pre-wrap'>
                                 {order_history.note}
                             </p>
                         </div>
@@ -670,11 +668,11 @@ export function OrderShowPage() {
 
                     {/* Yetkazib beruvchi */}
                     {order_history.driver_info && (
-                        <div className='bg-gradient-to-br from-teal-50 to-cyan-50 p-2 rounded border border-teal-200 dark:from-slate-800 dark:to-slate-700 dark:border-slate-700 md:col-span-2 lg:col-span-3 xl:col-span-5'>
-                            <p className='text-[10px] font-semibold text-teal-600 mb-1 uppercase tracking-wide'>
+                        <div className='bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-500/20 dark:to-cyan-500/20 p-2 rounded border border-teal-200 dark:border-teal-500/30 md:col-span-2 lg:col-span-3 xl:col-span-5'>
+                            <p className='text-[10px] font-semibold text-teal-600 dark:text-teal-400 mb-1 uppercase tracking-wide'>
                                 Yetkazib beruvchi
                             </p>
-                            <p className='text-xs text-gray-800 dark:text-slate-100 whitespace-pre-wrap'>
+                            <p className='text-xs text-gray-800 dark:text-foreground whitespace-pre-wrap'>
                                 {order_history.driver_info}
                             </p>
                         </div>
@@ -683,42 +681,42 @@ export function OrderShowPage() {
             </div>
 
             {/* Productlar - Model bo'yicha guruhlangan */}
-            <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden'>
+            <div className='bg-white dark:bg-card rounded-lg shadow-md dark:shadow-md border border-border overflow-hidden'>
                 <div className='overflow-x-auto'>
                     <table className='w-full border-collapse text-sm'>
                         <thead>
-                            <tr className='bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-gray-700'>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                            <tr className='bg-gray-50 dark:bg-muted/50 border-b border-gray-200 dark:border-border'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     #
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Joyi
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Model
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Nomi
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     O'lchami
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Tip
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Soni
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Berilgan soni
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Narxi ($)
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Asl Narxi ($)
                                 </th>
-                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap'>
+                                <th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Foyda ($)
                                 </th>
                             </tr>
@@ -739,11 +737,11 @@ export function OrderShowPage() {
                                         {/* Model Header */}
                                         <tr
                                             key={`header-${group.model_id}`}
-                                            className='bg-blue-100 dark:bg-slate-800 border-b border-blue-200 dark:border-slate-700'
+                                            className='bg-blue-100 dark:bg-muted/50 border-b border-blue-200 dark:border-border'
                                         >
                                             <td
                                                 colSpan={11}
-                                                className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-blue-800'
+                                                className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-blue-800 dark:text-foreground'
                                             >
                                                 {group.model}
                                             </td>
@@ -766,29 +764,29 @@ export function OrderShowPage() {
                                             return (
                                                 <tr
                                                     key={product.id}
-                                                    className='border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors'
+                                                    className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors'
                                                 >
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-600 dark:text-gray-300'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-600 dark:text-muted-foreground'>
                                                         {productIndex}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
                                                         {product.sklad_detail?.name || 'Ombor'}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
                                                         {group.model}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
                                                         {product.branch_category_detail?.name ||
                                                             product.type_detail?.name ||
                                                             '-'}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
                                                         {product.size_detail?.size || '-'}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
                                                         {product.type_detail?.name || '-'}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
                                                         {count}
                                                     </td>
                                                     <td className='px-3 py-2 sm:px-4 sm:py-3'>
@@ -799,13 +797,13 @@ export function OrderShowPage() {
                                                             onUpdated={handleGivenCountUpdated}
                                                         />
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
                                                         {priceDollar.toFixed(2)}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-slate-100 text-right'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
                                                         {realPrice.toFixed(2)}
                                                     </td>
-                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-green-600 text-right'>
+                                                    <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-green-600 dark:text-green-400 text-right'>
                                                         {profit.toFixed(2)}
                                                     </td>
                                                 </tr>
@@ -813,26 +811,26 @@ export function OrderShowPage() {
                                         })}
 
                                         {/* Group Total */}
-                                        <tr className='bg-gray-100 dark:bg-slate-800 border-b-2 border-gray-300 dark:border-gray-700'>
+                                        <tr className='bg-gray-100 dark:bg-muted/50 border-b-2 border-gray-300 dark:border-border'>
                                             <td
                                                 colSpan={6}
-                                                className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700'
+                                                className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground'
                                             >
                                                 Jami:
                                             </td>
-                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 text-right'>
+                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
                                                 {groupTotal.count}
                                             </td>
-                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 text-right'>
+                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
                                                 {groupTotal.given_count}
                                             </td>
-                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 text-right'>
+                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
                                                 {groupTotal.price_dollar.toFixed(2)}
                                             </td>
-                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 text-right'>
+                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
                                                 {groupTotal.real_price.toFixed(2)}
                                             </td>
-                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-green-600 text-right'>
+                                            <td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-green-600 dark:text-green-400 text-right'>
                                                 {groupTotal.profit.toFixed(2)}
                                             </td>
                                         </tr>

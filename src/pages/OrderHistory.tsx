@@ -573,16 +573,16 @@ export default function OrderHistoryPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className='grid w-full grid-cols-2 bg-gray-100 p-1'>
+                        <TabsList className='grid w-full grid-cols-2 bg-gray-100 dark:bg-muted p-1'>
                             <TabsTrigger
                                 value='sales'
-                                className='data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
+                                className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
                             >
                                 Savdo ro'yxati
                             </TabsTrigger>
                             <TabsTrigger
                                 value='debtor'
-                                className='data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-md'
+                                className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
                             >
                                 Mijozdan qarzdorlik
                             </TabsTrigger>
