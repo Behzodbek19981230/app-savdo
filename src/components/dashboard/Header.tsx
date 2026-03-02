@@ -78,7 +78,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     // Tanlangan filial ma'lumotlari (default: birinchi filial)
     const selectedFilial = filials.find((f) => f.id === userFilialId) || filials[0];
     // Tanlangan filial bo'yicha exchange rate olish
-    const { data: exchangeRatesData, isLoading: isExchangeLoading } = useExchangeRates(
+    const { data: exchangeRatesData, isLoading: isExchangeLoading, refetch: refetchExchangeRates } = useExchangeRates(
         userFilialId ? { filial: userFilialId } : undefined,
     );
     // Filialga tegishli exchange rate
@@ -147,8 +147,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             // User profilini yangilash
             try {
+                void refetchExchangeRates();
+
                 const updatedUser = await authService.getCurrentUser();
                 queryClient.setQueryData(AUTH_KEYS.currentUser, updatedUser);
+
             } catch (error) {
                 // User yangilashda xatolik bo'lsa, invalidate qilish
                 queryClient.invalidateQueries({ queryKey: AUTH_KEYS.currentUser });
