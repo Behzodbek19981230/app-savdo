@@ -20,6 +20,13 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     Pagination,
     PaginationContent,
     PaginationItem,
@@ -29,6 +36,7 @@ import {
 } from '@/components/ui/pagination';
 import { ExpenseModal } from '@/components/expenses/ExpenseModal';
 import { useExpenseCategories } from '@/hooks/api/useExpenseCategories';
+import { Expense } from '@/services/expenseService';
 import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 50;
@@ -81,7 +89,9 @@ export default function ExpensesPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [editingItem, setEditingItem] = useState<ExpenseItem | null>(null);
+    const [editingItem, setEditingItem] = useState<Expense | null>(null);
+    const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+    const [selectedNote, setSelectedNote] = useState<string>('');
 
     // Applied filters (used for querying)
     const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -137,7 +147,17 @@ export default function ExpensesPage() {
     };
 
     const openEdit = (item: ExpenseItem) => {
-        setEditingItem(item);
+        // Convert ExpenseItem to Expense format for ExpenseModal
+        const expenseData: Expense = {
+            ...item,
+            summa_total_dollar: Number(item.summa_total_dollar) || 0,
+            summa_dollar: Number(item.summa_dollar) || 0,
+            summa_naqt: Number(item.summa_naqt) || 0,
+            summa_kilik: Number(item.summa_kilik) || 0,
+            summa_terminal: Number(item.summa_terminal) || 0,
+            summa_transfer: Number(item.summa_transfer) || 0,
+        };
+        setEditingItem(expenseData);
         setIsDialogOpen(true);
     };
 
@@ -338,7 +358,22 @@ export default function ExpensesPage() {
                                                         <TableCell className='text-right'>
                                                             {formatCurrency(it.summa_transfer)}
                                                         </TableCell>
-                                                        <TableCell>{it.note || '-'}</TableCell>
+                                                        <TableCell>
+                                                            {it.note ? (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedNote(it.note || '');
+                                                                        setIsNoteDialogOpen(true);
+                                                                    }}
+                                                                    className='text-left text-blue-600 hover:text-blue-800 hover:underline cursor-pointer line-clamp-1'
+                                                                    title="Izohni ko'rish"
+                                                                >
+                                                                    {it.note}
+                                                                </button>
+                                                            ) : (
+                                                                '-'
+                                                            )}
+                                                        </TableCell>
                                                         <TableCell className='text-right'>
                                                             <div className='flex items-center justify-end gap-1'>
                                                                 <Button
@@ -443,6 +478,21 @@ export default function ExpensesPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Note Dialog */}
+            <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+                <DialogContent className='sm:max-w-[500px]'>
+                    <DialogHeader>
+                        <DialogTitle>Izoh</DialogTitle>
+                        <DialogDescription>Xarajat izohi</DialogDescription>
+                    </DialogHeader>
+                    <div className='mt-4'>
+                        <p className='text-sm text-foreground whitespace-pre-wrap break-words'>
+                            {selectedNote || "Izoh yo'q"}
+                        </p>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

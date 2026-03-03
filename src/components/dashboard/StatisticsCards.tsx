@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { reportsService } from '../../services/reports.service';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/api';
 import { FinancialSummary } from './FinancialSummary';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const baseCards = [
     {
@@ -56,14 +56,15 @@ function safeNum(v: string | number | undefined): number {
 }
 
 export function StatisticsCards() {
-    const { user } = useAuth();
+    const { user, selectedFilialId } = useAuthContext();
+
     const now = new Date();
     const [year, setYear] = useState<number>(now.getFullYear());
     const [month, setMonth] = useState<number | null>(now.getMonth() + 1);
     const [showFullSummary, setShowFullSummary] = useState(false);
     const navigate = useNavigate();
-    const filialId = user?.filials_detail?.[0]?.id ?? null;
-
+    const filialId = selectedFilialId ?? user?.filials_detail?.[0]?.id ?? null;
+    console.log(filialId);
     const { data, isLoading } = useQuery({
         queryKey: ['filial-statistics', filialId, year, month],
         queryFn: () => {

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
     Dialog,
     DialogContent,
@@ -25,6 +27,35 @@ import { Loader2 } from 'lucide-react';
 import moment from 'moment';
 import { AxiosError } from 'axios';
 
+// Validation schema
+const expenseSchema = z
+    .object({
+        category: z.string().min(1, 'Kategoriya tanlanishi shart'),
+        summa_total_dollar: z.coerce.number().min(0, "Jami summa 0 dan kichik bo'lishi mumkin emas"),
+        summa_dollar: z.coerce.number().min(0, "Summa 0 dan kichik bo'lishi mumkin emas"),
+        summa_naqt: z.coerce.number().min(0, "Summa 0 dan kichik bo'lishi mumkin emas"),
+        summa_kilik: z.coerce.number().min(0, "Summa 0 dan kichik bo'lishi mumkin emas"),
+        summa_terminal: z.coerce.number().min(0, "Summa 0 dan kichik bo'lishi mumkin emas"),
+        summa_transfer: z.coerce.number().min(0, "Summa 0 dan kichik bo'lishi mumkin emas"),
+        date: z.date({ required_error: 'Sana kiritilishi shart' }),
+        note: z.string().optional(),
+        is_salary: z.boolean().default(false),
+        employee: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+        if (data.is_salary === true) {
+            if (!data.employee || data.employee === '' || Number(data.employee) <= 0) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Oylik xarajat uchun hodim tanlanishi shart',
+                    path: ['employee'],
+                });
+            }
+        }
+    });
+
+type ExpenseFormValues = z.infer<typeof expenseSchema>;
+
 interface ExpenseModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -36,29 +67,16 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
     const { user, selectedFilialId } = useAuthContext();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    interface FormValues {
-        category?: string;
-        summa_total_dollar?: string;
-        summa_dollar?: string;
-        summa_naqt?: string;
-        summa_kilik?: string;
-        summa_terminal?: string;
-        summa_transfer?: string;
-        date?: Date | undefined;
-        note?: string;
-        is_salary?: boolean;
-        employee?: string;
-    }
-
-    const form = useForm<FormValues>({
+    const form = useForm<ExpenseFormValues>({
+        resolver: zodResolver(expenseSchema),
         defaultValues: {
             category: initialData?.category?.toString() || '',
-            summa_total_dollar: initialData?.summa_total_dollar?.toString() || '0',
-            summa_dollar: initialData?.summa_dollar?.toString() || '0',
-            summa_naqt: initialData?.summa_naqt?.toString() || '0',
-            summa_kilik: initialData?.summa_kilik?.toString() || '0',
-            summa_terminal: initialData?.summa_terminal?.toString() || '0',
-            summa_transfer: initialData?.summa_transfer?.toString() || '0',
+            summa_total_dollar: initialData?.summa_total_dollar || 0,
+            summa_dollar: initialData?.summa_dollar || 0,
+            summa_naqt: initialData?.summa_naqt || 0,
+            summa_kilik: initialData?.summa_kilik || 0,
+            summa_terminal: initialData?.summa_terminal || 0,
+            summa_transfer: initialData?.summa_transfer || 0,
             date: initialData?.date ? new Date(initialData.date) : new Date(),
             note: initialData?.note || '',
             is_salary: initialData?.is_salary || false,
@@ -76,18 +94,18 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
     const dollarRate = exchangeRatesData?.results?.[0]?.dollar || 12500;
 
     // Watch all summa fields for auto-calculation
-    const summaDollar = Number(form.watch('summa_dollar') || 0);
-    const summaNaqt = Number(form.watch('summa_naqt') || 0);
-    const summaKilik = Number(form.watch('summa_kilik') || 0);
-    const summaTerminal = Number(form.watch('summa_terminal') || 0);
-    const summaTransfer = Number(form.watch('summa_transfer') || 0);
+    const summaDollar = form.watch('summa_dollar') || 0;
+    const summaNaqt = form.watch('summa_naqt') || 0;
+    const summaKilik = form.watch('summa_kilik') || 0;
+    const summaTerminal = form.watch('summa_terminal') || 0;
+    const summaTransfer = form.watch('summa_transfer') || 0;
 
     // Auto-calculate total dollar based on inputs
     useEffect(() => {
         if (!isOpen) return;
         const totalInSom = summaNaqt + summaKilik + summaTerminal + summaTransfer;
         const totalInDollar = summaDollar + totalInSom / dollarRate;
-        form.setValue('summa_total_dollar', parseFloat(totalInDollar.toFixed(2)).toString());
+        form.setValue('summa_total_dollar', parseFloat(totalInDollar.toFixed(2)), { shouldValidate: false });
     }, [summaDollar, summaNaqt, summaKilik, summaTerminal, summaTransfer, dollarRate, form, isOpen]);
 
     // Get categories from API using hook
@@ -120,12 +138,12 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
     useEffect(() => {
         form.reset({
             category: initialData?.category?.toString() || '',
-            summa_total_dollar: initialData?.summa_total_dollar?.toString() || '0',
-            summa_dollar: initialData?.summa_dollar?.toString() || '0',
-            summa_naqt: initialData?.summa_naqt?.toString() || '0',
-            summa_kilik: initialData?.summa_kilik?.toString() || '0',
-            summa_terminal: initialData?.summa_terminal?.toString() || '0',
-            summa_transfer: initialData?.summa_transfer?.toString() || '0',
+            summa_total_dollar: initialData?.summa_total_dollar || 0,
+            summa_dollar: initialData?.summa_dollar || 0,
+            summa_naqt: initialData?.summa_naqt || 0,
+            summa_kilik: initialData?.summa_kilik || 0,
+            summa_terminal: initialData?.summa_terminal || 0,
+            summa_transfer: initialData?.summa_transfer || 0,
             date: initialData?.date ? new Date(initialData.date) : new Date(),
             note: initialData?.note || '',
             is_salary: initialData?.is_salary || false,
@@ -133,23 +151,23 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
         });
     }, [initialData, form]);
 
-    const onSubmit = async (values: FormValues) => {
+    const onSubmit = async (values: ExpenseFormValues) => {
         setIsSubmitting(true);
-        const payload = {
+        const payload: CreateExpensePayload = {
             filial: user?.order_filial || 0,
             category: values.category ? Number(values.category) : undefined,
-            summa_total_dollar: Number(values.summa_total_dollar || 0),
-            summa_dollar: Number(values.summa_dollar || 0),
-            summa_naqt: Number(values.summa_naqt || 0),
-            summa_kilik: Number(values.summa_kilik || 0),
-            summa_terminal: Number(values.summa_terminal || 0),
-            summa_transfer: Number(values.summa_transfer || 0),
+            summa_total_dollar: values.summa_total_dollar,
+            summa_dollar: values.summa_dollar,
+            summa_naqt: values.summa_naqt,
+            summa_kilik: values.summa_kilik,
+            summa_terminal: values.summa_terminal,
+            summa_transfer: values.summa_transfer,
             date: values.date ? moment(values.date).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'),
             note: values.note || '',
             is_delete: false,
             is_salary: values.is_salary === true,
             employee: values.is_salary === true && values.employee ? Number(values.employee) : undefined,
-        } as CreateExpensePayload;
+        };
 
         try {
             if (initialData && initialData.id) {
@@ -272,8 +290,8 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                         <FormLabel>Jami summa ($) *</FormLabel>
                                         <FormControl>
                                             <NumberInput
-                                                value={field.value ?? '0'}
-                                                onChange={field.onChange}
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
                                                 className='w-full'
                                                 disabled
                                                 readOnly
@@ -328,7 +346,11 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                     <FormItem>
                                         <FormLabel>Summa ($)</FormLabel>
                                         <FormControl>
-                                            <NumberInput value={field.value ?? '0'} onChange={field.onChange} className='w-full' />
+                                            <NumberInput
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
+                                                className='w-full'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -342,7 +364,11 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                     <FormItem>
                                         <FormLabel>Summa so'm</FormLabel>
                                         <FormControl>
-                                            <NumberInput value={field.value ?? '0'} onChange={field.onChange} className='w-full' />
+                                            <NumberInput
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
+                                                className='w-full'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -356,7 +382,11 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                     <FormItem>
                                         <FormLabel>Summa kilik</FormLabel>
                                         <FormControl>
-                                            <NumberInput value={field.value ?? '0'} onChange={field.onChange} className='w-full' />
+                                            <NumberInput
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
+                                                className='w-full'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -372,7 +402,11 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                     <FormItem>
                                         <FormLabel>Summa terminal</FormLabel>
                                         <FormControl>
-                                            <NumberInput value={field.value ?? '0'} onChange={field.onChange} className='w-full' />
+                                            <NumberInput
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
+                                                className='w-full'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -386,7 +420,11 @@ export function ExpenseModal({ isOpen, onClose, onSuccess, initialData = null }:
                                     <FormItem>
                                         <FormLabel>Summa transfer</FormLabel>
                                         <FormControl>
-                                            <NumberInput value={field.value ?? '0'} onChange={field.onChange} className='w-full' />
+                                            <NumberInput
+                                                value={field.value?.toString() ?? '0'}
+                                                onChange={(value) => field.onChange(Number(value) || 0)}
+                                                className='w-full'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
