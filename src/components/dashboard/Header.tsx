@@ -158,9 +158,8 @@ export function Header({ onMenuClick }: HeaderProps) {
             }
 
             // Agar is_active false bo'lsa, dialog yopilmasligi kerak
-            if (!shouldBlockInterface) {
-                setIsExchangeDialogOpen(false);
-            }
+            setIsExchangeDialogOpen(false);
+
         } catch {
             // handled in hook toast
         }
