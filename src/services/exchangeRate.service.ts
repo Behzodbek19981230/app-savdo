@@ -8,11 +8,13 @@ import { API_ENDPOINTS } from '@/lib/api/config';
 import type {
     ExchangeRate,
     ExchangeRateQueryParams,
+    ExchangeRateHistory,
+    ExchangeRateHistoryQueryParams,
     CreateExchangeRatePayload,
     UpdateExchangeRatePayload,
 } from '@/types/exchangeRate';
 
-export type { ExchangeRate, ExchangeRateQueryParams, CreateExchangeRatePayload, UpdateExchangeRatePayload };
+export type { ExchangeRate, ExchangeRateQueryParams, ExchangeRateHistory, ExchangeRateHistoryQueryParams, CreateExchangeRatePayload, UpdateExchangeRatePayload };
 
 export interface ExchangeRateListResponse {
     pagination?: {
@@ -22,6 +24,16 @@ export interface ExchangeRateListResponse {
         total: number;
     };
     results: ExchangeRate[];
+}
+
+export interface ExchangeRateHistoryListResponse {
+    pagination?: {
+        currentPage: number;
+        lastPage: number;
+        perPage: number;
+        total: number;
+    };
+    results: ExchangeRateHistory[];
 }
 
 export const exchangeRateService = {
@@ -43,5 +55,9 @@ export const exchangeRateService = {
 
     deleteExchangeRate: async (id: number) => {
         return api.delete(API_ENDPOINTS.exchangeRate.delete(id.toString()));
+    },
+
+    getExchangeRateHistory: async (params?: ExchangeRateHistoryQueryParams) => {
+        return api.get<ExchangeRateHistoryListResponse>(API_ENDPOINTS.exchangeRate.history, { params });
     },
 };

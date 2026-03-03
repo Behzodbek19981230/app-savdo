@@ -9,6 +9,8 @@ import {
 	exchangeRateService,
 	type ExchangeRate,
 	type ExchangeRateQueryParams,
+	type ExchangeRateHistory,
+	type ExchangeRateHistoryQueryParams,
 	type CreateExchangeRatePayload,
 	type UpdateExchangeRatePayload,
 } from '@/services/exchangeRate.service';
@@ -40,6 +42,8 @@ export const exchangeRateKeys = {
 	list: (params?: ExchangeRateQueryParams) => [...exchangeRateKeys.lists(), params] as const,
 	details: () => [...exchangeRateKeys.all, 'detail'] as const,
 	detail: (id: number) => [...exchangeRateKeys.details(), id] as const,
+	histories: () => [...exchangeRateKeys.all, 'history'] as const,
+	history: (params?: ExchangeRateHistoryQueryParams) => [...exchangeRateKeys.histories(), params] as const,
 };
 
 export const useExchangeRates = (params?: ExchangeRateQueryParams) => {
@@ -118,4 +122,13 @@ export const useUpsertExchangeRate = () => {
 		},
 		isPending: createMutation.isPending || updateMutation.isPending,
 	};
+};
+
+// Exchange rate history olish uchun hook
+export const useExchangeRateHistory = (params?: ExchangeRateHistoryQueryParams) => {
+	return useQuery({
+		queryKey: exchangeRateKeys.history(params),
+		queryFn: () => exchangeRateService.getExchangeRateHistory(params),
+		enabled: !!params?.exchange_rate,
+	});
 };

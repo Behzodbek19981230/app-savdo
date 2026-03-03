@@ -38,10 +38,13 @@ import {
 	useCreateExchangeRate,
 	useUpdateExchangeRate,
 	useDeleteExchangeRate,
+	useExchangeRateHistory,
 } from '@/hooks/api/useExchangeRate';
 import { useCompanies } from '@/hooks/api/useCompanies';
 import type { ExchangeRate } from '@/types/exchangeRate';
-import { DollarSign, Loader2, Plus, Trash2, Edit, Building2 } from 'lucide-react';
+import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
+import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
+import { DollarSign, Loader2, Plus, Trash2, Edit, Building2, History } from 'lucide-react';
 import moment from 'moment';
 
 // Form validation schema
@@ -57,6 +60,8 @@ export default function ExchangeRates() {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [selectedRateId, setSelectedRateId] = useState<number | null>(null);
+	const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
 	const form = useForm<ExchangeRateFormData>({
 		resolver: zodResolver(exchangeRateSchema),
@@ -171,7 +176,7 @@ export default function ExchangeRates() {
 										<TableHead>Dollar kursi</TableHead>
 										<TableHead>Yangilangan</TableHead>
 										<TableHead>Yangilagan foydalanuvchi</TableHead>
-										<TableHead className='text-right w-[120px]'>Amallar</TableHead>
+										<TableHead className='text-right w-[160px]'>Amallar</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -203,6 +208,18 @@ export default function ExchangeRates() {
 											</TableCell>
 											<TableCell className='text-right'>
 												<div className='flex items-center justify-end gap-1'>
+													<Button
+														variant='ghost'
+														size='icon'
+														className='h-8 w-8'
+														onClick={() => {
+															setSelectedRateId(rate.id);
+															setIsHistoryModalOpen(true);
+														}}
+														title="Tarixni ko'rish"
+													>
+														<History className='h-4 w-4' />
+													</Button>
 													<Button
 														variant='ghost'
 														size='icon'
@@ -324,6 +341,93 @@ export default function ExchangeRates() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Exchange Rate History Modal */}
+			<Dialog open={isHistoryModalOpen} onOpenChange={setIsHistoryModalOpen}>
+				<DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
+					<DialogHeader>
+						<DialogTitle>O'zgarishlar tarixi</DialogTitle>
+						<DialogDescription>
+							Dollar kursi o'zgarishlari tarixi
+						</DialogDescription>
+					</DialogHeader>
+					<div className='mt-4'>
+						{selectedRateId && (
+							<ExchangeRateHistoryContent rateId={selectedRateId} formatCurrency={formatCurrency} />
+						)}
+					</div>
+					<DialogFooter>
+						<Button variant='outline' onClick={() => setIsHistoryModalOpen(false)}>
+							Yopish
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
+	);
+}
+
+// Exchange Rate History Content Component
+function ExchangeRateHistoryContent({
+	rateId,
+	formatCurrency,
+}: {
+	rateId: number;
+	formatCurrency: (value: number) => string;
+}) {
+	const { data: historyData, isLoading: isHistoryLoading } = useExchangeRateHistory({
+		exchange_rate: rateId,
+	});
+	const history = historyData?.results || [];
+
+	if (isHistoryLoading) {
+		return (
+			<div className='flex items-center justify-center py-8'>
+				<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+			</div>
+		);
+	}
+
+	if (history.length === 0) {
+		return (
+			<div className='text-center py-8 text-muted-foreground'>
+				Tarix ma'lumotlari topilmadi
+			</div>
+		);
+	}
+
+	return (
+		<Table>
+			<TableHeader>
+				<TableRow>
+					<TableHead className='w-[60px]'>№</TableHead>
+					<TableHead>Eski kurs</TableHead>
+					<TableHead>Yangi kurs</TableHead>
+					<TableHead>Yaratilgan</TableHead>
+					<TableHead>Kim tomonidan</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{history.map((hist: ExchangeRateHistory, histIndex: number) => (
+					<TableRow key={hist.id}>
+						<TableCell className='font-medium'>{histIndex + 1}</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{formatCurrency(Number(hist.old_dollar))} so'm
+						</TableCell>
+						<TableCell className='font-semibold text-green-600'>
+							{formatCurrency(Number(hist.new_dollar))} so'm
+						</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{hist.created_time
+								? moment(hist.created_time).format('DD.MM.YYYY HH:mm')
+								: '—'}
+						</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{hist.created_by_detail?.full_name || hist.created_by_detail?.username || '—'}
+						</TableCell>
+					</TableRow>
+				))}
+			</TableBody>
+		</Table>
 	);
 }

@@ -171,6 +171,7 @@ export const API_ENDPOINTS = {
 		create: '/exchange-rate',
 		update: (id: string) => `/exchange-rate/${id}`,
 		delete: (id: string) => `/exchange-rate/${id}`,
+		history: '/exchange-rate-history',
 	},
 
 	// Purchase Invoice endpoints (Tovar kirimi / Faktura)

@@ -1,4 +1,4 @@
-import { Bell, Calendar, Menu, Pencil, DollarSign, Loader2, Building2, Check } from 'lucide-react';
+import { Bell, Calendar, Menu, Pencil, DollarSign, Loader2, Building2, Check, List, History, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
@@ -10,18 +10,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, LogOut } from 'lucide-react';
 import { useLogout } from '@/hooks/api/useAuth';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useExchangeRates, useCreateExchangeRate, useUpdateExchangeRate } from '@/hooks/api/useExchangeRate';
+import { useExchangeRates, useCreateExchangeRate, useUpdateExchangeRate, useExchangeRateHistory } from '@/hooks/api/useExchangeRate';
 import type { ExchangeRate } from '@/types/exchangeRate';
+import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
 import { useCompanies, useNotes, useUpdateNote } from '@/hooks/api';
 import moment from 'moment';
 import { Label } from '../ui/label';
@@ -36,6 +37,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
     const [today, setToday] = useState(new Date());
     const [isExchangeDialogOpen, setIsExchangeDialogOpen] = useState(false);
+    const [isExchangeHistoryDialogOpen, setIsExchangeHistoryDialogOpen] = useState(false);
     const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
     const [selectedNote, setSelectedNote] = useState<NoteItem | null>(null);
     const [dollarValue, setDollarValue] = useState<number | undefined>(undefined);
@@ -84,8 +86,16 @@ export function Header({ onMenuClick }: HeaderProps) {
     // Filialga tegishli exchange rate
     const currentExchangeRate: ExchangeRate | null = exchangeRatesData?.results?.[0] || null;
 
+    // Exchange rate list olish (barcha exchange rate'lar)
+    const { data: exchangeRatesListData, isLoading: isExchangeHistoryLoading } = useExchangeRates(
+        userFilialId ? { filial: userFilialId } : undefined,
+    );
+    const exchangeRatesList = exchangeRatesListData?.results || [];
+    const [selectedRateId, setSelectedRateId] = useState<number | null>(null);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
     // Agar is_active false bo'lsa va Superadmin bo'lsa, dialog avtomatik ochilishi kerak
-    const shouldBlockInterface = isSuperAdmin && currentExchangeRate?.is_active === false;
+    const shouldBlockInterface = currentExchangeRate?.is_active === false;
 
     useEffect(() => {
         if (shouldBlockInterface && !isExchangeDialogOpen) {
@@ -145,20 +155,13 @@ export function Header({ onMenuClick }: HeaderProps) {
                 });
             }
 
-            // User profilini yangilash
-            try {
-                void refetchExchangeRates();
 
-                const updatedUser = await authService.getCurrentUser();
-                queryClient.setQueryData(AUTH_KEYS.currentUser, updatedUser);
-
-            } catch (error) {
-                // User yangilashda xatolik bo'lsa, invalidate qilish
-                queryClient.invalidateQueries({ queryKey: AUTH_KEYS.currentUser });
-            }
-
-            // Agar is_active false bo'lsa, dialog yopilmasligi kerak
+            await refetchExchangeRates();
             setIsExchangeDialogOpen(false);
+
+            const updatedUser = await authService.getCurrentUser();
+            queryClient.setQueryData(AUTH_KEYS.currentUser, updatedUser);
+
 
         } catch {
             // handled in hook toast
@@ -263,12 +266,24 @@ export function Header({ onMenuClick }: HeaderProps) {
                                 "Kurs yo'q"
                             )}
                         </span>
+                        {!shouldBlockInterface && (
+                            <Button
+                                variant='ghost'
+                                size='icon'
+                                className='h-5 w-5 p-0 hover:bg-muted'
+                                onClick={() => setIsExchangeHistoryDialogOpen(true)}
+                                title="Dollar kursi tarixi"
+                            >
+                                <List className='h-3 w-3 text-muted-foreground' />
+                            </Button>
+                        )}
                         {(isAdmin || isManager || isSuperAdmin) && !shouldBlockInterface && (
                             <Button
                                 variant='ghost'
                                 size='icon'
                                 className='h-5 w-5 p-0 hover:bg-muted'
                                 onClick={openExchangeDialog}
+                                title="Dollar kursini tahrirlash"
                             >
                                 <Pencil className='h-3 w-3 text-muted-foreground' />
                             </Button>
@@ -277,16 +292,30 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </div>
 
                 <div className='flex items-center gap-2 lg:gap-2.5 flex-shrink-0'>
-                    {/* Mobile dollar kursi button - faqat Admin va Manager uchun tahrirlash */}
-                    {(isAdmin || isManager || isSuperAdmin) && !shouldBlockInterface && (
-                        <Button
-                            variant='outline'
-                            size='icon'
-                            className='sm:hidden h-10 w-10 rounded-xl shadow-sm'
-                            onClick={openExchangeDialog}
-                        >
-                            <DollarSign className='h-4 w-4' />
-                        </Button>
+                    {/* Mobile dollar kursi buttons */}
+                    {!shouldBlockInterface && (
+                        <>
+                            <Button
+                                variant='outline'
+                                size='icon'
+                                className='sm:hidden h-10 w-10 rounded-xl shadow-sm'
+                                onClick={() => setIsExchangeHistoryDialogOpen(true)}
+                                title="Dollar kursi tarixi"
+                            >
+                                <List className='h-4 w-4' />
+                            </Button>
+                            {(isAdmin || isManager || isSuperAdmin) && (
+                                <Button
+                                    variant='outline'
+                                    size='icon'
+                                    className='sm:hidden h-10 w-10 rounded-xl shadow-sm'
+                                    onClick={openExchangeDialog}
+                                    title="Dollar kursini tahrirlash"
+                                >
+                                    <DollarSign className='h-4 w-4' />
+                                </Button>
+                            )}
+                        </>
                     )}
 
                     {/* Filial tanlash dropdown */}
@@ -308,7 +337,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                                         <Building2 className='h-4 w-4 flex-shrink-0' />
                                     )}
                                     <span className='truncate text-sm'>{selectedFilial?.name || 'Filial tanlang'}</span>
-                                    {filials.length > 1 && <ChevronDown className='h-4 w-4 flex-shrink-0 ml-auto' />}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end' className='w-[220px]'>
@@ -530,6 +558,117 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </DialogContent>
             </Dialog>
 
+            {/* Exchange Rate History Dialog - List */}
+            <Dialog open={isExchangeHistoryDialogOpen} onOpenChange={setIsExchangeHistoryDialogOpen}>
+                <DialogContent className='sm:max-w-[900px] max-h-[80vh] overflow-y-auto'>
+                    <DialogHeader>
+                        <DialogTitle>Dollar kursi tarixi</DialogTitle>
+                        <DialogDescription>
+                            {selectedFilial ? `${selectedFilial.name} filiali uchun dollar kursi tarixi` : 'Dollar kursi tarixi'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className='mt-4'>
+                        {isExchangeHistoryLoading ? (
+                            <div className='flex items-center justify-center py-8'>
+                                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+                            </div>
+                        ) : exchangeRatesList.length === 0 ? (
+                            <div className='text-center py-8 text-muted-foreground'>
+                                Tarix ma'lumotlari topilmadi
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className='w-[60px]'>№</TableHead>
+                                        <TableHead>Dollar kursi</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Yangilangan</TableHead>
+                                        <TableHead>Kim tomonidan</TableHead>
+                                        <TableHead className='w-[80px]'>Amallar</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {exchangeRatesList.map((rate, index) => (
+                                        <TableRow key={rate.id}>
+                                            <TableCell className='font-medium'>{index + 1}</TableCell>
+                                            <TableCell className='font-semibold'>
+                                                {formatCurrency(rate.dollar)} so'm
+                                            </TableCell>
+                                            <TableCell>
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${rate.is_active
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                                        }`}
+                                                >
+                                                    {rate.is_active ? 'Faol' : 'Nofaol'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className='text-muted-foreground'>
+                                                {rate.updated_time
+                                                    ? new Date(rate.updated_time).toLocaleString('uz-UZ', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })
+                                                    : '—'}
+                                            </TableCell>
+                                            <TableCell className='text-muted-foreground'>
+                                                {rate.updated_by_detail?.full_name || rate.updated_by_detail?.username || '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant='ghost'
+                                                    size='icon'
+                                                    className='h-8 w-8'
+                                                    onClick={() => {
+                                                        setSelectedRateId(rate.id);
+                                                        setIsHistoryModalOpen(true);
+                                                    }}
+                                                    title="Tarixni ko'rish"
+                                                >
+                                                    <History className='h-4 w-4' />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant='outline' onClick={() => setIsExchangeHistoryDialogOpen(false)}>
+                            Yopish
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Exchange Rate History Modal - Single Rate */}
+            <Dialog open={isHistoryModalOpen} onOpenChange={setIsHistoryModalOpen}>
+                <DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
+                    <DialogHeader>
+                        <DialogTitle>O'zgarishlar tarixi</DialogTitle>
+                        <DialogDescription>
+                            Dollar kursi o'zgarishlari tarixi
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className='mt-4'>
+                        {selectedRateId && (
+                            <ExchangeRateHistoryContent rateId={selectedRateId} />
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant='outline' onClick={() => setIsHistoryModalOpen(false)}>
+                            Yopish
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
                 <DialogContent className='sm:max-w-[560px]'>
                     <DialogHeader>
@@ -571,5 +710,70 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </DialogContent>
             </Dialog>
         </>
+    );
+}
+
+// Exchange Rate History Content Component
+function ExchangeRateHistoryContent({ rateId }: { rateId: number }) {
+    const { data: historyData, isLoading: isHistoryLoading } = useExchangeRateHistory({
+        exchange_rate: rateId,
+    });
+    const history = historyData?.results || [];
+
+    if (isHistoryLoading) {
+        return (
+            <div className='flex items-center justify-center py-8'>
+                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+            </div>
+        );
+    }
+
+    if (history.length === 0) {
+        return (
+            <div className='text-center py-8 text-muted-foreground'>
+                Tarix ma'lumotlari topilmadi
+            </div>
+        );
+    }
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className='w-[60px]'>№</TableHead>
+                    <TableHead>Eski kurs</TableHead>
+                    <TableHead>Yangi kurs</TableHead>
+                    <TableHead>Yaratilgan</TableHead>
+                    <TableHead>Kim tomonidan</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {history.map((hist: ExchangeRateHistory, histIndex: number) => (
+                    <TableRow key={hist.id}>
+                        <TableCell className='font-medium'>{histIndex + 1}</TableCell>
+                        <TableCell className='text-muted-foreground'>
+                            {new Intl.NumberFormat('uz-UZ').format(Number(hist.old_dollar))} so'm
+                        </TableCell>
+                        <TableCell className='font-semibold text-green-600'>
+                            {new Intl.NumberFormat('uz-UZ').format(Number(hist.new_dollar))} so'm
+                        </TableCell>
+                        <TableCell className='text-muted-foreground'>
+                            {hist.created_time
+                                ? new Date(hist.created_time).toLocaleString('uz-UZ', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })
+                                : '—'}
+                        </TableCell>
+                        <TableCell className='text-muted-foreground'>
+                            {hist.created_by_detail?.full_name || hist.created_by_detail?.username || '—'}
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     );
 }
