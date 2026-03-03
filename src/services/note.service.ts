@@ -63,6 +63,9 @@ export const noteService = {
 	deleteNote: async (id: number) => {
 		return api.delete<void>(`/note/${id}`);
 	},
+	markAllAsRead: async () => {
+		return api.post<void>('/note/all-read');
+	},
 };
 
 const toWsBaseUrl = (baseUrl: string) => {

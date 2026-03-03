@@ -9,82 +9,82 @@ import type { User } from '@/services';
 import { startNotesWs, stopNotesWs } from '@/services/notesWs.service';
 
 interface AuthContextType {
-	user: User | undefined;
-	isLoading: boolean;
-	isAuthenticated: boolean;
-	error: Error | null;
-	selectedFilialId: number | null;
-	setSelectedFilialId: (id: number | null) => void;
+    user: User | undefined;
+    isLoading: boolean;
+    isAuthenticated: boolean;
+    error: Error | null;
+    selectedFilialId: number | null;
+    setSelectedFilialId: (id: number | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-	children: ReactNode;
+    children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-	const auth = useAuthQuery();
+    const auth = useAuthQuery();
 
-	const toValidFilialId = (value: unknown): number | null => {
-		const parsed = Number(value);
-		return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-	};
+    const toValidFilialId = (value: unknown): number | null => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    };
 
-	const [selectedFilialId, setSelectedFilialIdState] = useState<number | null>(() => {
-		try {
-			const raw = localStorage.getItem('selectedFilialId');
-			return raw ? toValidFilialId(raw) : null;
-		} catch {
-			return null;
-		}
-	});
+    const [selectedFilialId, setSelectedFilialIdState] = useState<number | null>(() => {
+        try {
+            const raw = localStorage.getItem('selectedFilialId');
+            return raw ? toValidFilialId(raw) : null;
+        } catch {
+            return null;
+        }
+    });
 
-	// When user data loads, default filial if none set
-	useEffect(() => {
-		if (!auth.user) return;
-		if (selectedFilialId) return;
+    // When user data loads, default filial if none set
+    useEffect(() => {
+        if (!auth.user) return;
+        if (selectedFilialId) return;
 
-		const defaultFilial = toValidFilialId(auth.user.filials_detail?.[0]?.id || auth.user.companies?.[0]);
-		if (defaultFilial) setSelectedFilialIdState(defaultFilial);
-	}, [auth.user]);
+        const defaultFilial = toValidFilialId(auth.user.filials_detail?.[0]?.id || auth.user.companies?.[0]);
+        if (defaultFilial) setSelectedFilialIdState(defaultFilial);
+    }, [auth.user]);
 
-	// Start notes websocket when authenticated, stop on logout
-	useEffect(() => {
-		if (auth.user) {
-			startNotesWs();
-			return () => {
-				stopNotesWs();
-			};
-		}
-		// ensure stopped when no user
-		stopNotesWs();
-	}, [auth.user]);
+    // Start notes websocket when authenticated, stop on logout
+    useEffect(() => {
+        if (auth.user) {
+            startNotesWs();
+            return () => {
+                stopNotesWs();
+            };
+        }
+        // ensure stopped when no user
+        stopNotesWs();
+    }, [auth.user]);
 
-	const setSelectedFilialId = (id: number | null) => {
-		const validId = id === null ? null : toValidFilialId(id);
-		setSelectedFilialIdState(validId);
-		try {
-			if (validId === null) localStorage.removeItem('selectedFilialId');
-			else localStorage.setItem('selectedFilialId', String(validId));
-		} catch {
-			// ignore localStorage errors
-		}
-	};
+    const setSelectedFilialId = (id: number | null) => {
+        const validId = id === null ? null : toValidFilialId(id);
+        setSelectedFilialIdState(validId);
+        try {
+            if (validId === null) localStorage.removeItem('selectedFilialId');
+            else localStorage.setItem('selectedFilialId', String(validId));
+        } catch {
+            // ignore localStorage errors
+        }
+    };
 
-	return (
-		<AuthContext.Provider value={{ ...(auth as any), selectedFilialId, setSelectedFilialId }}>
-			{children}
-		</AuthContext.Provider>
-	);
+    return (
+        <AuthContext.Provider value={{ ...(auth as unknown as AuthContextType), selectedFilialId, setSelectedFilialId }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuthContext() {
-	const context = useContext(AuthContext);
+    const context = useContext(AuthContext);
 
-	if (context === undefined) {
-		throw new Error('useAuthContext must be used within an AuthProvider');
-	}
+    if (context === undefined) {
+        throw new Error('useAuthContext must be used within an AuthProvider');
+    }
 
-	return context;
+    return context;
 }

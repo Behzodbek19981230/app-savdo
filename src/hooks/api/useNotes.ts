@@ -67,3 +67,19 @@ export function useDeleteNote() {
         },
     });
 }
+
+export function useMarkAllNotesAsRead() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => noteService.markAllAsRead(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: noteKeys.all });
+            queryClient.invalidateQueries({ queryKey: noteKeys.allCount });
+            toast.success("Barcha bildirishnomalar o'qildi deb belgilandi");
+        },
+        onError: () => {
+            toast.error("Bildirishnomalarni o'qilgan deb belgilashda xatolik");
+        },
+    });
+}

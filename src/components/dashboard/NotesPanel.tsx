@@ -8,6 +8,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCreateNote, useDeleteNote, useNotes, useNotesAll, useUpdateNote } from '@/hooks/api/useNotes';
 import type { NoteItem } from '@/services/note.service';
+import clsx from 'clsx';
 
 type WsNotePayload = {
     type?: string;
@@ -290,15 +291,22 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                             return (
                                 <div
                                     key={note.id}
-                                    className={`group flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-muted/50 cursor-pointer ${note.is_read === false ? 'bg-amber-50/60 dark:bg-amber-950/15' : ''
-                                        }`}
+                                    className={clsx(
+                                        `group flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-gray-50 cursor-pointer  `,
+                                        {
+                                            'bg-amber-100': note.status === 'done' && note.is_read,
+                                            'bg-blue-50': note.status === 'new' && note.is_read === false,
+                                            'bg-red-50': note.status === 'expired',
+                                            'bg-amber-50': note.status === 'new',
+                                            'bg-green-50':
+                                                note.status === 'new' &&
+                                                note.date &&
+                                                new Date(note.date).getTime() - Date.now() > 86400000,
+                                        },
+                                    )}
                                     onClick={() => openView(note)}
                                 >
-                                    {/* Status dot */}
-                                    <span
-                                        className={`h-2 w-2 flex-shrink-0 rounded-full ${statusDot[st] || statusDot.new}`}
-                                        title={statusLabel[st] || 'Yangi'}
-                                    />
+
 
                                     {/* Content */}
                                     <div className='min-w-0 flex-1'>
@@ -395,10 +403,10 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                     <span>·</span>
                                     <span
                                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${viewingNote.status === 'done'
-                                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                                                : viewingNote.status === 'expired'
-                                                    ? 'bg-red-500/15 text-red-700 dark:text-red-400'
-                                                    : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                            : viewingNote.status === 'expired'
+                                                ? 'bg-red-500/15 text-red-700 dark:text-red-400'
+                                                : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
                                             }`}
                                     >
                                         {statusLabel[viewingNote.status] || 'Yangi'}

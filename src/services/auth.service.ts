@@ -57,6 +57,7 @@ export interface User {
     address: string;
     companies: number[];
     filials_detail: Company[];
+    order_filial?: number | null;
 }
 
 export interface ForgotPasswordData {

@@ -23,7 +23,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useExchangeRates, useCreateExchangeRate, useUpdateExchangeRate, useExchangeRateHistory } from '@/hooks/api/useExchangeRate';
 import type { ExchangeRate } from '@/types/exchangeRate';
 import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
-import { useCompanies, useNotes, useUpdateNote } from '@/hooks/api';
+import { useCompanies, useNotes, useUpdateNote, useMarkAllNotesAsRead } from '@/hooks/api';
 import moment from 'moment';
 import { Label } from '../ui/label';
 import { authService, type NoteItem } from '@/services';
@@ -57,6 +57,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     const createExchangeRate = useCreateExchangeRate();
     const updateExchangeRate = useUpdateExchangeRate();
     const updateNote = useUpdateNote();
+    const markAllNotesAsRead = useMarkAllNotesAsRead();
     const isMutating = createExchangeRate.isPending || updateExchangeRate.isPending;
 
     const { data: filialsData } = useCompanies();
@@ -477,6 +478,28 @@ export function Header({ onMenuClick }: HeaderProps) {
                                         ))
                                     )}
                                 </div>
+                                {sortedNotes.length > 0 && (
+                                    <div className='border-t border-border mt-1.5 pt-1.5'>
+                                        <Button
+                                            variant='ghost'
+                                            size='sm'
+                                            className='w-full justify-start text-xs h-8'
+                                            onClick={() => {
+                                                void markAllNotesAsRead.mutateAsync();
+                                            }}
+                                            disabled={markAllNotesAsRead.isPending}
+                                        >
+                                            {markAllNotesAsRead.isPending ? (
+                                                <>
+                                                    <Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' />
+                                                    Kutilmoqda...
+                                                </>
+                                            ) : (
+                                                "Barchasini o'qish"
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
