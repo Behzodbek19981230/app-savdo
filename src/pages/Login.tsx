@@ -29,7 +29,10 @@ import { useAuth, useUser } from '@/hooks/api';
 
 // Validation schema
 const loginSchema = z.object({
-	username: z.string().min(3, "Username kamida 3 ta belgidan iborat bo'lishi kerak").max(50, 'Username juda uzun'),
+	username: z
+		.string()
+		.min(3, "Foydalanuvchi nomi kamida 3 ta belgidan iborat bo'lishi kerak")
+		.max(50, 'Foydalanuvchi nomi juda uzun'),
 	password: z.string().min(4, "Parol kamida 4 ta belgidan iborat bo'lishi kerak").max(100, 'Parol juda uzun'),
 	rememberMe: z.boolean().default(false),
 });
@@ -77,7 +80,7 @@ const Login = () => {
 		} catch (error) {
 			toast({
 				title: 'Xatolik yuz berdi',
-				description: "Username yoki parol noto'g'ri.",
+				description: "Foydalanuvchi nomi yoki parol noto'g'ri.",
 				variant: 'destructive',
 			});
 		} finally {
@@ -149,11 +152,15 @@ const Login = () => {
 									name='username'
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Username</FormLabel>
+											<FormLabel>Foydalanuvchi nomi</FormLabel>
 											<FormControl>
 												<div className='relative'>
 													<User className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-													<Input placeholder='username' className='pl-10 h-11' {...field} />
+													<Input
+														placeholder='foydalanuvchi nomi'
+														className='pl-10 h-11'
+														{...field}
+													/>
 												</div>
 											</FormControl>
 											<FormMessage />

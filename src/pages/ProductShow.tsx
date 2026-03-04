@@ -215,7 +215,7 @@ export default function ProductShow() {
 				<Card className='overflow-hidden'>
 					<CardHeader className='border-b'>
 						<div className='flex items-center justify-between gap-3'>
-							<CardTitle>Rasmlar (Gallery)</CardTitle>
+							<CardTitle>Rasmlar (Galereya)</CardTitle>
 							<Badge variant='outline'>{images.length}</Badge>
 						</div>
 					</CardHeader>
@@ -240,7 +240,7 @@ export default function ProductShow() {
 									<div className='h-[420px] w-full bg-black/5'>
 										<img
 											src={selectedImage.file}
-											alt='Product'
+											alt='Mahsulot rasmi'
 											className='h-full w-full object-contain'
 										/>
 									</div>
@@ -296,7 +296,7 @@ export default function ProductShow() {
 													>
 														<img
 															src={p.url}
-															alt='Preview'
+															alt='Oldindan ko\'rish'
 															className='h-full w-full object-cover'
 														/>
 													</div>
@@ -313,7 +313,7 @@ export default function ProductShow() {
 
 								<Card className='p-4 min-h-0'>
 									<div className='flex items-center justify-between'>
-										<div className='font-medium'>Gallery</div>
+										<div className='font-medium'>Galereya</div>
 										<Badge variant='outline'>{images.length}</Badge>
 									</div>
 

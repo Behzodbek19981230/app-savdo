@@ -915,7 +915,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 						</div>
 
 						<div className='space-y-2 max-w-[200px]'>
-							<Label>Tartib (sorting)</Label>
+							<Label>Tartib raqami</Label>
 							<Input
 								type='number'
 								min={0}
@@ -945,7 +945,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 								{productTypeSizeRows.map((row, index) => (
 									<div key={index} className='flex flex-wrap items-center gap-2'>
 										<Input
-											placeholder='Size'
+											placeholder='O\'lcham'
 											className='w-28'
 											value={row.size}
 											onChange={(e) => updateSizeRow(index, 'size', e.target.value)}
@@ -954,7 +954,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 											options={units.map((u) => ({ value: u.id, label: u.code }))}
 											value={row.unit ? Number(row.unit) : undefined}
 											onValueChange={(v) => updateSizeRow(index, 'unit', Number(v))}
-											placeholder='Unit'
+												placeholder='Birlik'
 											searchPlaceholder='Birlik qidirish...'
 											emptyText='Topilmadi'
 											className='w-[140px]'
@@ -1089,7 +1089,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 							</div>
 
 							<div className='space-y-2 max-w-[200px]'>
-								<Label>Tartib (sorting)</Label>
+								<Label>Tartib raqami</Label>
 								<Input
 									type='number'
 									min={0}
@@ -1129,7 +1129,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 											editModelSizes.map((row, index) => (
 												<div key={index} className='flex flex-wrap items-center gap-2'>
 													<Input
-														placeholder='Size'
+														placeholder='O\'lcham'
 														className='w-28'
 														value={row.size}
 														onChange={(e) =>
@@ -1142,7 +1142,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 														onValueChange={(v) =>
 															updateEditSizeRow(index, 'unit', Number(v))
 														}
-														placeholder='Unit'
+														placeholder='Birlik'
 														searchPlaceholder='Birlik qidirish...'
 														emptyText='Topilmadi'
 														className='w-[140px]'

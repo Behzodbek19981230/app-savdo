@@ -412,7 +412,7 @@ export function OrderShowPage() {
 					{/* Status */}
 					<div className='bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-500/20 dark:to-slate-500/20 p-2 rounded border border-gray-200 dark:border-gray-500/30'>
 						<p className='text-[10px] font-semibold text-gray-600 dark:text-muted-foreground mb-1 uppercase tracking-wide'>
-							Status
+							Holat
 						</p>
 						<div className='space-y-0.5'>
 							<div className='flex items-center gap-1.5'>
@@ -704,45 +704,45 @@ export function OrderShowPage() {
 			{/* Productlar - Model bo'yicha guruhlangan */}
 			<div className='bg-white dark:bg-card rounded-lg shadow-md dark:shadow-md border border-border overflow-hidden'>
 				<div className='overflow-x-auto'>
-					<table className='w-full border-collapse text-sm'>
+					<table className='w-full border-collapse text-xs'>
 						<thead>
 							<tr className='bg-gray-50 dark:bg-muted/50 border-b border-gray-200 dark:border-border'>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									#
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Joyi
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Model
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Nomi
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									O'lchami
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Tip
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-right text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Soni
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-right text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Berilgan soni
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-right text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Narxi ($)
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-right text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Asl Narxi ($)
 								</th>
-								<th className='px-3 py-2 sm:px-4 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+								<th className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-right text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Foyda ($)
 								</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody className='[&_tr:nth-child(even)]:bg-muted/30'>
 							{products.map((group, groupIndex) => {
 								let productIndex = 0;
 								const groupTotal = {
@@ -762,7 +762,7 @@ export function OrderShowPage() {
 										>
 											<td
 												colSpan={11}
-												className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-blue-800 dark:text-foreground'
+												className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-blue-800 dark:text-foreground'
 											>
 												{group.model}
 											</td>
@@ -785,32 +785,32 @@ export function OrderShowPage() {
 											return (
 												<tr
 													key={product.id}
-													className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors'
+													className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors even:bg-muted/30'
 												>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-600 dark:text-muted-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-600 dark:text-muted-foreground'>
 														{productIndex}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
 														{product.sklad_detail?.name || 'Ombor'}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
 														{group.model}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
 														{product.branch_category_detail?.name ||
 															product.type_detail?.name ||
 															'-'}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
 														{product.size_detail?.size || '-'}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
 														{product.type_detail?.name || '-'}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
 														{count}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0'>
 														<GivenCountCell
 															productId={product.id}
 															count={count}
@@ -818,13 +818,13 @@ export function OrderShowPage() {
 															onUpdated={handleGivenCountUpdated}
 														/>
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
 														{priceDollar.toFixed(2)}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm text-gray-800 dark:text-foreground text-right'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
 														{realPrice.toFixed(2)}
 													</td>
-													<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-green-600 dark:text-green-400 text-right'>
+													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-green-600 dark:text-green-400 text-right'>
 														{profit.toFixed(2)}
 													</td>
 												</tr>
@@ -835,23 +835,23 @@ export function OrderShowPage() {
 										<tr className='bg-gray-100 dark:bg-muted/50 border-b-2 border-gray-300 dark:border-border'>
 											<td
 												colSpan={6}
-												className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground'
+												className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground'
 											>
 												Jami:
 											</td>
-											<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
 												{groupTotal.count}
 											</td>
-											<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
 												{groupTotal.given_count}
 											</td>
-											<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
 												{groupTotal.price_dollar.toFixed(2)}
 											</td>
-											<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-semibold text-gray-700 dark:text-foreground text-right'>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
 												{groupTotal.real_price.toFixed(2)}
 											</td>
-											<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-green-600 dark:text-green-400 text-right'>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-green-600 dark:text-green-400 text-right'>
 												{groupTotal.profit.toFixed(2)}
 											</td>
 										</tr>
@@ -863,23 +863,23 @@ export function OrderShowPage() {
 							<tr className='bg-gray-300 dark:bg-slate-700 border-t-2 border-gray-400 dark:border-gray-600'>
 								<td
 									colSpan={6}
-									className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-gray-800 dark:text-slate-100'
+									className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100'
 								>
 									Jami:
 								</td>
-								<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-gray-800 dark:text-slate-100 text-right'>
+								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
 									{products.reduce(
 										(sum, g) => sum + g.product.reduce((s, p) => s + Number(p.count || 0), 0),
 										0,
 									)}
 								</td>
-								<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-gray-800 dark:text-slate-100 text-right'>
+								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
 									{products.reduce(
 										(sum, g) => sum + g.product.reduce((s, p) => s + Number(p.given_count || 0), 0),
 										0,
 									)}
 								</td>
-								<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-gray-800 dark:text-slate-100 text-right'>
+								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
 									{products
 										.reduce(
 											(sum, g) =>
@@ -892,7 +892,7 @@ export function OrderShowPage() {
 										)
 										.toFixed(2)}
 								</td>
-								<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-gray-800 dark:text-slate-100 text-right'>
+								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
 									{products
 										.reduce(
 											(sum, g) =>
@@ -905,7 +905,7 @@ export function OrderShowPage() {
 										)
 										.toFixed(2)}
 								</td>
-								<td className='px-3 py-2 sm:px-4 sm:py-3 text-sm font-bold text-green-700 dark:text-green-300 text-right'>
+								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-green-700 dark:text-green-300 text-right'>
 									{products
 										.reduce(
 											(sum, g) =>

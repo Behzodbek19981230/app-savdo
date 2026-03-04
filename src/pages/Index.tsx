@@ -6,70 +6,70 @@ import { UserRound, Users, ShoppingCart, UserCog } from 'lucide-react';
 import { StatisticsCards } from '@/components/dashboard/StatisticsCards';
 
 const Index = () => {
-    const { selectedFilialId, user } = useAuthContext();
-    const normalizeFilialId = (value: unknown): number | null => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-    };
-    const filialId =
-        normalizeFilialId(selectedFilialId) ??
-        normalizeFilialId(user?.filials_detail?.[0]?.id) ??
-        normalizeFilialId(user?.companies?.[0]);
-    const { data, isLoading, isError } = useFilialDashboard(filialId);
+	const { selectedFilialId, user } = useAuthContext();
+	const normalizeFilialId = (value: unknown): number | null => {
+		const parsed = Number(value);
+		return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+	};
+	const filialId =
+		normalizeFilialId(selectedFilialId) ??
+		normalizeFilialId(user?.filials_detail?.[0]?.id) ??
+		normalizeFilialId(user?.companies?.[0]);
+	const { data, isLoading, isError } = useFilialDashboard(filialId);
 
-    const cardCount = data?.card_count;
-    const numberFormatter = new Intl.NumberFormat('uz-UZ');
-    const kpiData = cardCount
-        ? [
-            {
-                title: 'Mijozlar soni',
-                value: numberFormatter.format(cardCount.clients_count),
-                icon: Users,
-                iconColor: 'success' as const,
-            },
-            {
-                title: 'Qarzdor mijozlar',
-                value: numberFormatter.format(cardCount.debtors_count),
-                icon: UserRound,
-                iconColor: 'warning' as const,
-            },
-            {
-                title: 'Buyurtmalar',
-                value: numberFormatter.format(cardCount.karzinka_orders_count),
-                icon: ShoppingCart,
-                iconColor: 'primary' as const,
-            },
-            {
-                title: 'Foydalanuvchilar',
-                value: numberFormatter.format(cardCount.users_count),
-                icon: UserCog,
-                iconColor: 'info' as const,
-            },
-        ]
-        : [];
+	const cardCount = data?.card_count;
+	const numberFormatter = new Intl.NumberFormat('uz-UZ');
+	const kpiData = cardCount
+		? [
+				{
+					title: 'Mijozlar soni',
+					value: numberFormatter.format(cardCount.clients_count),
+					icon: Users,
+					iconColor: 'success' as const,
+				},
+				{
+					title: 'Qarzdor mijozlar',
+					value: numberFormatter.format(cardCount.debtors_count),
+					icon: UserRound,
+					iconColor: 'warning' as const,
+				},
+				{
+					title: 'Buyurtmalar',
+					value: numberFormatter.format(cardCount.karzinka_orders_count),
+					icon: ShoppingCart,
+					iconColor: 'primary' as const,
+				},
+				{
+					title: 'Foydalanuvchilar',
+					value: numberFormatter.format(cardCount.users_count),
+					icon: UserCog,
+					iconColor: 'info' as const,
+				},
+			]
+		: [];
 
-    return (
-        <div className='space-y-4'>
-            {/* KPI Cards */}
-            <div className='grid gap-3 lg:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
-                {isLoading ? (
-                    <div className='col-span-full rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>
-                        Dashboard ma'lumotlari yuklanmoqda...
-                    </div>
-                ) : isError ? (
-                    <div className='col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive'>
-                        Dashboard ma'lumotlarini yuklab bo'lmadi.
-                    </div>
-                ) : (
-                    kpiData.map((kpi) => <StatCard key={kpi.title} {...kpi} />)
-                )}
-            </div>
+	return (
+		<div className='space-y-4'>
+			{/* KPI Cards */}
+			<div className='grid gap-3 lg:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
+				{isLoading ? (
+					<div className='col-span-full rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>
+						Boshqaruv paneli ma'lumotlari yuklanmoqda...
+					</div>
+				) : isError ? (
+					<div className='col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive'>
+						Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi.
+					</div>
+				) : (
+					kpiData.map((kpi) => <StatCard key={kpi.title} {...kpi} />)
+				)}
+			</div>
 
-            {/* Statistika */}
-            <RevenueChart data={data?.monthly} isLoading={isLoading} />
-            <StatisticsCards />
-        </div>
-    );
+			{/* Statistika */}
+			<RevenueChart data={data?.monthly} isLoading={isLoading} />
+			<StatisticsCards />
+		</div>
+	);
 };
 
 export default Index;

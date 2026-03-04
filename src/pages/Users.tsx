@@ -91,7 +91,6 @@ export default function Users() {
 			date_of_birthday: '',
 			gender: '',
 			phone_number: '+998',
-			email: '',
 			password: '',
 			companies: [],
 			region: 0,
@@ -257,7 +256,6 @@ export default function Users() {
 				date_of_birthday: '',
 				gender: '',
 				phone_number: '+998',
-				email: '',
 				password: '',
 				companies: [],
 				region: 0,
@@ -310,7 +308,6 @@ export default function Users() {
 			date_of_birthday: values.date_of_birthday || '',
 			gender: values.gender || '',
 			phone_number: values.phone_number || '',
-			email: values.email || '',
 			password: values.password || '',
 			companies: Array.isArray(values.companies) ? values.companies.filter((id) => id > 0) : [],
 			region: values.region && Number(values.region) > 0 ? Number(values.region) : undefined,
@@ -411,7 +408,7 @@ export default function Users() {
 					</div>
 					<Button onClick={() => handleOpenDialog()}>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi user qo'shish
+						Yangi foydalanuvchi qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -442,13 +439,13 @@ export default function Users() {
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>Avatar</TableHead>
+											<TableHead>Profil rasmi</TableHead>
 											<TableHead>
 												<button
 													className='flex items-center hover:text-foreground transition-colors'
 													onClick={() => handleSort('username')}
 												>
-													Username
+													Foydalanuvchi nomi
 													{getSortIcon('username')}
 												</button>
 											</TableHead>
@@ -461,7 +458,7 @@ export default function Users() {
 													{getSortIcon('full_name')}
 												</button>
 											</TableHead>
-											<TableHead>Company</TableHead>
+											<TableHead>Filial</TableHead>
 											<TableHead>
 												<button
 													className='flex items-center hover:text-foreground transition-colors'
@@ -471,9 +468,8 @@ export default function Users() {
 													{getSortIcon('roles')}
 												</button>
 											</TableHead>
-											<TableHead>Email</TableHead>
 											<TableHead>Telefon</TableHead>
-											<TableHead>Address</TableHead>
+											<TableHead>Manzil</TableHead>
 											<TableHead>
 												<button
 													className='flex items-center hover:text-foreground transition-colors'
@@ -489,7 +485,7 @@ export default function Users() {
 									<TableBody>
 										{users.map((u) => (
 											<TableRow key={u.id}>
-												<TableCell>
+												<TableCell className='py-1'>
 													<div className='h-9 w-9 rounded-full border bg-muted overflow-hidden flex items-center justify-center'>
 														{u.avatar ? (
 															<img
@@ -514,9 +510,7 @@ export default function Users() {
 												<TableCell className='max-w-[320px] truncate'>
 													{formatRoles(u)}
 												</TableCell>
-												<TableCell className='max-w-[260px] truncate'>
-													{u.email || '-'}
-												</TableCell>
+
 												<TableCell>{u.phone_number || '-'}</TableCell>
 												<TableCell className='max-w-[320px] truncate'>
 													{u.address || '-'}
@@ -588,8 +582,8 @@ export default function Users() {
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
-								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi user qo'shish"}</DialogTitle>
-								<DialogDescription>User ma'lumotlarini kiriting</DialogDescription>
+								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi foydalanuvchi qo'shish"}</DialogTitle>
+								<DialogDescription>Foydalanuvchi ma'lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 
 							<div className='grid gap-4 py-4'>
@@ -599,7 +593,7 @@ export default function Users() {
 										name='username'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Username *</FormLabel>
+												<FormLabel>Foydalanuvchi nomi *</FormLabel>
 												<FormControl>
 													<Input placeholder='admin' {...field} />
 												</FormControl>
@@ -609,18 +603,31 @@ export default function Users() {
 									/>
 									<FormField
 										control={form.control}
-										name='full_name'
+										name='password'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>F.I.Sh *</FormLabel>
+												<FormLabel>{editingId ? 'Parol (ixtiyoriy)' : 'Parol *'}</FormLabel>
 												<FormControl>
-													<Input placeholder='Ism Familiya' {...field} />
+													<Input type='password' placeholder='****' {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
 								</div>
+								<FormField
+									control={form.control}
+									name='full_name'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>F.I.Sh *</FormLabel>
+											<FormControl>
+												<Input placeholder='Ism Familiya' {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
 								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 									<FormField
@@ -686,7 +693,7 @@ export default function Users() {
 										name='gender'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Gender</FormLabel>
+												<FormLabel>Jinsi</FormLabel>
 												<Select
 													onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
 													value={field.value ? field.value : 'none'}
@@ -698,8 +705,8 @@ export default function Users() {
 													</FormControl>
 													<SelectContent>
 														<SelectItem value='none'>Tanlang</SelectItem>
-														<SelectItem value='male'>Male</SelectItem>
-														<SelectItem value='female'>Female</SelectItem>
+														<SelectItem value='male'>Erkak</SelectItem>
+														<SelectItem value='female'>Ayol</SelectItem>
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -711,41 +718,12 @@ export default function Users() {
 								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 									<FormField
 										control={form.control}
-										name='email'
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Email</FormLabel>
-												<FormControl>
-													<Input placeholder='mail@example.com' {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
 										name='phone_number'
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Telefon</FormLabel>
 												<FormControl>
 													<PhoneInput placeholder='+998 90 123 45 67' {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-
-								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-									<FormField
-										control={form.control}
-										name='password'
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{editingId ? 'Parol (ixtiyoriy)' : 'Parol *'}</FormLabel>
-												<FormControl>
-													<Input type='password' placeholder='****' {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -772,7 +750,7 @@ export default function Users() {
 										name='companies'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Filiallar (Companies)</FormLabel>
+												<FormLabel>Filiallar</FormLabel>
 												<DropdownMenu>
 													<DropdownMenuTrigger asChild>
 														<FormControl>
@@ -853,7 +831,7 @@ export default function Users() {
 										name='region'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Viloyat (Region)</FormLabel>
+												<FormLabel>Viloyat</FormLabel>
 												<Select
 													onValueChange={(v) => field.onChange(Number(v))}
 													value={String(field.value ?? 0)}
@@ -883,7 +861,7 @@ export default function Users() {
 										key={editingId + selectedRegion}
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Tuman (District)</FormLabel>
+												<FormLabel>Tuman</FormLabel>
 												<Select
 													onValueChange={(v) => field.onChange(Number(v))}
 													value={String(field.value ?? 0)}
@@ -933,13 +911,13 @@ export default function Users() {
 									name='avatar'
 									render={() => (
 										<FormItem>
-											<FormLabel>Avatar (File)</FormLabel>
+											<FormLabel>Profil rasmi (fayl)</FormLabel>
 											<div className='flex items-center gap-3'>
 												<div className='h-14 w-14 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
 													{avatarPreviewUrl ? (
 														<img
 															src={avatarPreviewUrl}
-															alt='Avatar'
+															alt='Profil rasmi'
 															className='h-full w-full object-cover'
 														/>
 													) : (
@@ -988,7 +966,7 @@ export default function Users() {
 											<div className='space-y-0.5'>
 												<FormLabel className='text-base'>Faol</FormLabel>
 												<div className='text-sm text-muted-foreground'>
-													User aktiv / noaktiv
+													Foydalanuvchi faol / nofaol
 												</div>
 											</div>
 											<FormControl>
@@ -1017,7 +995,9 @@ export default function Users() {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
-						<AlertDialogDescription>Bu amalni qaytarib bo'lmaydi. User o'chiriladi.</AlertDialogDescription>
+						<AlertDialogDescription>
+							Bu amalni qaytarib bo'lmaydi. Foydalanuvchi o'chiriladi.
+						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Bekor qilish</AlertDialogCancel>

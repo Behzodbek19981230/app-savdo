@@ -584,7 +584,7 @@ export default function SkladPage() {
 								name='sorting'
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Tartib (ordering)</FormLabel>
+										<FormLabel>Tartib raqami</FormLabel>
 										<FormControl>
 											<Input
 												type='number'

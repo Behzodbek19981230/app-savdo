@@ -7,6 +7,13 @@ export type ClientType = 'dona' | 'optom' | 'dokon' | 'hamkor';
 
 export interface Client {
 	id: number;
+	created_by?: number | null;
+	created_by_detail?: {
+		id: number;
+		full_name?: string;
+		username?: string;
+		phone_number?: string;
+	} | null;
 	telegram_id?: number | null;
 	full_name: string;
 	is_active?: boolean;

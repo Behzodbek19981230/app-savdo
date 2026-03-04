@@ -928,7 +928,7 @@ export default function Products() {
 							isLoading={filterModelTypesInfinite.isLoading}
 						/>
 
-						{/* Status filter */}
+						{/* Holat filtri */}
 						<div>
 							<Select
 								value={filterStatus || undefined}
@@ -939,7 +939,7 @@ export default function Products() {
 								}}
 							>
 								<SelectTrigger className='h-9 text-sm'>
-									<SelectValue placeholder='Status' />
+									<SelectValue placeholder='Holat' />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value='all'>Barchasi</SelectItem>
@@ -950,7 +950,7 @@ export default function Products() {
 						</div>
 					</div>
 
-					{/* Active Filters Display */}
+					{/* Faol filtrlar ko'rinishi */}
 					{(filterBranch ||
 						filterBranchCategory ||
 						filterModel ||
@@ -958,7 +958,7 @@ export default function Products() {
 						filterType ||
 						filterStatus) && (
 						<div className='mb-4 flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg border'>
-							<span className='text-sm font-medium text-muted-foreground'>Faol filterlar:</span>
+							<span className='text-sm font-medium text-muted-foreground'>Faol filtrlar:</span>
 							{filterBranch && filterBranch !== 'all' && (
 								<Badge variant='secondary' className='gap-1.5 pl-2 pr-1'>
 									<span className='text-xs'>Bo&apos;lim:</span>
@@ -1054,7 +1054,7 @@ export default function Products() {
 							)}
 							{filterStatus && filterStatus !== 'all' && (
 								<Badge variant='secondary' className='gap-1.5 pl-2 pr-1'>
-									<span className='text-xs'>Status:</span>
+									<span className='text-xs'>Holat:</span>
 									<span className='font-medium'>{filterStatus === 'active' ? 'Faol' : 'Nofaol'}</span>
 									<button
 										onClick={() => {
@@ -1128,7 +1128,7 @@ export default function Products() {
 									<TableBody>
 										{products.map((product, index) => (
 											<TableRow key={product.id}>
-												<TableCell>
+												<TableCell className='py-1'>
 													<Avatar
 														className='h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity'
 														onClick={async () => {
