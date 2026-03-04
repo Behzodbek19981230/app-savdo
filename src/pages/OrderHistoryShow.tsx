@@ -708,13 +708,13 @@ export function OrderShowPage() {
 						<thead>
 							<tr className='bg-gray-50 dark:bg-muted/50 border-b border-gray-200 dark:border-border'>
 								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+									Model
+								</th>
+								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									#
 								</th>
 								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Joyi
-								</th>
-								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
-									Model
 								</th>
 								<th className='px-1.5 py-1 sm:px-1.5 sm:py-1 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
 									Nomi
@@ -743,184 +743,72 @@ export function OrderShowPage() {
 							</tr>
 						</thead>
 						<tbody className='[&_tr:nth-child(even)]:bg-muted/30'>
-							{products.map((group, groupIndex) => {
+							{products.map((group) => {
 								let productIndex = 0;
-								const groupTotal = {
-									count: 0,
-									given_count: 0,
-									price_dollar: 0,
-									real_price: 0,
-									profit: 0,
-								};
 
-								return (
-									<>
-										{/* Model Header */}
+								return group.product.map((product, idx) => {
+									productIndex++;
+									const realPrice = Number(product.real_price || 0);
+									const priceDollar = Number(product.price_dollar || 0);
+									const count = Number(product.count || 0);
+									const profit = (priceDollar - realPrice) * count;
+
+									return (
 										<tr
-											key={`header-${group.model_id}`}
-											className='bg-blue-100 dark:bg-muted/50 border-b border-blue-200 dark:border-border'
+											key={product.id}
+											className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors even:bg-muted/30'
 										>
-											<td
-												colSpan={11}
-												className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-blue-800 dark:text-foreground'
-											>
-												{group.model}
-											</td>
-										</tr>
-
-										{/* Products */}
-										{group.product.map((product) => {
-											productIndex++;
-											const realPrice = Number(product.real_price || 0);
-											const priceDollar = Number(product.price_dollar || 0);
-											const count = Number(product.count || 0);
-											const profit = (priceDollar - realPrice) * count;
-
-											groupTotal.count += count;
-											groupTotal.given_count += Number(product.given_count || 0);
-											groupTotal.price_dollar += priceDollar * count;
-											groupTotal.real_price += realPrice * count;
-											groupTotal.profit += profit;
-
-											return (
-												<tr
-													key={product.id}
-													className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors even:bg-muted/30'
+											{idx === 0 && (
+												<td
+													rowSpan={group.product.length}
+													className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground align-top'
 												>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-600 dark:text-muted-foreground'>
-														{productIndex}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
-														{product.sklad_detail?.name || 'Ombor'}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
-														{group.model}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
-														{product.branch_category_detail?.name ||
-															product.type_detail?.name ||
-															'-'}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
-														{product.size_detail?.size || '-'}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
-														{product.type_detail?.name || '-'}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
-														{count}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0'>
-														<GivenCountCell
-															productId={product.id}
-															count={count}
-															givenCount={Number(product.given_count || 0)}
-															onUpdated={handleGivenCountUpdated}
-														/>
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
-														{priceDollar.toFixed(2)}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
-														{realPrice.toFixed(2)}
-													</td>
-													<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-green-600 dark:text-green-400 text-right'>
-														{profit.toFixed(2)}
-													</td>
-												</tr>
-											);
-										})}
-
-										{/* Group Total */}
-										<tr className='bg-gray-100 dark:bg-muted/50 border-b-2 border-gray-300 dark:border-border'>
-											<td
-												colSpan={6}
-												className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground'
-											>
-												Jami:
+													<div className='flex items-start gap-2'>
+														<span>{group.model}</span>
+													</div>
+												</td>
+											)}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-600 dark:text-muted-foreground'>
+												{productIndex}
 											</td>
-											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
-												{groupTotal.count}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
+												{product.sklad_detail?.name || 'Ombor'}
 											</td>
-											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
-												{groupTotal.given_count}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
+												{product.branch_category_detail?.name ||
+													product.type_detail?.name ||
+													'-'}
 											</td>
-											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
-												{groupTotal.price_dollar.toFixed(2)}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
+												{product.size_detail?.size || '-'}
 											</td>
-											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-gray-700 dark:text-foreground text-right'>
-												{groupTotal.real_price.toFixed(2)}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
+												{product.type_detail?.name || '-'}
 											</td>
-											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-green-600 dark:text-green-400 text-right'>
-												{groupTotal.profit.toFixed(2)}
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
+												{count}
+											</td>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0'>
+												<GivenCountCell
+													productId={product.id}
+													count={count}
+													givenCount={Number(product.given_count || 0)}
+													onUpdated={handleGivenCountUpdated}
+												/>
+											</td>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
+												{priceDollar.toFixed(2)}
+											</td>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
+												{realPrice.toFixed(2)}
+											</td>
+											<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-semibold text-green-600 dark:text-green-400 text-right'>
+												{profit.toFixed(2)}
 											</td>
 										</tr>
-									</>
-								);
+									);
+								});
 							})}
-
-							{/* Grand Total */}
-							<tr className='bg-gray-300 dark:bg-slate-700 border-t-2 border-gray-400 dark:border-gray-600'>
-								<td
-									colSpan={6}
-									className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100'
-								>
-									Jami:
-								</td>
-								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
-									{products.reduce(
-										(sum, g) => sum + g.product.reduce((s, p) => s + Number(p.count || 0), 0),
-										0,
-									)}
-								</td>
-								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
-									{products.reduce(
-										(sum, g) => sum + g.product.reduce((s, p) => s + Number(p.given_count || 0), 0),
-										0,
-									)}
-								</td>
-								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
-									{products
-										.reduce(
-											(sum, g) =>
-												sum +
-												g.product.reduce(
-													(s, p) => s + Number(p.price_dollar || 0) * Number(p.count || 0),
-													0,
-												),
-											0,
-										)
-										.toFixed(2)}
-								</td>
-								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-gray-800 dark:text-slate-100 text-right'>
-									{products
-										.reduce(
-											(sum, g) =>
-												sum +
-												g.product.reduce(
-													(s, p) => s + Number(p.real_price || 0) * Number(p.count || 0),
-													0,
-												),
-											0,
-										)
-										.toFixed(2)}
-								</td>
-								<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs font-bold text-green-700 dark:text-green-300 text-right'>
-									{products
-										.reduce(
-											(sum, g) =>
-												sum +
-												g.product.reduce((s, p) => {
-													const profit =
-														(Number(p.price_dollar || 0) - Number(p.real_price || 0)) *
-														Number(p.count || 0);
-													return s + profit;
-												}, 0),
-											0,
-										)
-										.toFixed(2)}
-								</td>
-							</tr>
 						</tbody>
 					</table>
 				</div>

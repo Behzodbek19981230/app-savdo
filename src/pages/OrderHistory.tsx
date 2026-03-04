@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -67,87 +67,43 @@ function OrderHistoryTable({
 				<Table>
 					<TableHeader>
 						<TableRow>
+							<TableHead className='w-[110px]'>Sana</TableHead>
 							<TableHead className='w-[60px]'>t/r</TableHead>
-							<TableHead>Sanasi</TableHead>
 							<TableHead>Mijoz</TableHead>
-							<TableHead>Xodim</TableHead>
-							<TableHead className='text-right'>Buyurtma summasi</TableHead>
-							<TableHead className='text-right'>To'langan</TableHead>
-							<TableHead className='text-right'>Qarz</TableHead>
-							<TableHead className='text-right'>Umumiy qarz</TableHead>
-							<TableHead>Holati</TableHead>
+							<TableHead>Kim buyurtma oldi</TableHead>
+							<TableHead className='text-right'>To'lanadigan summa($)</TableHead>
+							<TableHead className='text-right'>To'langan summa($)</TableHead>
+							<TableHead className='text-right'>Qaytim</TableHead>
+							<TableHead className='text-right'>Bugungi qarz($)</TableHead>
+							<TableHead className='text-right'>Umumiy qolgan qarz($)</TableHead>
+							<TableHead className='text-right'>Jami foyda($)</TableHead>
+							<TableHead className='text-right'>Yaratilgan vaqt</TableHead>
+							<TableHead className='text-right'>Buyurtma holati</TableHead>
+							<TableHead className='text-right'>Keshbek($)</TableHead>
 							<TableHead className='text-right'>Amallar</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{dateGroups.map((group: any, groupIdx: number) => {
-							// Calculate totals for this date group
-							const totalSumma = group.items.reduce(
-								(sum: number, item: any) => sum + parseFloat(item.summa_total_dollar || '0'),
-								0,
-							);
-							const totalPaid = group.items.reduce((sum: number, item: any) => {
-								const paid =
-									parseFloat(item.summa_dollar || '0') +
-									parseFloat(item.summa_naqt || '0') +
-									parseFloat(item.summa_kilik || '0') +
-									parseFloat(item.summa_terminal || '0') +
-									parseFloat(item.summa_transfer || '0');
-								return sum + paid;
-							}, 0);
-							const totalQarz = group.items.reduce((sum: number, item: any) => {
-								const paid =
-									parseFloat(item.summa_dollar || '0') +
-									parseFloat(item.summa_naqt || '0') +
-									parseFloat(item.summa_kilik || '0') +
-									parseFloat(item.summa_terminal || '0') +
-									parseFloat(item.summa_transfer || '0');
-								const qarz = parseFloat(item.summa_total_dollar || '0') - paid;
-								return sum + qarz;
-							}, 0);
-							const totalDebt = group.items.reduce(
-								(sum: number, item: any) => sum + parseFloat(item.total_debt_client || '0'),
-								0,
-							);
-
 							return (
-								<>
-									{/* Summary Row */}
-									<TableRow key={`summary-${group.date}`} className='bg-muted/50 font-semibold'>
-										<TableCell>
-											<div className='flex items-center gap-2'>
-												<Badge>{group.count}</Badge>
-											</div>
-										</TableCell>
-										<TableCell className='font-semibold'>
-											{moment(group.date).format('YYYY-MM-DD')}
-										</TableCell>
-										<TableCell></TableCell>
-										<TableCell></TableCell>
-										<TableCell className='text-right font-semibold'>
-											{formatCurrency(totalSumma)}
-										</TableCell>
-										<TableCell className='text-right font-semibold'>
-											{formatCurrency(totalPaid)}
-										</TableCell>
-										<TableCell className='text-right font-semibold'>
-											{formatCurrency(totalQarz)}
-										</TableCell>
-										<TableCell className='text-right font-semibold'>
-											{formatCurrency(totalDebt)}
-										</TableCell>
-										<TableCell></TableCell>
-										<TableCell></TableCell>
-									</TableRow>
-									{/* Order Items */}
+								<Fragment key={`group-${group.date}-${groupIdx}`}>
 									{group.items.map((it: any, idx: number) => {
+										const payable = parseFloat(
+											it.all_product_summa || it.summa_total_dollar || '0',
+										);
 										const paid =
 											parseFloat(it.summa_dollar || '0') +
 											parseFloat(it.summa_naqt || '0') +
 											parseFloat(it.summa_kilik || '0') +
 											parseFloat(it.summa_terminal || '0') +
 											parseFloat(it.summa_transfer || '0');
-										const qarz = parseFloat(it.summa_total_dollar || '0') - paid;
+										const changeDollar = parseFloat(it.zdacha_dollar || '0');
+										const changeSom = parseFloat(it.zdacha_som || '0');
+										const todayDebt = parseFloat(it.total_debt_today_client || '0');
+										const totalDebt = parseFloat(
+											it.client_detail?.total_debt || it.total_debt_client || '0',
+										);
+										const totalProfit = parseFloat(it.all_profit_dollar || '0');
 
 										return (
 											<TableRow
@@ -156,27 +112,47 @@ function OrderHistoryTable({
 													it.order_status === false ? 'bg-red-50 dark:bg-[#7b5858]' : ''
 												}
 											>
+												{idx === 0 && (
+													<TableCell
+														rowSpan={group.items.length}
+														className='font-medium align-top'
+													>
+														<div className='flex items-start gap-2'>
+															<span>{moment(group.date).format('DD.MM.YYYY')}</span>
+														</div>
+													</TableCell>
+												)}
 												<TableCell className='font-medium'>
-													{group.items.length - idx}
-												</TableCell>
-												<TableCell>
-													{it.created_time
-														? moment(it.created_time).format('YYYY-MM-DD HH:mm')
-														: group.date}
+													{it.number || it.order || '-'}
 												</TableCell>
 												<TableCell>{it.client_detail?.full_name || `#${it.client}`}</TableCell>
 												<TableCell>{it.created_by_detail?.full_name || '-'}</TableCell>
 												<TableCell className='text-right text-blue-600 font-semibold'>
 													<Link to={`/order-history/${it.id}`}>
-														{formatCurrency(it.summa_total_dollar)}
+														{formatCurrency(payable)}
 													</Link>
 												</TableCell>
 												<TableCell className='text-right'>{formatCurrency(paid)}</TableCell>
-												<TableCell className='text-right'>{formatCurrency(qarz)}</TableCell>
 												<TableCell className='text-right'>
-													{formatCurrency(it.total_debt_client)}
+													{changeDollar > 0 || changeSom > 0
+														? `${formatCurrency(changeDollar)}$${changeSom > 0 ? ` / ${formatCurrency(changeSom)} so'm` : ''}`
+														: '-'}
 												</TableCell>
-												<TableCell>
+												<TableCell className='text-right'>
+													{formatCurrency(todayDebt)}
+												</TableCell>
+												<TableCell className='text-right'>
+													{formatCurrency(totalDebt)}
+												</TableCell>
+												<TableCell className='text-right'>
+													{formatCurrency(totalProfit)}
+												</TableCell>
+												<TableCell className='text-right'>
+													{it.created_time
+														? moment(it.created_time).format('DD.MM.YYYY HH:mm')
+														: '-'}
+												</TableCell>
+												<TableCell className='text-right'>
 													{it.is_karzinka ? (
 														<span className='px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs'>
 															Korzinkada
@@ -192,6 +168,9 @@ function OrderHistoryTable({
 													)}
 												</TableCell>
 												<TableCell className='text-right'>
+													{formatCurrency(it.client_detail?.keshbek || '0')}
+												</TableCell>
+												<TableCell className='text-right'>
 													<div className='flex items-center justify-end gap-1'>
 														<Button
 															variant='ghost'
@@ -205,7 +184,7 @@ function OrderHistoryTable({
 											</TableRow>
 										);
 									})}
-								</>
+								</Fragment>
 							);
 						})}
 					</TableBody>

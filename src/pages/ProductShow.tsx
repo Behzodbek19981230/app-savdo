@@ -296,7 +296,7 @@ export default function ProductShow() {
 													>
 														<img
 															src={p.url}
-															alt='Oldindan ko\'rish'
+															alt={`Oldindan ko'rish`}
 															className='h-full w-full object-cover'
 														/>
 													</div>
