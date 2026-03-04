@@ -67,6 +67,16 @@ export const API_ENDPOINTS = {
 		search: '/customers/search',
 	},
 
+	// Client endpoints (Mijozlar)
+	// NOTE: Frontend route: /customers, backend endpoint: /client
+	clients: {
+		list: '/client',
+		byId: (id: string) => `/client/${id}`,
+		create: '/client',
+		update: (id: string) => `/client/${id}`,
+		delete: (id: string) => `/client/${id}`,
+	},
+
 	// Order endpoints
 	orders: {
 		list: '/orders',
