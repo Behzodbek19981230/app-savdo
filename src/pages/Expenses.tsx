@@ -200,7 +200,7 @@ export default function ExpensesPage() {
                                     onValueChange={(v) => setFormCategory(v && v !== '0' ? Number(v) : null)}
                                     value={formCategory ? String(formCategory) : '0'}
                                 >
-                                    <SelectTrigger className='w-full sm:min-w-[200px] h-10'>
+                                    <SelectTrigger className='w-full sm:min-w-[200px] h-9'>
                                         <SelectValue placeholder='Barcha kategoriyalar' />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -220,7 +220,7 @@ export default function ExpensesPage() {
                                     dateTo={formDateTo}
                                     onDateFromChange={(d) => setFormDateFrom(d)}
                                     onDateToChange={(d) => setFormDateTo(d)}
-                                    className="[&>div>button]:h-10"
+                                    className="[&>div>button]:h-9"
                                 />
                             </div>
 

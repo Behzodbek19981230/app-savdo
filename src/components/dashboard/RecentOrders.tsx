@@ -38,7 +38,7 @@ export function RecentOrders() {
             className="flex items-center justify-between gap-3 lg:gap-4 rounded-lg lg:rounded-xl border border-border/50 p-3 lg:p-3.5 hover:bg-muted/30 transition-colors"
           >
             <div className="flex items-center gap-2.5 lg:gap-3 min-w-0 flex-1">
-              <div className="flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/[0.18] border border-primary/[0.22] flex-shrink-0">
                 <span className="text-xs lg:text-sm font-black text-primary">
                   {order.customer.charAt(0)}
                 </span>

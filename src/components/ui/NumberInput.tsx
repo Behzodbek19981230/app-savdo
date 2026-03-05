@@ -71,7 +71,7 @@ export function NumberInput({
             ? 'h-8 px-3 py-1.5 text-sm'
             : size === 'large'
                 ? 'h-12 px-5 py-3 text-base'
-                : 'h-10 px-3 py-2 text-base md:text-sm';
+                : 'h-9 px-3 py-2 text-base md:text-sm';
 
     return (
         <input

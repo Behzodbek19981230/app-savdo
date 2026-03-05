@@ -228,7 +228,7 @@ export default function ProductShow() {
                                     </div>
                                 ) : !selectedImage ? (
                                     <div className='h-[420px] flex flex-col items-center justify-center gap-3 text-center p-6'>
-                                        <ImagePlus className='h-10 w-10 text-muted-foreground/60' />
+                                        <ImagePlus className='h-9 w-10 text-muted-foreground/60' />
                                         <div>
                                             <div className='font-medium'>Rasm yo'q</div>
                                             <div className='text-sm text-muted-foreground'>

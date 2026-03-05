@@ -96,7 +96,7 @@ export default function DebtorsPage() {
                                 placeholder='Mijoz FIO boʻyicha qidirish...'
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className='pl-9 h-10'
+                                className='pl-9 h-9'
                             />
                         </div>
                         <div className='flex gap-2 sm:flex-shrink-0'>

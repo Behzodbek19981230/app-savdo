@@ -276,7 +276,7 @@ export default function CustomersAdmin() {
                                     setSearchQuery(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className='pl-9 h-10'
+                                className='pl-9 h-9'
                             />
                         </div>
                     </div>
@@ -434,7 +434,7 @@ export default function CustomersAdmin() {
                                     <FormItem>
                                         <FormLabel>F.I.Sh *</FormLabel>
                                         <FormControl>
-                                            <Input placeholder='F.I.Sh' className="h-10" {...field} />
+                                            <Input placeholder='F.I.Sh' className="h-9" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -449,7 +449,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Telefon</FormLabel>
                                             <FormControl>
-                                                <PhoneInput placeholder='+998 90 123 45 67' className="h-10" {...field} />
+                                                <PhoneInput placeholder='+998 90 123 45 67' className="h-9" {...field} />
 
                                             </FormControl>
                                             <FormMessage />
@@ -468,7 +468,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-10">
+                                                    <SelectTrigger className="h-9">
                                                         <SelectValue placeholder='Tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -502,7 +502,7 @@ export default function CustomersAdmin() {
                                                     onDateChange={(date) =>
                                                         field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
                                                     }
-                                                    className='w-full [&>button]:h-10'
+                                                    className='w-full [&>button]:h-9'
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -520,7 +520,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(value) => field.onChange(Number(value))}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-10">
+                                                    <SelectTrigger className="h-9">
                                                         <SelectValue placeholder='Filial tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -547,7 +547,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(value) => field.onChange(Number(value))}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-10">
+                                                    <SelectTrigger className="h-9">
                                                         <SelectValue placeholder='Viloyat tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -575,7 +575,7 @@ export default function CustomersAdmin() {
                                                 disabled={!selectedRegion}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-10">
+                                                    <SelectTrigger className="h-9">
                                                         <SelectValue placeholder='Tuman tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -598,7 +598,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Umumiy qarz</FormLabel>
                                             <FormControl>
-                                                <Input type='number' step='0.01' className="h-10" {...field} />
+                                                <Input type='number' step='0.01' className="h-9" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -611,7 +611,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Keshbek</FormLabel>
                                             <FormControl>
-                                                <Input type='number' step='0.01' className="h-10" {...field} />
+                                                <Input type='number' step='0.01' className="h-9" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -625,7 +625,7 @@ export default function CustomersAdmin() {
                                             <FormLabel>Mijoz turi</FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
-                                                    <SelectTrigger className="h-10">
+                                                    <SelectTrigger className="h-9">
                                                         <SelectValue placeholder='Turini tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>

@@ -260,7 +260,7 @@ export default function Locations() {
                                         placeholder='Qidirish...'
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className='pl-9 h-10'
+                                        className='pl-9 h-9'
                                     />
                                 </div>
                                 {activeTab === 'district' && (
@@ -268,7 +268,7 @@ export default function Locations() {
                                         value={selectedRegionFilter}
                                         onValueChange={(value) => setSelectedRegionFilter(value)}
                                     >
-                                        <SelectTrigger className='w-[220px] h-10'>
+                                        <SelectTrigger className='w-[220px] h-9'>
                                             <SelectValue placeholder="Viloyat bo'yicha filtr" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -371,7 +371,7 @@ export default function Locations() {
                                 <Input
                                     id='code'
                                     value={editingItem?.code || ''}
-                                    className="h-10"
+                                    className="h-9"
                                     onChange={(e) => setEditingItem((prev) => ({ ...prev!, code: e.target.value }))}
                                     required
                                 />
@@ -381,7 +381,7 @@ export default function Locations() {
                                 <Input
                                     id='name'
                                     value={editingItem?.name || ''}
-                                    className="h-10"
+                                    className="h-9"
                                     onChange={(e) => setEditingItem((prev) => ({ ...prev!, name: e.target.value }))}
                                     required
                                 />
@@ -396,7 +396,7 @@ export default function Locations() {
                                             setEditingItem((prev) => ({ ...prev!, region: Number(value) }))
                                         }
                                     >
-                                        <SelectTrigger className="h-10">
+                                        <SelectTrigger className="h-9">
                                             <SelectValue placeholder='Viloyatni tanlang' />
                                         </SelectTrigger>
                                         <SelectContent position='popper' sideOffset={5}>
