@@ -82,48 +82,46 @@ export default function DebtorsPage() {
     return (
         <div className='space-y-6'>
             <Card>
-                <CardHeader>
-                    <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-                        <div className='flex items-center gap-3'>
-                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Qarzdorlar ro'yxati</CardTitle>
-
-                            <div className='relative w-[250px]'>
-                                <Search className='absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
-                                <Input
-                                    placeholder='Mijoz FIO boʻyicha qidirish...'
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className='pl-8 h-9 text-sm'
-                                />
-                            </div>
-                        </div>
-                        <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
-                            <div className='w-full sm:w-auto flex gap-2 items-center'>
-                                <Button
-                                    onClick={handleFilter}
-                                    className='bg-blue-600 hover:bg-blue-700 text-white'
-                                >
-                                    <SearchIcon className='h-4 w-4' />
-                                    Qidirish
-                                </Button>
-                                <Button
-                                    variant='outline'
-                                    onClick={handleClear}
-                                    className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
-                                >
-                                    <X className='h-4 w-4' />
-                                    Tozalash
-                                </Button>
-                            </div>
-                        </div>
+                <CardHeader className='pb-4 flex flex-row items-center justify-between'>
+                    <div>
+                        <CardTitle className='text-lg'>Qarzdorlar ro'yxati</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent>
+                    {/* Filters Row */}
+                    <div className='mb-4 flex flex-col sm:flex-row gap-3'>
+                        <div className='relative flex-1'>
+                            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                            <Input
+                                placeholder='Mijoz FIO boʻyicha qidirish...'
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className='pl-9 h-10'
+                            />
+                        </div>
+                        <div className='flex gap-2 sm:flex-shrink-0'>
+                            <Button
+                                onClick={handleFilter}
+                                className='bg-blue-600 hover:bg-blue-700 text-white '
+                            >
+                                <SearchIcon className='h-4 w-4 mr-2' />
+                                Qidirish
+                            </Button>
+                            <Button
+                                variant='outline'
+                                onClick={handleClear}
+                                className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 '
+                            >
+                                <X className='h-4 w-4 mr-2' />
+                                Tozalash
+                            </Button>
+                        </div>
+                    </div>
                     {/* Total Debt Summary */}
                     <div className='mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200'>
                         <div className='flex items-center justify-between'>
                             <span className='text-sm font-medium text-muted-foreground'>Jami qarz miqdori:</span>
-                            <span className='text-2xl font-bold text-red-600'>
+                            <span className='text-xl font-bold text-red-600'>
                                 {formatCurrency(total_debt_summ)} $
                             </span>
                         </div>

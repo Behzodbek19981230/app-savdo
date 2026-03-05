@@ -828,7 +828,7 @@ export default function Products() {
 									setSearchQuery(e.target.value);
 									setCurrentPage(1);
 								}}
-								className='pl-8 h-9 text-sm'
+								className='pl-8 h-10 text-sm'
 							/>
 						</div>
 						<Autocomplete
@@ -938,7 +938,7 @@ export default function Products() {
 									setCurrentPage(1);
 								}}
 							>
-								<SelectTrigger className='h-9 text-sm'>
+								<SelectTrigger className='h-10 text-sm'>
 									<SelectValue placeholder='Holat' />
 								</SelectTrigger>
 								<SelectContent>

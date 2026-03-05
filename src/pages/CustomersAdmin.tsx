@@ -260,7 +260,7 @@ export default function CustomersAdmin() {
                         </div>
                         <CardDescription>Jami {pagination?.total || clients.length} ta mijoz</CardDescription>
                     </div>
-                    <Button onClick={() => handleOpenDialog()}>
+                    <Button onClick={() => handleOpenDialog()} className="">
                         <Plus className='mr-2 h-4 w-4' />
                         Yangi mijoz
                     </Button>
@@ -276,7 +276,7 @@ export default function CustomersAdmin() {
                                     setSearchQuery(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className='pl-9'
+                                className='pl-9 h-10'
                             />
                         </div>
                     </div>
@@ -375,6 +375,7 @@ export default function CustomersAdmin() {
                                                 <PaginationPrevious
                                                     onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                                                     className={cn(
+                                                        "",
                                                         currentPage === 1 && 'pointer-events-none opacity-50',
                                                     )}
                                                 />
@@ -390,6 +391,7 @@ export default function CustomersAdmin() {
                                                         <PaginationLink
                                                             onClick={() => handlePageChange(pageNum)}
                                                             isActive={currentPage === pageNum}
+                                                            className=""
                                                         >
                                                             {pageNum}
                                                         </PaginationLink>
@@ -402,6 +404,7 @@ export default function CustomersAdmin() {
                                                         handlePageChange(Math.min(totalPages, currentPage + 1))
                                                     }
                                                     className={cn(
+                                                        "",
                                                         currentPage === totalPages && 'pointer-events-none opacity-50',
                                                     )}
                                                 />
@@ -431,7 +434,7 @@ export default function CustomersAdmin() {
                                     <FormItem>
                                         <FormLabel>F.I.Sh *</FormLabel>
                                         <FormControl>
-                                            <Input placeholder='F.I.Sh' {...field} />
+                                            <Input placeholder='F.I.Sh' className="h-10" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -446,7 +449,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Telefon</FormLabel>
                                             <FormControl>
-                                                <PhoneInput placeholder='+998 90 123 45 67' {...field} />
+                                                <PhoneInput placeholder='+998 90 123 45 67' className="h-10" {...field} />
 
                                             </FormControl>
                                             <FormMessage />
@@ -465,7 +468,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="h-10">
                                                         <SelectValue placeholder='Tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -499,7 +502,7 @@ export default function CustomersAdmin() {
                                                     onDateChange={(date) =>
                                                         field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
                                                     }
-                                                    className='w-full'
+                                                    className='w-full [&>button]:h-10'
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -517,7 +520,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(value) => field.onChange(Number(value))}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="h-10">
                                                         <SelectValue placeholder='Filial tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -544,7 +547,7 @@ export default function CustomersAdmin() {
                                                 onValueChange={(value) => field.onChange(Number(value))}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="h-10">
                                                         <SelectValue placeholder='Viloyat tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -572,7 +575,7 @@ export default function CustomersAdmin() {
                                                 disabled={!selectedRegion}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="h-10">
                                                         <SelectValue placeholder='Tuman tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -595,7 +598,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Umumiy qarz</FormLabel>
                                             <FormControl>
-                                                <Input type='number' step='0.01' {...field} />
+                                                <Input type='number' step='0.01' className="h-10" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -608,7 +611,7 @@ export default function CustomersAdmin() {
                                         <FormItem>
                                             <FormLabel>Keshbek</FormLabel>
                                             <FormControl>
-                                                <Input type='number' step='0.01' {...field} />
+                                                <Input type='number' step='0.01' className="h-10" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -622,7 +625,7 @@ export default function CustomersAdmin() {
                                             <FormLabel>Mijoz turi</FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="h-10">
                                                         <SelectValue placeholder='Turini tanlang' />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -653,10 +656,10 @@ export default function CustomersAdmin() {
                                 />
                             </div>
                             <DialogFooter>
-                                <Button type='button' variant='outline' onClick={handleCloseDialog}>
+                                <Button type='button' variant='outline' onClick={handleCloseDialog} className="">
                                     Bekor qilish
                                 </Button>
-                                <Button type='submit' disabled={createClient.isPending || updateClient.isPending}>
+                                <Button type='submit' disabled={createClient.isPending || updateClient.isPending} className="">
                                     {(createClient.isPending || updateClient.isPending) && (
                                         <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                                     )}
@@ -677,10 +680,10 @@ export default function CustomersAdmin() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                        <AlertDialogCancel className="">Bekor qilish</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
-                            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                            className='bg-destructive text-destructive-foreground hover:bg-destructive/90 '
                             disabled={deleteClient.isPending}
                         >
                             {deleteClient.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}O'chirish

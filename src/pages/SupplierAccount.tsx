@@ -566,6 +566,8 @@ function SupplierAccountFilters({
     setFormDateTo,
     onFilter,
     onClear,
+    onAdd,
+    activeTab,
 }: {
     formSearch: string;
     setFormSearch: (value: string) => void;
@@ -585,19 +587,21 @@ function SupplierAccountFilters({
     setFormDateTo: (value: Date | undefined) => void;
     onFilter: () => void;
     onClear: () => void;
+    onAdd: () => void;
+    activeTab: string;
 }) {
     return (
-        <div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
-            <div className='w-full sm:w-auto'>
+        <div className='flex flex-col sm:flex-row sm:flex-wrap gap-3'>
+            <div className='relative flex-1 sm:min-w-[200px]'>
                 <Input
                     placeholder="Ta'minotchi nomi yoki telefon"
                     value={formSearch}
                     onChange={(e) => setFormSearch(e.target.value)}
-                    className='w-full sm:min-w-[220px]'
+                    className='h-10'
                 />
             </div>
 
-            <div className='w-full sm:w-[260px]'>
+            <div className='w-full sm:w-[260px] sm:flex-shrink-0'>
                 <Autocomplete
                     options={supplierOptions}
                     value={formSupplierId ?? undefined}
@@ -612,29 +616,36 @@ function SupplierAccountFilters({
                     hasMore={suppliersHasMore}
                     isLoading={isSuppliersLoading}
                     isLoadingMore={isSuppliersFetching}
+                    className="[&>button]:h-10"
                 />
             </div>
 
-            <div className='w-full sm:w-auto'>
+            <div className='w-full sm:w-auto sm:flex-shrink-0'>
                 <DateRangePicker
                     dateFrom={formDateFrom}
                     dateTo={formDateTo}
                     onDateFromChange={(d) => setFormDateFrom(d)}
                     onDateToChange={(d) => setFormDateTo(d)}
+                    className="[&>div>button]:h-10"
                 />
             </div>
-            <div className='w-full sm:w-auto flex gap-2 items-center'>
-                <Button onClick={onFilter} className='bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white'>
-                    <SearchIcon className='h-4 w-4' />
+
+            <div className='flex gap-2 sm:flex-shrink-0'>
+                <Button onClick={onFilter} className='bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white '>
+                    <SearchIcon className='h-4 w-4 mr-2' />
                     Qidirish
                 </Button>
                 <Button
                     variant='outline'
                     onClick={onClear}
-                    className='border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-orange-700 dark:hover:text-orange-300'
+                    className='border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-orange-700 dark:hover:text-orange-300 '
                 >
-                    <X className='h-4 w-4' />
+                    <X className='h-4 w-4 mr-2' />
                     Tozalash
+                </Button>
+                <Button onClick={onAdd} className=''>
+                    <Plus className='h-4 w-4 mr-2' />
+                    Qo'shish
                 </Button>
             </div>
         </div>
@@ -1008,41 +1019,36 @@ export default function SupplierAccountPage() {
     return (
         <div className='space-y-6'>
             <Card>
-                <CardHeader>
-                    <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-                        <div className='flex items-center gap-2'>
-                            <CardTitle className='whitespace-nowrap'>
-                                {activeTab === 'account' ? 'Mening qarzlarim' : 'To\'langan qarzlar'}
-                            </CardTitle>
-
-                        </div>
-                        <SupplierAccountFilters
-                            formSearch={formSearch}
-                            setFormSearch={setFormSearch}
-                            formSupplierId={formSupplierId}
-                            setFormSupplierId={setFormSupplierId}
-                            formSupplierSearch={formSupplierSearch}
-                            setFormSupplierSearch={setFormSupplierSearch}
-                            supplierOptions={supplierOptions}
-                            supplierPage={supplierPage}
-                            setSupplierPage={setSupplierPage}
-                            suppliersHasMore={suppliersHasMore}
-                            isSuppliersLoading={isSuppliersLoading}
-                            isSuppliersFetching={isSuppliersFetching}
-                            formDateFrom={formDateFrom}
-                            setFormDateFrom={setFormDateFrom}
-                            formDateTo={formDateTo}
-                            setFormDateTo={setFormDateTo}
-                            onFilter={handleFilter}
-                            onClear={handleClear}
-                        />
-                        <Button onClick={activeTab === 'account' ? handleOpenAccountDialog : handleOpenRepaymentDialog} size='sm'>
-                            <Plus className='h-4 w-4 mr-2' />
-                            Qo'shish
-                        </Button>
+                <CardHeader className='pb-4 flex flex-row items-center justify-between'>
+                    <div>
+                        <CardTitle className='text-lg'>
+                            {activeTab === 'account' ? 'Mening qarzlarim' : 'To\'langan qarzlar'}
+                        </CardTitle>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className='space-y-4'>
+                    <SupplierAccountFilters
+                        formSearch={formSearch}
+                        setFormSearch={setFormSearch}
+                        formSupplierId={formSupplierId}
+                        setFormSupplierId={setFormSupplierId}
+                        formSupplierSearch={formSupplierSearch}
+                        setFormSupplierSearch={setFormSupplierSearch}
+                        supplierOptions={supplierOptions}
+                        supplierPage={supplierPage}
+                        setSupplierPage={setSupplierPage}
+                        suppliersHasMore={suppliersHasMore}
+                        isSuppliersLoading={isSuppliersLoading}
+                        isSuppliersFetching={isSuppliersFetching}
+                        formDateFrom={formDateFrom}
+                        setFormDateFrom={setFormDateFrom}
+                        formDateTo={formDateTo}
+                        setFormDateTo={setFormDateTo}
+                        onFilter={handleFilter}
+                        onClear={handleClear}
+                        onAdd={activeTab === 'account' ? handleOpenAccountDialog : handleOpenRepaymentDialog}
+                        activeTab={activeTab}
+                    />
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList className='grid w-full grid-cols-2 bg-gray-100 dark:bg-muted p-1'>
                             <TabsTrigger

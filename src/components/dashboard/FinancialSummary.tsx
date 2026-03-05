@@ -140,7 +140,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             <div className='bg-card rounded-2xl shadow-xl p-4 sm:p-6 border border-border'>
                 <div className='flex items-center gap-2 mb-4'>
                     <Calendar className='w-5 h-5 text-blue-600 dark:text-blue-400' />
-                    <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Filter ma'lumotlari</h2>
+                    <h2 className='text-xl sm:text-xl font-bold text-foreground'>Filter ma'lumotlari</h2>
                 </div>
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
                     <div className='bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-200 dark:border-blue-800/40'>
@@ -176,13 +176,13 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             >
                 <div className='flex items-center gap-2 mb-4'>
                     <TrendingDown className='w-5 h-5' />
-                    <h2 className='text-xl sm:text-2xl font-bold'>Umumiy statistika</h2>
+                    <h2 className='text-xl sm:text-xl font-bold'>Umumiy statistika</h2>
                 </div>
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     <div className='bg-white/20 backdrop-blur-sm p-4 rounded-xl border border-white/30'>
                         <div className='text-sm opacity-90 mb-2'>Sof daromad (USD)</div>
                         <div
-                            className={`text-2xl sm:text-3xl font-bold ${isNegative(data.summary.net_revenue_usd) ? 'text-red-100' : ''
+                            className={`text-xl sm:text-xl font-bold ${isNegative(data.summary.net_revenue_usd) ? 'text-red-100' : ''
                                 }`}
                         >
                             {isNegative(data.summary.net_revenue_usd) ? '-' : ''}
@@ -192,7 +192,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
                     <div className='bg-white/20 backdrop-blur-sm p-4 rounded-xl border border-white/30'>
                         <div className='text-sm opacity-90 mb-2'>Sof pul oqimi (USD)</div>
                         <div
-                            className={`text-2xl sm:text-3xl font-bold ${isNegative(data.summary.net_cashflow_usd) ? 'text-red-100' : ''
+                            className={`text-xl sm:text-xl font-bold ${isNegative(data.summary.net_cashflow_usd) ? 'text-red-100' : ''
                                 }`}
                         >
                             {isNegative(data.summary.net_cashflow_usd) ? '-' : ''}
@@ -206,7 +206,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             <div className='bg-card rounded-2xl shadow-xl p-4 sm:p-6 border border-border'>
                 <div className='flex items-center gap-2 mb-4'>
                     <ShoppingCart className='w-5 h-5 text-blue-600 dark:text-blue-400' />
-                    <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Savdo ma'lumotlari</h2>
+                    <h2 className='text-xl sm:text-xl font-bold text-foreground'>Savdo ma'lumotlari</h2>
                 </div>
                 <div className='space-y-4'>
                     <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4'>
@@ -253,7 +253,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             <div className='bg-card rounded-2xl shadow-xl p-4 sm:p-6 border border-border'>
                 <div className='flex items-center gap-2 mb-4'>
                     <RotateCcw className='w-5 h-5 text-orange-600 dark:text-orange-400' />
-                    <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Qaytarilganlar</h2>
+                    <h2 className='text-xl sm:text-xl font-bold text-foreground'>Qaytarilganlar</h2>
                 </div>
                 <div className='space-y-4'>
                     <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4'>
@@ -278,7 +278,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             <div className='bg-card rounded-2xl shadow-xl p-4 sm:p-6 border border-border'>
                 <div className='flex items-center gap-2 mb-4'>
                     <TrendingDown className='w-5 h-5 text-red-600 dark:text-red-400' />
-                    <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Chiqimlar</h2>
+                    <h2 className='text-xl sm:text-xl font-bold text-foreground'>Chiqimlar</h2>
                 </div>
                 <div className='space-y-4'>
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4'>
@@ -299,7 +299,7 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
             <div className='bg-card rounded-2xl shadow-xl p-4 sm:p-6 border border-border'>
                 <div className='flex items-center gap-2 mb-4'>
                     <DollarSign className='w-5 h-5 text-emerald-600 dark:text-emerald-400' />
-                    <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Qarz to'lovlari</h2>
+                    <h2 className='text-xl sm:text-xl font-bold text-foreground'>Qarz to'lovlari</h2>
                 </div>
                 <div className='space-y-4'>
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>

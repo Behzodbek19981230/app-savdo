@@ -132,7 +132,7 @@ export default function OrderDebtHistoryPage() {
                 <CardHeader>
                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
                         <div className='flex items-center gap-3'>
-                            <CardTitle className='text-2xl font-bold whitespace-nowrap'>Kunlik hisobotlar</CardTitle>
+                            <CardTitle className='text-xl font-bold whitespace-nowrap'>Kunlik hisobotlar</CardTitle>
 
 
                         </div>

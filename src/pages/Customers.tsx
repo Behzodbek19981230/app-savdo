@@ -345,7 +345,7 @@ const Customers = () => {
             <Card className="border-border/50 shadow-sm rounded-xl lg:rounded-2xl">
                 <CardHeader className="flex flex-col gap-4 p-4 lg:p-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold">Mijozlar ro'yxati</CardTitle>
+                        <CardTitle className="text-lg sm:text-xl lg:text-xl font-bold">Mijozlar ro'yxati</CardTitle>
                         <div className="relative w-full sm:w-64 lg:w-80">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input

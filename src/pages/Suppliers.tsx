@@ -272,7 +272,7 @@ export default function Suppliers() {
 						</div>
 						<CardDescription>Jami {pagination?.total || suppliers.length} ta ta'minotchi</CardDescription>
 					</div>
-					<Button onClick={() => handleOpenDialog()}>
+					<Button onClick={() => handleOpenDialog()} className="">
 						<Plus className='mr-2 h-4 w-4' />
 						Yangi ta'minotchi
 					</Button>
@@ -431,7 +431,7 @@ export default function Suppliers() {
 
 			{/* Add/Edit Dialog */}
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<DialogContent className='sm:max-w-[500px]'>
+				<DialogContent className='sm:max-w-[500px] max-h-[90vh] overflow-y-auto'>
 					<DialogHeader>
 						<DialogTitle>
 							{editingId ? "Ta'minotchini tahrirlash" : "Yangi ta'minotchi qo'shish"}
