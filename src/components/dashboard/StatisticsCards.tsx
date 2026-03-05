@@ -236,7 +236,7 @@ export function StatisticsCards() {
                     </div>
                     <div className='flex items-center gap-2'>
                         <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                            <SelectTrigger className='w-[100px] h-9 text-sm'>
+                            <SelectTrigger className='w-[100px] h-7 text-sm'>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -251,7 +251,7 @@ export function StatisticsCards() {
                             value={month ? String(month) : '0'}
                             onValueChange={(v) => setMonth(Number(v) === 0 ? null : Number(v))}
                         >
-                            <SelectTrigger className='w-[130px] h-9 text-sm'>
+                            <SelectTrigger className='w-[130px] h-7 text-sm'>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -267,7 +267,7 @@ export function StatisticsCards() {
 
                 {isLoading ? (
                     <div className='flex items-center justify-center py-8'>
-                        <div className='animate-spin w-6 h-6 border-4 border-blue-400 border-t-transparent rounded-full' />
+                        <div className='animate-spin w-6 h-7 border-4 border-blue-400 border-t-transparent rounded-full' />
                     </div>
                 ) : (
                     <>

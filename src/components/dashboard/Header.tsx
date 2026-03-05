@@ -238,7 +238,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         variant='ghost'
                         size='icon'
                         onClick={onMenuClick}
-                        className='lg:hidden flex-shrink-0 h-9 w-9'
+                        className='lg:hidden flex-shrink-0 h-7 w-9'
                         disabled={shouldBlockInterface}
                     >
                         <Menu className='h-5 w-5' />
@@ -299,7 +299,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                             <Button
                                 variant='outline'
                                 size='icon'
-                                className='sm:hidden h-9 w-9 rounded-xl shadow-sm'
+                                className='sm:hidden h-7 w-9 rounded-xl shadow-sm'
                                 onClick={() => setIsExchangeHistoryDialogOpen(true)}
                                 title="Dollar kursi tarixi"
                             >
@@ -309,7 +309,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                                 <Button
                                     variant='outline'
                                     size='icon'
-                                    className='sm:hidden h-9 w-9 rounded-xl shadow-sm'
+                                    className='sm:hidden h-7 w-9 rounded-xl shadow-sm'
                                     onClick={openExchangeDialog}
                                     title="Dollar kursini tahrirlash"
                                 >
@@ -373,14 +373,14 @@ export function Header({ onMenuClick }: HeaderProps) {
                                 <Button
                                     variant='outline'
                                     size='icon'
-                                    className='md:hidden h-9 w-9 rounded-xl shadow-sm overflow-hidden'
+                                    className='md:hidden h-7 w-9 rounded-xl shadow-sm overflow-hidden'
                                     disabled={shouldBlockInterface}
                                 >
                                     {selectedFilial?.logo ? (
                                         <img
                                             src={selectedFilial.logo}
                                             alt={selectedFilial.name}
-                                            className='h-6 w-6 rounded-sm object-cover'
+                                            className='h-7 w-6 rounded-sm object-cover'
                                         />
                                     ) : (
                                         <Building2 className='h-4 w-4' />
@@ -416,7 +416,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     {!shouldBlockInterface && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant='outline' size='icon' className='relative h-9 w-9 rounded-xl shadow-sm'>
+                                <Button variant='outline' size='icon' className='relative h-7 w-9 rounded-xl shadow-sm'>
                                     <Bell className='h-[18px] w-[18px]' />
                                     {unreadNotesCount > 0 && (
                                         <span className='absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] px-1 items-center justify-center rounded-full bg-destructive text-[10px] font-extrabold text-destructive-foreground border-2 border-background'>
@@ -593,7 +593,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     <div className='mt-4'>
                         {isExchangeHistoryLoading ? (
                             <div className='flex items-center justify-center py-8'>
-                                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+                                <Loader2 className='h-7 w-6 animate-spin text-muted-foreground' />
                             </div>
                         ) : exchangeRatesList.length === 0 ? (
                             <div className='text-center py-8 text-muted-foreground'>
@@ -746,7 +746,7 @@ function ExchangeRateHistoryContent({ rateId }: { rateId: number }) {
     if (isHistoryLoading) {
         return (
             <div className='flex items-center justify-center py-8'>
-                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+                <Loader2 className='h-7 w-6 animate-spin text-muted-foreground' />
             </div>
         );
     }

@@ -148,7 +148,7 @@ export function ProductImagesDialog({ open, onOpenChange, product }: Props) {
                             </div>
                         ) : !selectedImage ? (
                             <div className='h-full flex flex-col items-center justify-center gap-3 text-center p-6'>
-                                <ImagePlus className='h-9 w-9 text-muted-foreground/60' />
+                                <ImagePlus className='h-7 w-9 text-muted-foreground/60' />
                                 <div>
                                     <div className='font-medium'>Rasm yo'q</div>
                                     <div className='text-sm text-muted-foreground'>O'ng tomondan rasm yuklang</div>

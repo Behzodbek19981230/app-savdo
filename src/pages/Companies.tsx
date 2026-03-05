@@ -368,7 +368,7 @@ export default function Companies() {
                                         {companies.map((c) => (
                                             <TableRow key={c.id}>
                                                 <TableCell className='py-1'>
-                                                    <div className='h-9 w-9 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
+                                                    <div className='h-7 w-9 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
                                                         {c.logo ? (
                                                             <img
                                                                 src={c.logo}

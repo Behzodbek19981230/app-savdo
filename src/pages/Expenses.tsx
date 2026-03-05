@@ -200,7 +200,7 @@ export default function ExpensesPage() {
                                     onValueChange={(v) => setFormCategory(v && v !== '0' ? Number(v) : null)}
                                     value={formCategory ? String(formCategory) : '0'}
                                 >
-                                    <SelectTrigger className='w-full sm:min-w-[200px] h-9'>
+                                    <SelectTrigger className='w-full sm:min-w-[200px] h-7'>
                                         <SelectValue placeholder='Barcha kategoriyalar' />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -220,7 +220,7 @@ export default function ExpensesPage() {
                                     dateTo={formDateTo}
                                     onDateFromChange={(d) => setFormDateFrom(d)}
                                     onDateToChange={(d) => setFormDateTo(d)}
-                                    className="[&>div>button]:h-9"
+                                    className="[&>div>button]:h-7"
                                 />
                             </div>
 
@@ -279,8 +279,9 @@ export default function ExpensesPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className='w-[110px]'>Sana</TableHead>
                                         <TableHead className='w-[60px]'>t/r</TableHead>
+
+                                        <TableHead className='w-[110px]'>Sana</TableHead>
                                         <TableHead>Kategoriya</TableHead>
                                         <TableHead>Xodim</TableHead>
                                         <TableHead className='text-right'>Jami ($)</TableHead>
@@ -298,6 +299,9 @@ export default function ExpensesPage() {
                                             <Fragment key={`group-${group.date}`}>
                                                 {group.items.map((it: ExpenseItem, idx: number) => (
                                                     <TableRow key={it.id}>
+                                                        <TableCell className='font-medium'>
+                                                            {group.items.length - idx}
+                                                        </TableCell>
                                                         {idx === 0 && (
                                                             <TableCell
                                                                 rowSpan={group.items.length}
@@ -310,9 +314,7 @@ export default function ExpensesPage() {
                                                                 </div>
                                                             </TableCell>
                                                         )}
-                                                        <TableCell className='font-medium'>
-                                                            {group.items.length - idx}
-                                                        </TableCell>
+
                                                         <TableCell>{it.category_detail?.name || '-'}</TableCell>
                                                         <TableCell>{it.employee_detail?.full_name || '-'}</TableCell>
                                                         <TableCell className='text-right text-blue-600 font-semibold'>

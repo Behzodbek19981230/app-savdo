@@ -355,7 +355,7 @@ const Customers = () => {
                                     setSearchQuery(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="pl-10 w-full text-sm h-9 rounded-lg"
+                                className="pl-10 w-full text-sm h-7 rounded-lg"
                             />
                         </div>
                     </div>
@@ -372,7 +372,7 @@ const Customers = () => {
                                 }
                             }}
                         >
-                            <SelectTrigger className="w-full h-9 rounded-lg text-sm">
+                            <SelectTrigger className="w-full h-7 rounded-lg text-sm">
                                 <SelectValue placeholder="Saralash" />
                             </SelectTrigger>
                             <SelectContent>
@@ -509,7 +509,7 @@ const Customers = () => {
                                     <CardContent className="p-4">
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                <div className="flex h-9 w-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20 flex-shrink-0 mt-0.5">
+                                                <div className="flex h-7 w-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20 flex-shrink-0 mt-0.5">
                                                     <span className="text-sm font-bold text-primary">
                                                         {customer.name.charAt(0)}
                                                     </span>

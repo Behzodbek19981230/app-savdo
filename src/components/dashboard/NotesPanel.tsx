@@ -349,7 +349,7 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                             <Button
                                                 size='icon'
                                                 variant='ghost'
-                                                className='h-6 w-6 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400'
+                                                className='h-7 w-6 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400'
                                                 title='Bajarildi'
                                                 onClick={() => onDone(note)}
                                             >
@@ -359,7 +359,7 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                         <Button
                                             size='icon'
                                             variant='ghost'
-                                            className='h-6 w-6'
+                                            className='h-7 w-6'
                                             title='Tahrirlash'
                                             onClick={() => openEdit(note)}
                                         >
@@ -368,7 +368,7 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                         <Button
                                             size='icon'
                                             variant='ghost'
-                                            className='h-6 w-6 text-destructive hover:text-destructive'
+                                            className='h-7 w-6 text-destructive hover:text-destructive'
                                             title="O'chirish"
                                             onClick={() => onDelete(note.id)}
                                         >
@@ -466,7 +466,7 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder='Sarlavha'
-                            className='h-9 text-sm'
+                            className='h-7 text-sm'
                         />
                         <div className='flex gap-2'>
                             <DatePicker
@@ -479,7 +479,7 @@ export function NotesPanel({ embedded = false }: NotesPanelProps) {
                                 type='time'
                                 value={reminderTime}
                                 onChange={(e) => setReminderTime(e.target.value)}
-                                className='h-9 w-[110px] text-sm'
+                                className='h-7 w-[110px] text-sm'
                             />
                         </div>
                         <Textarea

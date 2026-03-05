@@ -37,7 +37,7 @@ export function StatCard({ title, value, change, icon: Icon, iconColor }: StatCa
                 <div className='flex items-start gap-3 min-w-0 flex-1'>
                     <div
                         className={cn(
-                            'flex h-9 w-9 items-center justify-center rounded-xl lg:rounded-[14px] border flex-shrink-0',
+                            'flex h-7 w-9 items-center justify-center rounded-xl lg:rounded-[14px] border flex-shrink-0',
                             iconBgClasses[iconColor],
                         )}
                     >

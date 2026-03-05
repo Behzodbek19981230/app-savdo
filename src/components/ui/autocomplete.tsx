@@ -216,7 +216,7 @@ export function Autocomplete({
 										onSearchChangeRef.current?.('');
 									}
 								}}
-								className='pl-8 h-9 text-sm'
+								className='pl-8 h-7 text-sm'
 								autoFocus
 							/>
 						</div>

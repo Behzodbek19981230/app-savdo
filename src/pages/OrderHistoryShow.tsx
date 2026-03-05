@@ -133,7 +133,7 @@ function GivenCountCell({
                     title={`Soni: ${count}, Berilgan: ${givenCount}`}
                 />
             )}
-            <span className='inline-flex items-center justify-center h-6 w-6 rounded bg-muted/80 text-muted-foreground opacity-0 group-hover/cell:opacity-100 transition-opacity'>
+            <span className='inline-flex items-center justify-center h-7 w-6 rounded bg-muted/80 text-muted-foreground opacity-0 group-hover/cell:opacity-100 transition-opacity'>
                 <Pencil className='h-3.5 w-3.5' />
             </span>
         </div>
@@ -706,11 +706,12 @@ export function OrderShowPage() {
                         <thead>
                             <tr className='bg-gray-50 dark:bg-muted/50 border-b border-gray-200 dark:border-border'>
                                 <th className='px-1.5 py-2 sm:px-1.5 sm:py-2 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
-                                    Model
-                                </th>
-                                <th className='px-1.5 py-2 sm:px-1.5 sm:py-2 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     #
                                 </th>
+                                <th className='px-1.5 py-2 sm:px-1.5 sm:py-2 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
+                                    Model
+                                </th>
+
                                 <th className='px-1.5 py-2 sm:px-1.5 sm:py-2 text-left text-xs font-semibold text-gray-700 dark:text-foreground whitespace-nowrap'>
                                     Joyi
                                 </th>
@@ -756,6 +757,9 @@ export function OrderShowPage() {
                                             key={product.id}
                                             className='border-b border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors even:bg-muted/30'
                                         >
+                                            <td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-600 dark:text-muted-foreground'>
+                                                {productIndex}
+                                            </td>
                                             {idx === 0 && (
                                                 <td
                                                     rowSpan={group.product.length}
@@ -766,9 +770,7 @@ export function OrderShowPage() {
                                                     </div>
                                                 </td>
                                             )}
-                                            <td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-600 dark:text-muted-foreground'>
-                                                {productIndex}
-                                            </td>
+
                                             <td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground'>
                                                 {product.sklad_detail?.name || 'Ombor'}
                                             </td>

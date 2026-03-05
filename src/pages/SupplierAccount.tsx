@@ -591,7 +591,7 @@ function SupplierAccountFilters({
 					placeholder="Ta'minotchi nomi yoki telefon"
 					value={formSearch}
 					onChange={(e) => setFormSearch(e.target.value)}
-					className='h-9'
+					className='h-7'
 				/>
 			</div>
 
@@ -610,7 +610,7 @@ function SupplierAccountFilters({
 					hasMore={suppliersHasMore}
 					isLoading={isSuppliersLoading}
 					isLoadingMore={isSuppliersFetching}
-					className='[&>button]:h-9'
+					className='[&>button]:h-7'
 				/>
 			</div>
 
@@ -620,7 +620,7 @@ function SupplierAccountFilters({
 					dateTo={formDateTo}
 					onDateFromChange={(d) => setFormDateFrom(d)}
 					onDateToChange={(d) => setFormDateTo(d)}
-					className='[&>div>button]:h-9'
+					className='[&>div>button]:h-7'
 				/>
 			</div>
 

@@ -89,7 +89,7 @@ export default function TopClientsPage() {
                                     placeholder='Mijoz FIO boʻyicha qidirish...'
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className='pl-8 h-9 text-sm'
+                                    className='pl-8 h-7 text-sm'
                                 />
                             </div>
                         </div>
