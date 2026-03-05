@@ -31,7 +31,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Edit, Trash2, MapPin, Globe, Map, Building2, Loader2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, MapPin, Globe, Map, Building2, Loader2 } from 'lucide-react';
 import {
     useCountries,
     useRegions,
@@ -329,20 +329,22 @@ export default function Locations() {
                                                     )}
 
                                                     <TableCell className='text-right'>
-                                                        <div className='flex items-center justify-end gap-2'>
+                                                        <div className='flex items-center justify-end '>
                                                             <Button
                                                                 variant='ghost'
                                                                 size='icon'
                                                                 onClick={() => handleOpenDialog(item)}
+                                                                className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
                                                             >
-                                                                <Edit className='h-4 w-4' />
+                                                                <Pencil className='h-4 w-4' />
                                                             </Button>
                                                             <Button
                                                                 variant='ghost'
                                                                 size='icon'
                                                                 onClick={() => openDeleteDialog(item.id)}
+                                                                className='text-destructive hover:text-destructive hover:bg-destructive/10'
                                                             >
-                                                                <Trash2 className='h-4 w-4 text-destructive' />
+                                                                <Trash2 className='h-4 w-4' />
                                                             </Button>
                                                         </div>
                                                     </TableCell>

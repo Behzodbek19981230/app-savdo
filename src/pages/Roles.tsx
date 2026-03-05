@@ -42,7 +42,7 @@ import { cn } from '@/lib/utils';
 import { roleSchema, type RoleFormData } from '@/lib/validations/role';
 import { useCreateRole, useDeleteRole, useRoles, useUpdateRole } from '@/hooks/api/useRoles';
 import type { Role } from '@/services/role.service';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Plus, Search, Shield, Trash2, Edit } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Pencil, Plus, Search, Shield, Trash2 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -219,7 +219,7 @@ export default function Roles() {
 					</div>
 					<Button onClick={() => handleOpenDialog()}>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi rol qo'shish
+						Qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -271,13 +271,13 @@ export default function Roles() {
 													{role.description || '-'}
 												</TableCell>
 												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-2'>
+													<div className='flex items-center justify-end '>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => handleOpenDialog(role)}
 														>
-															<Edit className='h-4 w-4' />
+															<Pencil className='h-4 w-4' />
 														</Button>
 														<Button
 															variant='ghost'

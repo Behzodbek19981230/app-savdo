@@ -64,7 +64,7 @@ import {
 	toUserFormDefaults,
 } from '@/hooks/api/useUsers';
 import type { AppUser, CreateAppUserPayload, UpdateAppUserPayload } from '@/services/user.service';
-import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Loader2, Plus, Search, Trash2, Upload, UserCog } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Pencil, Plus, Search, Trash2, Upload, UserCog } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -408,7 +408,7 @@ export default function Users() {
 					</div>
 					<Button onClick={() => handleOpenDialog()}>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi foydalanuvchi qo'shish
+						Qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -522,20 +522,22 @@ export default function Users() {
 												</TableCell>
 
 												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-2'>
+													<div className='flex items-center justify-end '>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => handleOpenDialog(u)}
+															className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
 														>
-															<Edit className='h-4 w-4' />
+															<Pencil className='h-4 w-4' />
 														</Button>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => openDeleteDialog(u.id)}
+															className='text-destructive hover:text-destructive hover:bg-destructive/10'
 														>
-															<Trash2 className='h-4 w-4 text-destructive' />
+															<Trash2 className='h-4 w-4' />
 														</Button>
 													</div>
 												</TableCell>

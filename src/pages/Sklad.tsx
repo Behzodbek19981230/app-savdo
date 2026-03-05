@@ -54,7 +54,7 @@ import {
 	ArrowUp,
 	ArrowDown,
 	Plus,
-	Edit,
+	Pencil,
 	Trash2,
 	Loader2,
 	Warehouse,
@@ -267,7 +267,7 @@ export default function SkladPage() {
 					</div>
 					<Button onClick={() => handleOpenDialog()}>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi ombor
+						Qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -356,20 +356,22 @@ export default function SkladPage() {
 													</Badge>
 												</TableCell>
 												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-1'>
+													<div className='flex items-center justify-end '>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => handleOpenDialog(sklad)}
+															className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
 														>
-															<Edit className='h-4 w-4' />
+															<Pencil className='h-4 w-4' />
 														</Button>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => openDeleteDialog(sklad.id)}
+															className='text-destructive hover:text-destructive hover:bg-destructive/10'
 														>
-															<Trash2 className='h-4 w-4 text-destructive' />
+															<Trash2 className='h-4 w-4' />
 														</Button>
 													</div>
 												</TableCell>

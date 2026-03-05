@@ -166,10 +166,11 @@ const KorzinkaPage: React.FC = () => {
 															)}
 														</TableCell>
 														<TableCell className='text-right'>
-															<div className='flex items-center justify-end gap-1'>
+															<div className='flex items-center justify-end '>
 																<Button
 																	variant='ghost'
 																	size='icon'
+																	className=' text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
 																	onClick={() => navigate(`/order-history/${it.id}`)}
 																>
 																	<Eye className='h-4 w-4' />
@@ -180,15 +181,17 @@ const KorzinkaPage: React.FC = () => {
 																	size='icon'
 																	onClick={() => openRestoreDialog(it.id)}
 																	title='Qayta tiklash'
+																	className='text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
 																>
-																	<RotateCw className='h-4 w-4 text-emerald-600' />
+																	<RotateCw className='h-4 w-4 ' />
 																</Button>
 																<Button
 																	variant='ghost'
 																	size='icon'
 																	onClick={() => openDeleteDialog(it.id)}
+																	className='text-destructive hover:text-destructive/80 hover:bg-destructive/10 dark:hover:bg-destructive/20'
 																>
-																	<Trash2 className='h-4 w-4 text-destructive' />
+																	<Trash2 className='h-4 w-4' />
 																</Button>
 															</div>
 														</TableCell>

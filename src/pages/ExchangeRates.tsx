@@ -44,7 +44,7 @@ import { useCompanies } from '@/hooks/api/useCompanies';
 import type { ExchangeRate } from '@/types/exchangeRate';
 import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
 import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
-import { DollarSign, Loader2, Plus, Trash2, Edit, Building2, History } from 'lucide-react';
+import { Building2, DollarSign, History, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import moment from 'moment';
 
 // Form validation schema
@@ -207,11 +207,11 @@ export default function ExchangeRates() {
 													: '-'}
 											</TableCell>
 											<TableCell className='text-right'>
-												<div className='flex items-center justify-end gap-1'>
+												<div className='flex items-center justify-end '>
 													<Button
 														variant='ghost'
 														size='icon'
-														className='h-8 w-8'
+														className=' text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
 														onClick={() => {
 															setSelectedRateId(rate.id);
 															setIsHistoryModalOpen(true);
@@ -223,15 +223,15 @@ export default function ExchangeRates() {
 													<Button
 														variant='ghost'
 														size='icon'
-														className='h-8 w-8'
+														className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
 														onClick={() => handleOpenDialog(rate)}
 													>
-														<Edit className='h-4 w-4' />
+														<Pencil className='h-4 w-4' />
 													</Button>
 													<Button
 														variant='ghost'
 														size='icon'
-														className='h-8 w-8 text-destructive hover:text-destructive'
+														className=' text-destructive hover:text-destructive hover:bg-destructive/10'
 														onClick={() => openDeleteDialog(rate.id)}
 													>
 														<Trash2 className='h-4 w-4' />
@@ -347,9 +347,7 @@ export default function ExchangeRates() {
 				<DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
 					<DialogHeader>
 						<DialogTitle>O'zgarishlar tarixi</DialogTitle>
-						<DialogDescription>
-							Dollar kursi o'zgarishlari tarixi
-						</DialogDescription>
+						<DialogDescription>Dollar kursi o'zgarishlari tarixi</DialogDescription>
 					</DialogHeader>
 					<div className='mt-4'>
 						{selectedRateId && (
@@ -389,11 +387,7 @@ function ExchangeRateHistoryContent({
 	}
 
 	if (history.length === 0) {
-		return (
-			<div className='text-center py-8 text-muted-foreground'>
-				Tarix ma'lumotlari topilmadi
-			</div>
-		);
+		return <div className='text-center py-8 text-muted-foreground'>Tarix ma'lumotlari topilmadi</div>;
 	}
 
 	return (
@@ -418,9 +412,7 @@ function ExchangeRateHistoryContent({
 							{formatCurrency(Number(hist.new_dollar))} so'm
 						</TableCell>
 						<TableCell className='text-muted-foreground'>
-							{hist.created_time
-								? moment(hist.created_time).format('DD.MM.YYYY HH:mm')
-								: '—'}
+							{hist.created_time ? moment(hist.created_time).format('DD.MM.YYYY HH:mm') : '—'}
 						</TableCell>
 						<TableCell className='text-muted-foreground'>
 							{hist.created_by_detail?.full_name || hist.created_by_detail?.username || '—'}

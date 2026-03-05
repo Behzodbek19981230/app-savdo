@@ -54,7 +54,7 @@ import {
 	ArrowUp,
 	ArrowDown,
 	Plus,
-	Edit,
+	Pencil,
 	Trash2,
 	Loader2,
 	Truck,
@@ -74,7 +74,6 @@ const supplierSchema = z.object({
 	region: z.coerce.number().positive('Viloyat tanlanishi shart'),
 	district: z.coerce.number().positive('Tuman tanlanishi shart'),
 	address: z.string().optional(),
-	inn: z.coerce.number().optional(),
 	note: z.string().optional(),
 	is_active: z.boolean().default(true),
 });
@@ -101,7 +100,6 @@ export default function Suppliers() {
 			region: 0,
 			district: 0,
 			address: '',
-			inn: undefined,
 			note: '',
 			is_active: true,
 		},
@@ -122,15 +120,15 @@ export default function Suppliers() {
 	// Queries
 	const { data, isLoading } = useSuppliers({
 		page: currentPage,
-		perPage: ITEMS_PER_PAGE,
+		limit: ITEMS_PER_PAGE,
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
 		filial: selectedFilialId ?? undefined,
 	});
 
-	const { data: regionsData } = useRegions({ perPage: 100 });
-	const { data: districtsData } = useDistricts(selectedRegion ? { region: selectedRegion, perPage: 100 } : undefined);
+	const { data: regionsData } = useRegions({ limit: 100 });
+	const { data: districtsData } = useDistricts(selectedRegion ? { region: selectedRegion, limit: 100 } : undefined);
 
 	const regions = regionsData?.results || [];
 	const districts = districtsData?.results || [];
@@ -178,7 +176,6 @@ export default function Suppliers() {
 				region: item.region || 0,
 				district: item.district || 0,
 				address: item.address || '',
-				inn: item.inn || undefined,
 				note: item.note || '',
 				is_active: item.is_active ?? true,
 			});
@@ -190,7 +187,6 @@ export default function Suppliers() {
 				region: 0,
 				district: 0,
 				address: '',
-				inn: undefined,
 				note: '',
 				is_active: true,
 			});
@@ -212,7 +208,6 @@ export default function Suppliers() {
 				region: data.region,
 				district: data.district,
 				address: data.address,
-				inn: data.inn,
 				note: data.note,
 				is_active: data.is_active,
 				is_delete: false,
@@ -272,9 +267,9 @@ export default function Suppliers() {
 						</div>
 						<CardDescription>Jami {pagination?.total || suppliers.length} ta ta'minotchi</CardDescription>
 					</div>
-					<Button onClick={() => handleOpenDialog()} className="">
+					<Button onClick={() => handleOpenDialog()} className=''>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi ta'minotchi
+						Qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -323,7 +318,6 @@ export default function Suppliers() {
 											<TableHead>Viloyat</TableHead>
 											<TableHead>Tuman</TableHead>
 											<TableHead>Manzil</TableHead>
-											<TableHead>INN</TableHead>
 											<TableHead>Holati</TableHead>
 											<TableHead className='text-right'>Amallar</TableHead>
 										</TableRow>
@@ -345,27 +339,28 @@ export default function Suppliers() {
 												<TableCell className='max-w-[200px] truncate'>
 													{supplier.address || '-'}
 												</TableCell>
-												<TableCell>{supplier.inn || '-'}</TableCell>
 												<TableCell>
 													<Badge variant={supplier.is_active ? 'default' : 'secondary'}>
 														{supplier.is_active ? 'Faol' : 'Nofaol'}
 													</Badge>
 												</TableCell>
 												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-1'>
+													<div className='flex items-center justify-end '>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => handleOpenDialog(supplier)}
+															className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
 														>
-															<Edit className='h-4 w-4' />
+															<Pencil className='h-4 w-4' />
 														</Button>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => openDeleteDialog(supplier.id)}
+															className='text-destructive hover:text-destructive hover:bg-destructive/10'
 														>
-															<Trash2 className='h-4 w-4 text-destructive' />
+															<Trash2 className='h-4 w-4' />
 														</Button>
 													</div>
 												</TableCell>
@@ -559,27 +554,6 @@ export default function Suppliers() {
 										<FormLabel>Manzil</FormLabel>
 										<FormControl>
 											<Input placeholder='Manzilni kiriting' {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name='inn'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>INN</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												placeholder='INN raqamini kiriting'
-												{...field}
-												onChange={(e) =>
-													field.onChange(e.target.value ? Number(e.target.value) : undefined)
-												}
-											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

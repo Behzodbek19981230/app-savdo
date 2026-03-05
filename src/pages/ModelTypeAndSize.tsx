@@ -40,7 +40,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Tag, Ruler, Plus, Trash2, Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown, Edit } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Loader2, Pencil, Plus, Ruler, Search, Tag, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -659,7 +659,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 							</div>
 							<Button onClick={() => setIsAddModalOpen(true)}>
 								<Plus className='mr-2 h-4 w-4' />
-								Model turi va o&apos;lchamlar qo&apos;shish
+								Qo'shish
 							</Button>
 						</CardHeader>
 						<CardContent>
@@ -744,14 +744,14 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 															{mt.madel_detail?.name ?? mt.madel ?? '-'}
 														</TableCell>
 														<TableCell className='text-right'>
-															<div className='flex items-center justify-end gap-1'>
+															<div className='flex items-center justify-end '>
 																<Button
 																	variant='ghost'
 																	size='icon'
 																	onClick={() => openEditModal(mt)}
 																	title='Tahrirlash'
 																>
-																	<Edit className='h-4 w-4' />
+																	<Pencil className='h-4 w-4' />
 																</Button>
 																<Button
 																	variant='ghost'

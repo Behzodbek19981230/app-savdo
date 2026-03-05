@@ -7,14 +7,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
 	Pagination,
@@ -27,14 +20,7 @@ import {
 } from '@/components/ui/pagination';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
 	Dialog,
 	DialogContent,
@@ -53,17 +39,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-	Search,
-	ArrowUpDown,
-	ArrowUp,
-	ArrowDown,
-	Plus,
-	Edit,
-	Trash2,
-	Loader2,
-	Receipt,
-} from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Plus, Pencil, Trash2, Loader2, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
 	useExpenseCategories,
@@ -97,10 +73,7 @@ export default function ExpenseCategories() {
 		},
 	});
 
-	const ordering =
-		sortField && sortDirection
-			? `${sortDirection === 'desc' ? '-' : ''}${sortField}`
-			: undefined;
+	const ordering = sortField && sortDirection ? `${sortDirection === 'desc' ? '-' : ''}${sortField}` : undefined;
 
 	const { data, isLoading } = useExpenseCategories({
 		page: currentPage,
@@ -118,8 +91,7 @@ export default function ExpenseCategories() {
 	const pagination = data?.pagination;
 	const totalPages = pagination?.lastPage || 1;
 
-	const isMutating =
-		createCategory.isPending || updateCategory.isPending || deleteCategory.isPending;
+	const isMutating = createCategory.isPending || updateCategory.isPending || deleteCategory.isPending;
 
 	const handleSort = (field: SortField) => {
 		if (sortField === field) {
@@ -227,7 +199,7 @@ export default function ExpenseCategories() {
 					<PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
 						1
 					</PaginationLink>
-				</PaginationItem>
+				</PaginationItem>,
 			);
 			if (startPage > 2) {
 				items.push(<PaginationEllipsis key='ellipsis-start' />);
@@ -240,7 +212,7 @@ export default function ExpenseCategories() {
 					<PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
 						{i}
 					</PaginationLink>
-				</PaginationItem>
+				</PaginationItem>,
 			);
 		}
 
@@ -250,13 +222,10 @@ export default function ExpenseCategories() {
 			}
 			items.push(
 				<PaginationItem key={totalPages}>
-					<PaginationLink
-						onClick={() => handlePageChange(totalPages)}
-						isActive={currentPage === totalPages}
-					>
+					<PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
 						{totalPages}
 					</PaginationLink>
-				</PaginationItem>
+				</PaginationItem>,
 			);
 		}
 
@@ -272,13 +241,11 @@ export default function ExpenseCategories() {
 							<Receipt className='h-5 w-5 text-primary' />
 							<CardTitle className='text-lg'>Xarajat kategoriyalari</CardTitle>
 						</div>
-						<CardDescription>
-							Jami {pagination?.total || 0} ta xarajat kategoriyasi
-						</CardDescription>
+						<CardDescription>Jami {pagination?.total || 0} ta xarajat kategoriyasi</CardDescription>
 					</div>
 					<Button onClick={() => handleOpenDialog()}>
 						<Plus className='mr-2 h-4 w-4' />
-						Yangi kategoriya qo&apos;shish
+						Qo'shish
 					</Button>
 				</CardHeader>
 				<CardContent>
@@ -328,18 +295,16 @@ export default function ExpenseCategories() {
 									<TableBody>
 										{categories.map((category, index) => (
 											<TableRow key={category.id}>
-												<TableCell>
-													{index + 1 + (currentPage - 1) * ITEMS_PER_PAGE}
-												</TableCell>
+												<TableCell>{index + 1 + (currentPage - 1) * ITEMS_PER_PAGE}</TableCell>
 												<TableCell className='font-medium'>{category.name}</TableCell>
 												<TableCell className='text-right'>
-													<div className='flex items-center justify-end gap-2'>
+													<div className='flex items-center justify-end '>
 														<Button
 															variant='ghost'
 															size='icon'
 															onClick={() => handleOpenDialog(category)}
 														>
-															<Edit className='h-4 w-4' />
+															<Pencil className='h-4 w-4' />
 														</Button>
 														<Button
 															variant='ghost'
@@ -364,7 +329,7 @@ export default function ExpenseCategories() {
 												<PaginationPrevious
 													onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
 													className={cn(
-														currentPage === 1 && 'pointer-events-none opacity-50'
+														currentPage === 1 && 'pointer-events-none opacity-50',
 													)}
 												/>
 											</PaginationItem>
@@ -375,7 +340,7 @@ export default function ExpenseCategories() {
 														handlePageChange(Math.min(totalPages, currentPage + 1))
 													}
 													className={cn(
-														currentPage === totalPages && 'pointer-events-none opacity-50'
+														currentPage === totalPages && 'pointer-events-none opacity-50',
 													)}
 												/>
 											</PaginationItem>
@@ -401,12 +366,8 @@ export default function ExpenseCategories() {
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
-								<DialogTitle>
-									{editingId ? 'Tahrirlash' : "Yangi kategoriya qo'shish"}
-								</DialogTitle>
-								<DialogDescription>
-									Xarajat kategoriyasi ma&apos;lumotlarini kiriting
-								</DialogDescription>
+								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi kategoriya qo'shish"}</DialogTitle>
+								<DialogDescription>Xarajat kategoriyasi ma&apos;lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField

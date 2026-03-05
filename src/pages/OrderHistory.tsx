@@ -84,10 +84,10 @@ function OrderHistoryTable({
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{dateGroups.map((group: any, groupIdx: number) => {
+						{dateGroups.map((group, groupIdx: number) => {
 							return (
 								<Fragment key={`group-${group.date}-${groupIdx}`}>
-									{group.items.map((it: any, idx: number) => {
+									{group.items.map((it, idx: number) => {
 										const payable = parseFloat(
 											it.all_product_summa || it.summa_total_dollar || '0',
 										);
@@ -175,6 +175,7 @@ function OrderHistoryTable({
 														<Button
 															variant='ghost'
 															size='icon'
+															className=' text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
 															onClick={() => navigate(`/order-history/${it.id}`)}
 														>
 															<Eye className='h-4 w-4' />
@@ -452,7 +453,9 @@ export default function OrderHistoryPage() {
 	useEffect(() => {
 		// reset pages/options when client search or filial changes
 		setClientPage(1);
-		setClientOptions([]);
+		// Faqat qidiruv matni bor paytda tozalaymiz.
+		// Bo'sh qidiruvda listni saqlab turish clear qilinganda bo'sh chiqib qolishini oldini oladi.
+		if (formClientSearch.trim()) setClientOptions([]);
 	}, [formClientSearch, selectedFilialId]);
 
 	// Build params
@@ -501,6 +504,7 @@ export default function OrderHistoryPage() {
 	const handleClear = () => {
 		setFormSearch('');
 		setFormClientId(null);
+		setFormClientSearch('');
 		setFormEmployee(null);
 		setFormStatus('all');
 		setFormDateFrom(undefined);
@@ -512,7 +516,7 @@ export default function OrderHistoryPage() {
 		setStatus('all');
 		setDateFrom(undefined);
 		setDateTo(undefined);
-		setClientOptions([]);
+		setClientPage(1);
 		setPage(1);
 	};
 
