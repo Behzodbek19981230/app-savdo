@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
@@ -1116,7 +1115,6 @@ export default function SupplierAccountPage() {
 				<DialogContent className='max-w-2xl'>
 					<DialogHeader>
 						<DialogTitle>{editingAccountId ? 'Tahrirlash' : "Yangi qo'shish"}</DialogTitle>
-						<DialogDescription>Mening qarzlarim ma'lumotlarini kiriting</DialogDescription>
 					</DialogHeader>
 					<Form {...accountForm}>
 						<form onSubmit={accountForm.handleSubmit(handleSubmitAccount)} className='space-y-4'>
@@ -1128,23 +1126,14 @@ export default function SupplierAccountPage() {
 										<FormLabel>
 											Ta'minotchi <span className='text-destructive'>*</span>
 										</FormLabel>
-										<Select
-											onValueChange={(value) => field.onChange(Number(value))}
-											value={field.value ? String(field.value) : ''}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Ta'minotchini tanlang" />
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{supplierOptions.map((s) => (
-													<SelectItem key={s.value} value={String(s.value)}>
-														{s.label}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<FormControl>
+											<Autocomplete
+												options={supplierOptions}
+												value={field.value || undefined}
+												onValueChange={(value) => field.onChange(Number(value))}
+												placeholder="Ta'minotchini tanlang"
+											/>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
@@ -1208,9 +1197,6 @@ export default function SupplierAccountPage() {
 				<DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
 					<DialogHeader>
 						<DialogTitle>{editingRepaymentId ? 'Tahrirlash' : "Yangi qo'shish"}</DialogTitle>
-						<DialogDescription>
-							To'langan qarzlar ma'lumotlarini kiriting. Kurs: {formatCurrency(dollarRate)} UZS
-						</DialogDescription>
 					</DialogHeader>
 					<Form {...repaymentForm}>
 						<form onSubmit={repaymentForm.handleSubmit(handleSubmitRepayment)} className='space-y-4'>
@@ -1223,23 +1209,14 @@ export default function SupplierAccountPage() {
 											<FormLabel>
 												Ta'minotchi <span className='text-destructive'>*</span>
 											</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Ta'minotchini tanlang" />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{supplierOptions.map((s) => (
-														<SelectItem key={s.value} value={String(s.value)}>
-															{s.label}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={supplierOptions}
+													value={field.value || undefined}
+													onValueChange={(value) => field.onChange(Number(value))}
+													placeholder="Ta'minotchini tanlang"
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
@@ -1252,23 +1229,17 @@ export default function SupplierAccountPage() {
 											<FormLabel>
 												Xodim <span className='text-destructive'>*</span>
 											</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Xodimni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{users.map((u) => (
-														<SelectItem key={u.id} value={String(u.id)}>
-															{u.full_name || u.username}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={users.map((u) => ({
+														value: u.id,
+														label: u.full_name || u.username,
+													}))}
+													value={field.value || undefined}
+													onValueChange={(value) => field.onChange(Number(value))}
+													placeholder='Xodimni tanlang'
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}

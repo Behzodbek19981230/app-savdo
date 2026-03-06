@@ -367,7 +367,6 @@ export default function ExpenseCategories() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi kategoriya qo'shish"}</DialogTitle>
-								<DialogDescription>Xarajat kategoriyasi ma&apos;lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField

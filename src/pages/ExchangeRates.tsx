@@ -13,413 +13,402 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import {
-    useExchangeRates,
-    useCreateExchangeRate,
-    useUpdateExchangeRate,
-    useDeleteExchangeRate,
-    useExchangeRateHistory,
+	useExchangeRates,
+	useCreateExchangeRate,
+	useUpdateExchangeRate,
+	useDeleteExchangeRate,
+	useExchangeRateHistory,
 } from '@/hooks/api/useExchangeRate';
 import { useCompanies } from '@/hooks/api/useCompanies';
 import type { ExchangeRate } from '@/types/exchangeRate';
-import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
 import type { ExchangeRateHistory } from '@/services/exchangeRate.service';
 import { Building2, DollarSign, History, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import moment from 'moment';
 
 // Form validation schema
 const exchangeRateSchema = z.object({
-    dollar: z.coerce.number().positive("Kurs musbat bo'lishi kerak"),
-    filial: z.coerce.number().positive('Filial tanlanishi shart'),
+	dollar: z.coerce.number().positive("Kurs musbat bo'lishi kerak"),
+	filial: z.coerce.number().positive('Filial tanlanishi shart'),
 });
 
 type ExchangeRateFormData = z.infer<typeof exchangeRateSchema>;
 
 export default function ExchangeRates() {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [selectedRateId, setSelectedRateId] = useState<number | null>(null);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [editingId, setEditingId] = useState<number | null>(null);
+	const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [selectedRateId, setSelectedRateId] = useState<number | null>(null);
+	const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
-    const form = useForm<ExchangeRateFormData>({
-        resolver: zodResolver(exchangeRateSchema),
-        defaultValues: { dollar: 0, filial: 0 },
-    });
+	const form = useForm<ExchangeRateFormData>({
+		resolver: zodResolver(exchangeRateSchema),
+		defaultValues: { dollar: 0, filial: 0 },
+	});
 
-    // Barcha exchange ratelarni olish (filter yo'q - barchasi)
-    const { data, isLoading } = useExchangeRates();
-    const { data: companiesData } = useCompanies({ limit: 1000, is_delete: false });
+	// Barcha exchange ratelarni olish (filter yo'q - barchasi)
+	const { data, isLoading } = useExchangeRates();
+	const { data: companiesData } = useCompanies({ limit: 1000, is_delete: false });
 
-    const createExchangeRate = useCreateExchangeRate();
-    const updateExchangeRate = useUpdateExchangeRate();
-    const deleteExchangeRate = useDeleteExchangeRate();
+	const createExchangeRate = useCreateExchangeRate();
+	const updateExchangeRate = useUpdateExchangeRate();
+	const deleteExchangeRate = useDeleteExchangeRate();
 
-    const exchangeRates = data?.results || [];
-    const companies = companiesData?.results || [];
+	const exchangeRates = data?.results || [];
+	const companies = companiesData?.results || [];
 
-    const isMutating = createExchangeRate.isPending || updateExchangeRate.isPending || deleteExchangeRate.isPending;
+	const isMutating = createExchangeRate.isPending || updateExchangeRate.isPending || deleteExchangeRate.isPending;
 
-    // Filial nomini topish
-    const getFilialName = (filialId: number) => {
-        const company = companies.find((c) => c.id === filialId);
-        return company?.name || `Filial #${filialId}`;
-    };
+	// Filial nomini topish
+	const getFilialName = (filialId: number) => {
+		const company = companies.find((c) => c.id === filialId);
+		return company?.name || `Filial #${filialId}`;
+	};
 
-    const handleOpenDialog = (item?: ExchangeRate) => {
-        if (item) {
-            setEditingId(item.id);
-            form.reset({ dollar: item.dollar, filial: item.filial });
-        } else {
-            setEditingId(null);
-            form.reset({ dollar: 0, filial: 0 });
-        }
-        setIsDialogOpen(true);
-    };
+	const handleOpenDialog = (item?: ExchangeRate) => {
+		if (item) {
+			setEditingId(item.id);
+			form.reset({ dollar: item.dollar, filial: item.filial });
+		} else {
+			setEditingId(null);
+			form.reset({ dollar: 0, filial: 0 });
+		}
+		setIsDialogOpen(true);
+	};
 
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false);
-        setEditingId(null);
-        form.reset();
-    };
+	const handleCloseDialog = () => {
+		setIsDialogOpen(false);
+		setEditingId(null);
+		form.reset();
+	};
 
-    const openDeleteDialog = (id: number) => {
-        setDeletingId(id);
-        setIsDeleteDialogOpen(true);
-    };
+	const openDeleteDialog = (id: number) => {
+		setDeletingId(id);
+		setIsDeleteDialogOpen(true);
+	};
 
-    const handleDelete = async () => {
-        if (!deletingId) return;
-        try {
-            await deleteExchangeRate.mutateAsync(deletingId);
-            setIsDeleteDialogOpen(false);
-            setDeletingId(null);
-        } catch {
-            // handled in hook toast
-        }
-    };
+	const handleDelete = async () => {
+		if (!deletingId) return;
+		try {
+			await deleteExchangeRate.mutateAsync(deletingId);
+			setIsDeleteDialogOpen(false);
+			setDeletingId(null);
+		} catch {
+			// handled in hook toast
+		}
+	};
 
-    const onSubmit = async (values: ExchangeRateFormData) => {
-        try {
-            if (editingId) {
-                await updateExchangeRate.mutateAsync({
-                    id: editingId,
-                    data: { dollar: values.dollar, filial: values.filial },
-                });
-            } else {
-                await createExchangeRate.mutateAsync({
-                    dollar: values.dollar,
-                    filial: values.filial,
-                });
-            }
-            handleCloseDialog();
-        } catch {
-            // handled in hook toast
-        }
-    };
+	const onSubmit = async (values: ExchangeRateFormData) => {
+		try {
+			if (editingId) {
+				await updateExchangeRate.mutateAsync({
+					id: editingId,
+					data: { dollar: values.dollar, filial: values.filial },
+				});
+			} else {
+				await createExchangeRate.mutateAsync({
+					dollar: values.dollar,
+					filial: values.filial,
+				});
+			}
+			handleCloseDialog();
+		} catch {
+			// handled in hook toast
+		}
+	};
 
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('uz-UZ').format(value);
-    };
+	const formatCurrency = (value: number) => {
+		return new Intl.NumberFormat('uz-UZ').format(value);
+	};
 
-    return (
-        <div className='space-y-6'>
-            {/* Table Card */}
-            <Card>
-                <CardHeader className='pb-4 flex flex-row items-center justify-between'>
-                    <div>
-                        <div className='flex items-center gap-2'>
-                            <DollarSign className='h-5 w-5 text-green-600' />
-                            <CardTitle className='text-lg'>Dollar kurslari</CardTitle>
-                        </div>
-                        <CardDescription>Jami {exchangeRates.length} ta kurs</CardDescription>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className='flex items-center justify-center py-10'>
-                            <Loader2 className='h-8 w-8 animate-spin text-primary' />
-                        </div>
-                    ) : exchangeRates.length === 0 ? (
-                        <div className='flex flex-col items-center justify-center py-10 text-center'>
-                            <DollarSign className='h-12 w-12 text-muted-foreground/50 mb-4' />
-                            <p className='text-muted-foreground'>Hozircha kurslar mavjud emas</p>
-                        </div>
-                    ) : (
-                        <div className='rounded-md border'>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='w-[60px]'>#</TableHead>
-                                        <TableHead>Filial</TableHead>
-                                        <TableHead>Dollar kursi</TableHead>
-                                        <TableHead>Yangilangan</TableHead>
-                                        <TableHead>Yangilagan foydalanuvchi</TableHead>
-                                        <TableHead className='text-right w-[160px]'>Amallar</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {exchangeRates.map((rate, index) => (
-                                        <TableRow key={rate.id}>
-                                            <TableCell className='font-medium'>{index + 1}</TableCell>
-                                            <TableCell>
-                                                <div className='flex items-center gap-2'>
-                                                    <Building2 className='h-4 w-4 text-muted-foreground' />
-                                                    {getFilialName(rate.filial)}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className='font-semibold text-green-600'>
-                                                    {formatCurrency(rate.dollar)} so'm
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className='text-muted-foreground'>
-                                                {rate.updated_time
-                                                    ? moment(rate.updated_time).format('DD.MM.YYYY HH:mm')
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell className='text-muted-foreground'>
-                                                {rate.updated_by_detail
-                                                    ? rate.updated_by_detail?.fullname ||
-                                                    rate.updated_by_detail?.email ||
-                                                    '-'
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell className='text-right'>
-                                                <div className='flex items-center justify-end '>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='icon'
-                                                        className=' text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
-                                                        onClick={() => {
-                                                            setSelectedRateId(rate.id);
-                                                            setIsHistoryModalOpen(true);
-                                                        }}
-                                                        title="Tarixni ko'rish"
-                                                    >
-                                                        <History className='h-4 w-4' />
-                                                    </Button>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='icon'
-                                                        className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
-                                                        onClick={() => handleOpenDialog(rate)}
-                                                    >
-                                                        <Pencil className='h-4 w-4' />
-                                                    </Button>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='icon'
-                                                        className=' text-destructive hover:text-destructive hover:bg-destructive/10'
-                                                        onClick={() => openDeleteDialog(rate.id)}
-                                                    >
-                                                        <Trash2 className='h-4 w-4' />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+	return (
+		<div className='space-y-6'>
+			{/* Table Card */}
+			<Card>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<DollarSign className='h-5 w-5 text-green-600' />
+							<CardTitle className='text-lg'>Dollar kurslari</CardTitle>
+						</div>
+						<CardDescription>Jami {exchangeRates.length} ta kurs</CardDescription>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{isLoading ? (
+						<div className='flex items-center justify-center py-10'>
+							<Loader2 className='h-8 w-8 animate-spin text-primary' />
+						</div>
+					) : exchangeRates.length === 0 ? (
+						<div className='flex flex-col items-center justify-center py-10 text-center'>
+							<DollarSign className='h-12 w-12 text-muted-foreground/50 mb-4' />
+							<p className='text-muted-foreground'>Hozircha kurslar mavjud emas</p>
+						</div>
+					) : (
+						<div className='rounded-md border'>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className='w-[60px]'>#</TableHead>
+										<TableHead>Filial</TableHead>
+										<TableHead>Dollar kursi</TableHead>
+										<TableHead>Yangilangan</TableHead>
+										<TableHead>Yangilagan foydalanuvchi</TableHead>
+										<TableHead className='text-right w-[160px]'>Amallar</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{exchangeRates.map((rate, index) => (
+										<TableRow key={rate.id}>
+											<TableCell className='font-medium'>{index + 1}</TableCell>
+											<TableCell>
+												<div className='flex items-center gap-2'>
+													<Building2 className='h-4 w-4 text-muted-foreground' />
+													{getFilialName(rate.filial)}
+												</div>
+											</TableCell>
+											<TableCell>
+												<span className='font-semibold text-green-600'>
+													{formatCurrency(rate.dollar)} so'm
+												</span>
+											</TableCell>
+											<TableCell className='text-muted-foreground'>
+												{rate.updated_time
+													? moment(rate.updated_time).format('DD.MM.YYYY HH:mm')
+													: '-'}
+											</TableCell>
+											<TableCell className='text-muted-foreground'>
+												{rate.updated_by_detail
+													? rate.updated_by_detail?.fullname ||
+														rate.updated_by_detail?.email ||
+														'-'
+													: '-'}
+											</TableCell>
+											<TableCell className='text-right'>
+												<div className='flex items-center justify-end '>
+													<Button
+														variant='ghost'
+														size='icon'
+														className=' text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
+														onClick={() => {
+															setSelectedRateId(rate.id);
+															setIsHistoryModalOpen(true);
+														}}
+														title="Tarixni ko'rish"
+													>
+														<History className='h-4 w-4' />
+													</Button>
+													<Button
+														variant='ghost'
+														size='icon'
+														className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
+														onClick={() => handleOpenDialog(rate)}
+													>
+														<Pencil className='h-4 w-4' />
+													</Button>
+													<Button
+														variant='ghost'
+														size='icon'
+														className=' text-destructive hover:text-destructive hover:bg-destructive/10'
+														onClick={() => openDeleteDialog(rate.id)}
+													>
+														<Trash2 className='h-4 w-4' />
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
-            {/* Create/Edit Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className='sm:max-w-[425px]'>
-                    <DialogHeader>
-                        <DialogTitle>{editingId ? 'Kursni tahrirlash' : 'Yangi kurs'}</DialogTitle>
-                        <DialogDescription>
-                            {editingId ? 'Dollar kursini yangilang' : 'Filial uchun dollar kursini kiriting'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-                            <FormField
-                                control={form.control}
-                                name='filial'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Filial</FormLabel>
-                                        <Select
-                                            onValueChange={(value) => field.onChange(Number(value))}
-                                            value={field.value ? String(field.value) : ''}
-                                            disabled={!!editingId}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder='Filial tanlang' />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {companies.map((company) => (
-                                                    <SelectItem key={company.id} value={String(company.id)}>
-                                                        {company.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name='dollar'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>1 USD = ? UZS</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type='number'
-                                                placeholder='Masalan: 12500'
-                                                {...field}
-                                                min={0}
-                                                step={0.01}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <DialogFooter>
-                                <Button type='button' variant='outline' onClick={handleCloseDialog}>
-                                    Bekor qilish
-                                </Button>
-                                <Button type='submit' disabled={isMutating}>
-                                    {isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                                    {editingId ? 'Saqlash' : "Qo'shish"}
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
-                </DialogContent>
-            </Dialog>
+			{/* Create/Edit Dialog */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogContent className='sm:max-w-[425px]'>
+					<DialogHeader>
+						<DialogTitle>{editingId ? 'Kursni tahrirlash' : 'Yangi kurs'}</DialogTitle>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+							<FormField
+								control={form.control}
+								name='filial'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Filial</FormLabel>
+										<FormControl>
+											<Autocomplete
+												options={companies.map((company) => ({
+													value: company.id,
+													label: company.name,
+												}))}
+												value={field.value || undefined}
+												onValueChange={(v) => field.onChange(Number(v))}
+												placeholder='Filial tanlang'
+												disabled={!!editingId}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name='dollar'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>1 USD = ? UZS</FormLabel>
+										<FormControl>
+											<Input
+												type='number'
+												placeholder='Masalan: 12500'
+												{...field}
+												min={0}
+												step={0.01}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<DialogFooter>
+								<Button type='button' variant='outline' onClick={handleCloseDialog}>
+									Bekor qilish
+								</Button>
+								<Button type='submit' disabled={isMutating}>
+									{isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+									{editingId ? 'Saqlash' : "Qo'shish"}
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Kursni o'chirish</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Haqiqatan ham bu kursni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDelete}
-                            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                            disabled={deleteExchangeRate.isPending}
-                        >
-                            {deleteExchangeRate.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                            O'chirish
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Kursni o'chirish</AlertDialogTitle>
+						<AlertDialogDescription>
+							Haqiqatan ham bu kursni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDelete}
+							className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+							disabled={deleteExchangeRate.isPending}
+						>
+							{deleteExchangeRate.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+							O'chirish
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
-            {/* Exchange Rate History Modal */}
-            <Dialog open={isHistoryModalOpen} onOpenChange={setIsHistoryModalOpen}>
-                <DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
-                    <DialogHeader>
-                        <DialogTitle>O'zgarishlar tarixi</DialogTitle>
-                        <DialogDescription>Dollar kursi o'zgarishlari tarixi</DialogDescription>
-                    </DialogHeader>
-                    <div className='mt-4'>
-                        {selectedRateId && (
-                            <ExchangeRateHistoryContent rateId={selectedRateId} formatCurrency={formatCurrency} />
-                        )}
-                    </div>
-                    <DialogFooter>
-                        <Button variant='outline' onClick={() => setIsHistoryModalOpen(false)}>
-                            Yopish
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
-    );
+			{/* Exchange Rate History Modal */}
+			<Dialog open={isHistoryModalOpen} onOpenChange={setIsHistoryModalOpen}>
+				<DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
+					<DialogHeader>
+						<DialogTitle>O'zgarishlar tarixi</DialogTitle>
+					</DialogHeader>
+					<div className='mt-4'>
+						{selectedRateId && (
+							<ExchangeRateHistoryContent rateId={selectedRateId} formatCurrency={formatCurrency} />
+						)}
+					</div>
+					<DialogFooter>
+						<Button variant='outline' onClick={() => setIsHistoryModalOpen(false)}>
+							Yopish
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</div>
+	);
 }
 
 // Exchange Rate History Content Component
 function ExchangeRateHistoryContent({
-    rateId,
-    formatCurrency,
+	rateId,
+	formatCurrency,
 }: {
-    rateId: number;
-    formatCurrency: (value: number) => string;
+	rateId: number;
+	formatCurrency: (value: number) => string;
 }) {
-    const { data: historyData, isLoading: isHistoryLoading } = useExchangeRateHistory({
-        exchange_rate: rateId,
-    });
-    const history = historyData?.results || [];
+	const { data: historyData, isLoading: isHistoryLoading } = useExchangeRateHistory({
+		exchange_rate: rateId,
+	});
+	const history = historyData?.results || [];
 
-    if (isHistoryLoading) {
-        return (
-            <div className='flex items-center justify-center py-8'>
-                <Loader2 className='h-7 w-6 animate-spin text-muted-foreground' />
-            </div>
-        );
-    }
+	if (isHistoryLoading) {
+		return (
+			<div className='flex items-center justify-center py-8'>
+				<Loader2 className='h-7 w-6 animate-spin text-muted-foreground' />
+			</div>
+		);
+	}
 
-    if (history.length === 0) {
-        return <div className='text-center py-8 text-muted-foreground'>Tarix ma'lumotlari topilmadi</div>;
-    }
+	if (history.length === 0) {
+		return <div className='text-center py-8 text-muted-foreground'>Tarix ma'lumotlari topilmadi</div>;
+	}
 
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className='w-[60px]'>№</TableHead>
-                    <TableHead>Eski kurs</TableHead>
-                    <TableHead>Yangi kurs</TableHead>
-                    <TableHead>Yaratilgan</TableHead>
-                    <TableHead>Kim tomonidan</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {history.map((hist: ExchangeRateHistory, histIndex: number) => (
-                    <TableRow key={hist.id}>
-                        <TableCell className='font-medium'>{histIndex + 1}</TableCell>
-                        <TableCell className='text-muted-foreground'>
-                            {formatCurrency(Number(hist.old_dollar))} so'm
-                        </TableCell>
-                        <TableCell className='font-semibold text-green-600'>
-                            {formatCurrency(Number(hist.new_dollar))} so'm
-                        </TableCell>
-                        <TableCell className='text-muted-foreground'>
-                            {hist.created_time ? moment(hist.created_time).format('DD.MM.YYYY HH:mm') : '—'}
-                        </TableCell>
-                        <TableCell className='text-muted-foreground'>
-                            {hist.created_by_detail?.full_name || hist.created_by_detail?.username || '—'}
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    );
+	return (
+		<Table>
+			<TableHeader>
+				<TableRow>
+					<TableHead className='w-[60px]'>№</TableHead>
+					<TableHead>Eski kurs</TableHead>
+					<TableHead>Yangi kurs</TableHead>
+					<TableHead>Yaratilgan</TableHead>
+					<TableHead>Kim tomonidan</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{history.map((hist: ExchangeRateHistory, histIndex: number) => (
+					<TableRow key={hist.id}>
+						<TableCell className='font-medium'>{histIndex + 1}</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{formatCurrency(Number(hist.old_dollar))} so'm
+						</TableCell>
+						<TableCell className='font-semibold text-green-600'>
+							{formatCurrency(Number(hist.new_dollar))} so'm
+						</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{hist.created_time ? moment(hist.created_time).format('DD.MM.YYYY HH:mm') : '—'}
+						</TableCell>
+						<TableCell className='text-muted-foreground'>
+							{hist.created_by_detail?.full_name || hist.created_by_detail?.username || '—'}
+						</TableCell>
+					</TableRow>
+				))}
+			</TableBody>
+		</Table>
+	);
 }

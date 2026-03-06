@@ -397,9 +397,6 @@ export default function ProductCategories() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi tur qo'shish"}</DialogTitle>
-								<DialogDescription>
-									Mahsulot turi (bo&apos;lim) ma&apos;lumotlarini kiriting
-								</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField

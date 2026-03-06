@@ -43,7 +43,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { cn } from '@/lib/utils';
 import {
 	usePurchaseInvoices,
@@ -372,54 +372,38 @@ export default function PurchaseInvoices() {
 								{/* Tab bo'yicha filter: Tashqi = Ta'minotchi, Ichki = Qaysi ombor */}
 								{activeTab === PurchaseInvoiceType.EXTERNAL && (
 									<div className='flex flex-wrap items-center gap-2'>
-										<span className='text-sm text-muted-foreground'>Ta'minotchi:</span>
-										<Select
-											value={supplierFilterId !== undefined ? String(supplierFilterId) : 'all'}
+										<span className='text-xs text-muted-foreground'>Ta'minotchi:</span>
+										<Autocomplete
+											options={[
+												{ value: 'all', label: 'Barchasi' },
+												...filterSuppliers.map((s) => ({ value: s.id, label: s.name })),
+											]}
+											value={supplierFilterId ?? 'all'}
 											onValueChange={(v) => {
 												setSupplierFilterId(v === 'all' ? undefined : Number(v));
 												setCurrentPage(1);
 											}}
-										>
-											<SelectTrigger className='w-[220px]'>
-												<SelectValue placeholder="Ta'minotchini tanlang" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value='all'>Barchasi</SelectItem>
-												{filterSuppliers.map((s) => (
-													<SelectItem key={s.id} value={String(s.id)}>
-														{s.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+											placeholder="Ta'minotchini tanlang"
+											className='w-[220px]'
+										/>
 									</div>
 								)}
 								{activeTab === PurchaseInvoiceType.INTERNAL && (
 									<div className='flex flex-wrap items-center gap-2'>
-										<span className='text-sm text-muted-foreground'>Qaysi ombor:</span>
-										<Select
-											value={
-												skladOutgoingFilterId !== undefined
-													? String(skladOutgoingFilterId)
-													: 'all'
-											}
+										<span className='text-xs text-muted-foreground'>Qaysi ombor:</span>
+										<Autocomplete
+											options={[
+												{ value: 'all', label: 'Barchasi' },
+												...filterSklads.map((s) => ({ value: s.id, label: s.name })),
+											]}
+											value={skladOutgoingFilterId ?? 'all'}
 											onValueChange={(v) => {
 												setSkladOutgoingFilterId(v === 'all' ? undefined : Number(v));
 												setCurrentPage(1);
 											}}
-										>
-											<SelectTrigger className='w-[220px]'>
-												<SelectValue placeholder='Omborni tanlang' />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value='all'>Barchasi</SelectItem>
-												{filterSklads.map((s) => (
-													<SelectItem key={s.id} value={String(s.id)}>
-														{s.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+											placeholder='Omborni tanlang'
+											className='w-[220px]'
+										/>
 									</div>
 								)}
 								<DateRangePicker
@@ -672,7 +656,6 @@ export default function PurchaseInvoices() {
 						<DialogTitle>
 							{activeTab === PurchaseInvoiceType.INTERNAL ? 'Ichki kirim' : 'Tashqi kirim'} yaratish
 						</DialogTitle>
-						<DialogDescription>Faktura uchun asosiy ma'lumotlarni kiriting</DialogDescription>
 					</DialogHeader>
 					<Form {...newInvoiceForm}>
 						<form
@@ -791,12 +774,14 @@ export default function PurchaseInvoices() {
 											<FormItem>
 												<FormLabel>Qaysi ombordan</FormLabel>
 												<FormControl>
-													<Select
-														value={
-															field.value && field.value > 0
-																? String(field.value)
-																: 'none'
-														}
+													<Autocomplete
+														options={[
+															{ value: 'none', label: 'Tanlang' },
+															...filterSklads
+																.filter((s) => !selectedSklad || s.id !== selectedSklad)
+																.map((s) => ({ value: s.id, label: s.name })),
+														]}
+														value={field.value && field.value > 0 ? field.value : 'none'}
 														onValueChange={(v) => {
 															if (v === 'none') {
 																field.onChange(0);
@@ -804,26 +789,12 @@ export default function PurchaseInvoices() {
 															}
 															const value = v ? Number(v) : 0;
 															field.onChange(value);
-															// Agar ikkinchi ombor birinchi ombor bilan bir xil bo'lsa, uni tozalash
 															if (value === selectedSklad) {
 																newInvoiceForm.setValue('sklad', 0);
 															}
 														}}
-													>
-														<SelectTrigger>
-															<SelectValue placeholder='Chiquvchi omborni tanlang' />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value='none'>Tanlang</SelectItem>
-															{filterSklads
-																.filter((s) => !selectedSklad || s.id !== selectedSklad)
-																.map((s) => (
-																	<SelectItem key={s.id} value={String(s.id)}>
-																		{s.name}
-																	</SelectItem>
-																))}
-														</SelectContent>
-													</Select>
+														placeholder='Chiquvchi omborni tanlang'
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -836,12 +807,18 @@ export default function PurchaseInvoices() {
 											<FormItem>
 												<FormLabel>Qaysi omborga</FormLabel>
 												<FormControl>
-													<Select
-														value={
-															field.value && field.value > 0
-																? String(field.value)
-																: 'none'
-														}
+													<Autocomplete
+														options={[
+															{ value: 'none', label: 'Tanlang' },
+															...filterSklads
+																.filter(
+																	(s) =>
+																		!selectedSkladOutgoing ||
+																		s.id !== selectedSkladOutgoing,
+																)
+																.map((s) => ({ value: s.id, label: s.name })),
+														]}
+														value={field.value && field.value > 0 ? field.value : 'none'}
 														onValueChange={(v) => {
 															if (v === 'none') {
 																field.onChange(0);
@@ -849,30 +826,12 @@ export default function PurchaseInvoices() {
 															}
 															const value = v ? Number(v) : 0;
 															field.onChange(value);
-															// Agar birinchi ombor ikkinchi ombor bilan bir xil bo'lsa, uni tozalash
 															if (value === selectedSkladOutgoing) {
 																newInvoiceForm.setValue('sklad_outgoing', 0);
 															}
 														}}
-													>
-														<SelectTrigger>
-															<SelectValue placeholder='Kiruvchi omborni tanlang' />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value='none'>Tanlang</SelectItem>
-															{filterSklads
-																.filter(
-																	(s) =>
-																		!selectedSkladOutgoing ||
-																		s.id !== selectedSkladOutgoing,
-																)
-																.map((s) => (
-																	<SelectItem key={s.id} value={String(s.id)}>
-																		{s.name}
-																	</SelectItem>
-																))}
-														</SelectContent>
-													</Select>
+														placeholder='Kiruvchi omborni tanlang'
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>

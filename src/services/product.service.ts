@@ -65,6 +65,7 @@ export interface ProductAttachment {
 // Types
 export interface Product {
 	id: number;
+	is_active: boolean;
 	date: string;
 	reserve_limit: number;
 	filial: number;

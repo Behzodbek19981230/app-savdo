@@ -41,7 +41,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from '@/hooks/api/useSupplier';
@@ -431,11 +431,6 @@ export default function Suppliers() {
 						<DialogTitle>
 							{editingId ? "Ta'minotchini tahrirlash" : "Yangi ta'minotchi qo'shish"}
 						</DialogTitle>
-						<DialogDescription>
-							{editingId
-								? "Ta'minotchi ma'lumotlarini o'zgartiring"
-								: "Yangi ta'minotchi ma'lumotlarini kiriting"}
-						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -459,23 +454,19 @@ export default function Suppliers() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Filial *</FormLabel>
-										<Select
-											onValueChange={(value) => field.onChange(Number(value))}
-											value={field.value ? String(field.value) : ''}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder='Filialni tanlang' />
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{user?.filials_detail?.map((f) => (
-													<SelectItem key={f.id} value={String(f.id)}>
-														{f.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<FormControl>
+											<Autocomplete
+												options={
+													user?.filials_detail?.map((f) => ({
+														value: f.id,
+														label: f.name,
+													})) ?? []
+												}
+												value={field.value || undefined}
+												onValueChange={(value) => field.onChange(Number(value))}
+												placeholder='Filialni tanlang'
+											/>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
@@ -488,23 +479,14 @@ export default function Suppliers() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Viloyat *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Viloyatni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{regions.map((r) => (
-														<SelectItem key={r.id} value={String(r.id)}>
-															{r.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={regions.map((r) => ({ value: r.id, label: r.name }))}
+													value={field.value || undefined}
+													onValueChange={(value) => field.onChange(Number(value))}
+													placeholder='Viloyatni tanlang'
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
@@ -516,30 +498,17 @@ export default function Suppliers() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Tuman *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-												disabled={!selectedRegion}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={
-																selectedRegion
-																	? 'Tumanni tanlang'
-																	: 'Avval viloyatni tanlang'
-															}
-														/>
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{districts.map((d) => (
-														<SelectItem key={d.id} value={String(d.id)}>
-															{d.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={districts.map((d) => ({ value: d.id, label: d.name }))}
+													value={field.value || undefined}
+													onValueChange={(value) => field.onChange(Number(value))}
+													placeholder={
+														selectedRegion ? 'Tumanni tanlang' : 'Avval viloyatni tanlang'
+													}
+													disabled={!selectedRegion}
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
@@ -581,7 +550,7 @@ export default function Suppliers() {
 									<FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
 										<div className='space-y-0.5'>
 											<FormLabel>Faol holati</FormLabel>
-											<p className='text-sm text-muted-foreground'>
+											<p className='text-xs text-muted-foreground'>
 												Ta'minotchi faol yoki nofaol
 											</p>
 										</div>

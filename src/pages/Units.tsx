@@ -387,7 +387,6 @@ export default function Units() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi birlik qo'shish"}</DialogTitle>
-								<DialogDescription>O&apos;lchov birligi ma&apos;lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField

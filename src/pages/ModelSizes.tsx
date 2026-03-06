@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
 	Dialog,
@@ -40,7 +41,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, Plus, Pencil, Trash2, Loader2, Ruler } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Plus, Pencil, Trash2, Loader2, Ruler, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModelSizes, useCreateModelSize, useUpdateModelSize, useDeleteModelSize } from '@/hooks/api/useModelSizes';
 import { useModelTypes } from '@/hooks/api/useModelTypes';
@@ -61,6 +62,8 @@ export default function ModelSizes() {
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [filterProductTypeId, setFilterProductTypeId] = useState<number | undefined>(undefined);
+	const [draftSearch, setDraftSearch] = useState('');
+	const [draftFilterProductTypeId, setDraftFilterProductTypeId] = useState<number | undefined>(undefined);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -337,33 +340,56 @@ export default function ModelSizes() {
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 							<Input
 								placeholder='Qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
+								value={draftSearch}
+								onChange={(e) => setDraftSearch(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										setSearchQuery(draftSearch);
+										setFilterProductTypeId(draftFilterProductTypeId);
+										setCurrentPage(1);
+									}
 								}}
 								className='pl-9'
 							/>
 						</div>
-						<Select
-							value={filterProductTypeId?.toString() ?? 'all'}
+						<Autocomplete
+							options={[
+								{ value: 'all', label: 'Barcha model turlari' },
+								...modelTypes.map((modelType) => ({ value: modelType.id, label: modelType.name })),
+							]}
+							value={draftFilterProductTypeId ?? 'all'}
 							onValueChange={(v) => {
-								setFilterProductTypeId(v === 'all' ? undefined : Number(v));
+								setDraftFilterProductTypeId(v === 'all' ? undefined : Number(v));
+							}}
+							placeholder="Model turi bo'yicha filtrlash"
+							className='w-full sm:w-[220px]'
+						/>
+						<Button
+							className='bg-blue-600 hover:bg-blue-700 text-white'
+							onClick={() => {
+								setSearchQuery(draftSearch);
+								setFilterProductTypeId(draftFilterProductTypeId);
 								setCurrentPage(1);
 							}}
 						>
-							<SelectTrigger className='w-full sm:w-[220px]'>
-								<SelectValue placeholder="Model turi bo'yicha filtrlash" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value='all'>Barcha model turlari</SelectItem>
-								{modelTypes.map((modelType) => (
-									<SelectItem key={modelType.id} value={String(modelType.id)}>
-										{modelType.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							<Search className='mr-2 h-4 w-4' />
+							Qidirish
+						</Button>
+						{(searchQuery || filterProductTypeId !== undefined) && (
+							<Button
+								onClick={() => {
+									setDraftSearch('');
+									setDraftFilterProductTypeId(undefined);
+									setSearchQuery('');
+									setFilterProductTypeId(undefined);
+									setCurrentPage(1);
+								}}
+								variant='outline'
+							>
+								<X className='mr-2 h-4 w-4' />
+								Tozalash
+							</Button>
+						)}
 					</div>
 
 					{/* Table */}
@@ -487,7 +513,6 @@ export default function ModelSizes() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi o'lcham qo'shish"}</DialogTitle>
-								<DialogDescription>Model o'lchami ma'lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField
@@ -496,23 +521,17 @@ export default function ModelSizes() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Model turi *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(parseInt(value))}
-												value={field.value?.toString()}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Model turini tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{modelTypes.map((modelType) => (
-														<SelectItem key={modelType.id} value={modelType.id.toString()}>
-															{modelType.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={modelTypes.map((modelType) => ({
+														value: modelType.id,
+														label: modelType.name,
+													}))}
+													value={field.value || undefined}
+													onValueChange={(value) => field.onChange(parseInt(String(value)))}
+													placeholder='Model turini tanlang'
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
@@ -637,11 +656,10 @@ export default function ModelSizes() {
 				<DialogContent className='sm:max-w-[400px]'>
 					<DialogHeader>
 						<DialogTitle>Yangi o'lchov birligi</DialogTitle>
-						<DialogDescription>Yangi o'lchov birligini qo'shing</DialogDescription>
 					</DialogHeader>
 					<div className='space-y-4 py-4'>
 						<div className='space-y-2'>
-							<label className='text-sm font-medium'>Nomi</label>
+							<label className='text-xs font-medium'>Nomi</label>
 							<Input
 								placeholder='Masalan: Kilogram'
 								value={newUnitName}
@@ -649,7 +667,7 @@ export default function ModelSizes() {
 							/>
 						</div>
 						<div className='space-y-2'>
-							<label className='text-sm font-medium'>Kodi</label>
+							<label className='text-xs font-medium'>Kodi</label>
 							<Input
 								placeholder='Masalan: kg'
 								value={newUnitCode}

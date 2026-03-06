@@ -332,7 +332,6 @@ export default function Roles() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi rol qo'shish"}</DialogTitle>
-								<DialogDescription>Rol ma'lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 
 							<div className='grid gap-4 py-4'>

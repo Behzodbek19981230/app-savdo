@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import {
 	Dialog,
 	DialogContent,
@@ -40,7 +40,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Pencil, Plus, Search, Tag, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Pencil, Plus, Search, Tag, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModelTypes, useCreateModelType, useUpdateModelType, useDeleteModelType } from '@/hooks/api/useModelTypes';
 import { useProductModels } from '@/hooks/api/useProductModels';
@@ -55,6 +55,7 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function ModelTypes() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
+	const [draftSearch, setDraftSearch] = useState('');
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -269,19 +270,44 @@ export default function ModelTypes() {
 				</CardHeader>
 				<CardContent>
 					{/* Search */}
-					<div className='mb-4'>
+					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
 						<div className='relative'>
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 							<Input
 								placeholder='Qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
+								value={draftSearch}
+								onChange={(e) => setDraftSearch(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										setSearchQuery(draftSearch);
+										setCurrentPage(1);
+									}
 								}}
 								className='pl-9'
 							/>
 						</div>
+						<Button
+							className='bg-blue-600 hover:bg-blue-700 text-white'
+							onClick={() => {
+								setSearchQuery(draftSearch);
+								setCurrentPage(1);
+							}}
+						>
+							<Search className='mr-2 h-4 w-4' />
+							Qidirish
+						</Button>
+						{searchQuery && (
+							<Button
+								onClick={() => {
+									setDraftSearch('');
+									setSearchQuery('');
+									setCurrentPage(1);
+								}}
+							>
+								<X className='mr-2 h-4 w-4' />
+								Tozalash
+							</Button>
+						)}
 					</div>
 
 					{/* Table */}
@@ -400,7 +426,6 @@ export default function ModelTypes() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi tur qo'shish"}</DialogTitle>
-								<DialogDescription>Model turi ma'lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField
@@ -409,23 +434,17 @@ export default function ModelTypes() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Model *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(parseInt(value))}
-												value={field.value?.toString()}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Model tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{models.map((model) => (
-														<SelectItem key={model.id} value={model.id.toString()}>
-															{model.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={models.map((model) => ({
+														value: model.id,
+														label: model.name,
+													}))}
+													value={field.value || undefined}
+													onValueChange={(v) => field.onChange(parseInt(String(v)))}
+													placeholder='Model tanlang'
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}

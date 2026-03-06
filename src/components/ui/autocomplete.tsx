@@ -161,7 +161,7 @@ export function Autocomplete({
 					role='combobox'
 					aria-expanded={open}
 					disabled={disabled || isLoading}
-					className={cn('w-full justify-between font-normal', className)}
+					className={cn('w-full justify-between font-normal text-xs', className)}
 				>
 					{isLoading ? (
 						<span className='text-muted-foreground flex items-center gap-2'>
@@ -171,7 +171,7 @@ export function Autocomplete({
 					) : selectedOption ? (
 						selectedOption.label
 					) : (
-						<span className='text-muted-foreground'>{placeholder}</span>
+						<span className='text-muted-foreground text-xs'>{placeholder}</span>
 					)}
 					<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 				</Button>
@@ -179,7 +179,7 @@ export function Autocomplete({
 			<PopoverPrimitive.Portal>
 				<PopoverPrimitive.Content
 					className={cn(
-						'z-50 w-[var(--radix-popover-trigger-width)] rounded-lg border bg-popover p-0 shadow-lg',
+						'z-50 w-[var(--radix-popover-trigger-width)] rounded-sm border bg-popover p-0 shadow-lg',
 						'data-[state=open]:animate-in data-[state=closed]:animate-out',
 						'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
 						'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -216,7 +216,7 @@ export function Autocomplete({
 										onSearchChangeRef.current?.('');
 									}
 								}}
-								className='pl-8 h-7 text-sm'
+								className='pl-8 h-7 text-xs'
 								autoFocus
 							/>
 						</div>
@@ -288,7 +288,7 @@ export function Autocomplete({
 										}
 									}}
 									className={cn(
-										'relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-7 pr-2 text-sm outline-none',
+										'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none',
 										'focus:bg-accent focus:text-accent-foreground',
 										'hover:bg-accent hover:text-accent-foreground',
 										'transition-colors duration-200',
@@ -306,7 +306,7 @@ export function Autocomplete({
 								</button>
 							))
 						) : (
-							<div className='py-4 text-center text-sm text-muted-foreground'>{emptyText}</div>
+							<div className='py-4 text-center text-xs text-muted-foreground'>{emptyText}</div>
 						)}
 
 						{/* Load More Indicator */}
@@ -335,7 +335,7 @@ export function Autocomplete({
 									type='button'
 									onClick={handleCreateNew}
 									disabled={isCreating}
-									className='w-full flex items-center justify-center space-x-2 py-2.5 px-2 text-sm text-primary hover:bg-accent rounded-lg transition-colors duration-200 font-medium border-t mt-1 pt-2 disabled:opacity-50'
+									className='w-full flex items-center justify-center space-x-2 py-2.5 px-2 text-xs text-primary hover:bg-accent rounded-sm transition-colors duration-200 font-medium border-t mt-1 pt-2 disabled:opacity-50'
 								>
 									{isCreating ? (
 										<Loader2 className='h-4 w-4 animate-spin' />

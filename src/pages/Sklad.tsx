@@ -41,7 +41,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { useSklads, useCreateSklad, useUpdateSklad, useDeleteSklad } from '@/hooks/api/useSklad';
@@ -440,9 +440,6 @@ export default function SkladPage() {
 				<DialogContent className='sm:max-w-[500px]'>
 					<DialogHeader>
 						<DialogTitle>{editingId ? 'Omborni tahrirlash' : "Yangi ombor qo'shish"}</DialogTitle>
-						<DialogDescription>
-							{editingId ? "Ombor ma'lumotlarini o'zgartiring" : "Yangi ombor ma'lumotlarini kiriting"}
-						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -466,23 +463,19 @@ export default function SkladPage() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Filial *</FormLabel>
-										<Select
-											onValueChange={(value) => field.onChange(Number(value))}
-											value={field.value ? String(field.value) : ''}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder='Filialni tanlang' />
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{user?.filials_detail?.map((f) => (
-													<SelectItem key={f.id} value={String(f.id)}>
-														{f.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<FormControl>
+											<Autocomplete
+												options={
+													user?.filials_detail?.map((f) => ({
+														value: f.id,
+														label: f.name,
+													})) || []
+												}
+												value={field.value || undefined}
+												onValueChange={(v) => field.onChange(Number(v))}
+												placeholder='Filialni tanlang'
+											/>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
@@ -495,23 +488,14 @@ export default function SkladPage() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Viloyat *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder='Viloyatni tanlang' />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{regions.map((r) => (
-														<SelectItem key={r.id} value={String(r.id)}>
-															{r.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={regions.map((r) => ({ value: r.id, label: r.name }))}
+													value={field.value || undefined}
+													onValueChange={(v) => field.onChange(Number(v))}
+													placeholder='Viloyatni tanlang'
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
@@ -523,101 +507,89 @@ export default function SkladPage() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Tuman *</FormLabel>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={field.value ? String(field.value) : ''}
-												disabled={!selectedRegion}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={
-																selectedRegion
-																	? 'Tumanni tanlang'
-																	: 'Avval viloyatni tanlang'
-															}
-														/>
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{districts.map((d) => (
-														<SelectItem key={d.id} value={String(d.id)}>
-															{d.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={districts.map((d) => ({ value: d.id, label: d.name }))}
+													value={field.value || undefined}
+													onValueChange={(v) => field.onChange(Number(v))}
+													placeholder={
+														selectedRegion ? 'Tumanni tanlang' : 'Avval viloyatni tanlang'
+													}
+													disabled={!selectedRegion}
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
+								<FormField
+									control={form.control}
+									name='address'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Manzil</FormLabel>
+											<FormControl>
+												<Input placeholder='Manzilni kiriting' {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name='phone_number'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Telefon raqami</FormLabel>
+											<FormControl>
+												<PhoneInput placeholder='+998 90 123 45 67' {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name='sorting'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Tartib raqami</FormLabel>
+											<FormControl>
+												<Input
+													type='number'
+													min={0}
+													placeholder='0'
+													value={field.value ?? 0}
+													onChange={(e) =>
+														field.onChange(
+															e.target.value === '' ? 0 : Number(e.target.value),
+														)
+													}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name='is_active'
+									render={({ field }) => (
+										<FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
+											<div className='space-y-0.5'>
+												<FormLabel>Faol holati</FormLabel>
+												<p className='text-xs text-muted-foreground'>Ombor faol yoki nofaol</p>
+											</div>
+											<FormControl>
+												<Switch checked={field.value} onCheckedChange={field.onChange} />
+											</FormControl>
+										</FormItem>
+									)}
+								/>
 							</div>
-
-							<FormField
-								control={form.control}
-								name='address'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Manzil</FormLabel>
-										<FormControl>
-											<Input placeholder='Manzilni kiriting' {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name='phone_number'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Telefon raqami</FormLabel>
-										<FormControl>
-											<PhoneInput placeholder='+998 90 123 45 67' {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name='sorting'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Tartib raqami</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												min={0}
-												placeholder='0'
-												value={field.value ?? 0}
-												onChange={(e) =>
-													field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
-												}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name='is_active'
-								render={({ field }) => (
-									<FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
-										<div className='space-y-0.5'>
-											<FormLabel>Faol holati</FormLabel>
-											<p className='text-sm text-muted-foreground'>Ombor faol yoki nofaol</p>
-										</div>
-										<FormControl>
-											<Switch checked={field.value} onCheckedChange={field.onChange} />
-										</FormControl>
-									</FormItem>
-								)}
-							/>
 
 							<DialogFooter>
 								<Button type='button' variant='outline' onClick={handleCloseDialog}>

@@ -42,12 +42,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import {
 	Search,
 	ArrowUpDown,
 	ArrowUp,
 	ArrowDown,
+	Filter,
 	Plus,
 	Pencil,
 	Trash2,
@@ -81,6 +82,9 @@ export default function ProductModels() {
 	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
+	const [branchCategoryId, setBranchCategoryId] = useState<number | null>(null);
+	const [draftSearch, setDraftSearch] = useState('');
+	const [draftBranchCategoryId, setDraftBranchCategoryId] = useState<number | null>(null);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,7 +92,6 @@ export default function ProductModels() {
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
 	const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
-	const [branchCategoryId, setBranchCategoryId] = useState<number | null>(null);
 	const [suggestedSorting, setSuggestedSorting] = useState<number | null>(null);
 	const [isLoadingSuggestedSorting, setIsLoadingSuggestedSorting] = useState(false);
 
@@ -379,38 +382,59 @@ export default function ProductModels() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className='mb-4 flex flex-col sm:flex-row gap-3'>
+					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
 						<div className='relative'>
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 							<Input
 								placeholder='Qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
+								value={draftSearch}
+								onChange={(e) => setDraftSearch(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										setSearchQuery(draftSearch);
+										setBranchCategoryId(draftBranchCategoryId);
+										setCurrentPage(1);
+									}
 								}}
 								className='pl-9'
 							/>
 						</div>
-						<Select
-							value={branchCategoryId?.toString() ?? 'all'}
-							onValueChange={(v) => {
-								setBranchCategoryId(v === 'all' ? null : Number(v));
+						<Autocomplete
+							options={[
+								{ value: 'all', label: 'Barcha filial kategoriyalari' },
+								...branchCategories.map((cat) => ({ value: cat.id, label: cat.name })),
+							]}
+							value={draftBranchCategoryId?.toString() ?? 'all'}
+							onValueChange={(v) => setDraftBranchCategoryId(v === 'all' ? null : Number(v))}
+							placeholder='Barcha filial kategoriyalari'
+							className='w-full sm:w-[220px]'
+						/>
+						<Button
+							className='bg-blue-600 hover:bg-blue-700 text-white'
+							onClick={() => {
+								setSearchQuery(draftSearch);
+								setBranchCategoryId(draftBranchCategoryId);
 								setCurrentPage(1);
 							}}
 						>
-							<SelectTrigger className='w-full sm:w-[220px]'>
-								<SelectValue placeholder='Barcha filial kategoriyalari' />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value='all'>Barcha filial kategoriyalari</SelectItem>
-								{branchCategories.map((cat) => (
-									<SelectItem key={cat.id} value={String(cat.id)}>
-										{cat.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							<Search className='mr-2 h-4 w-4' />
+							Qidirish
+						</Button>
+						{(searchQuery || branchCategoryId !== null) && (
+							<Button
+								className='bg-red-500 hover:bg-red-600 text-white'
+								onClick={() => {
+									setDraftSearch('');
+									setDraftBranchCategoryId(null);
+									setSearchQuery('');
+									setBranchCategoryId(null);
+									setCurrentPage(1);
+								}}
+							>
+								<X className='mr-2 h-4 w-4' />
+								Tozalash
+							</Button>
+						)}
 					</div>
 
 					{/* Table */}
@@ -533,7 +557,6 @@ export default function ProductModels() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi model qo'shish"}</DialogTitle>
-								<DialogDescription>Mahsulot modeli ma'lumotlarini kiriting</DialogDescription>
 							</DialogHeader>
 							{editingId && isEditingModelLoading ? (
 								<div className='flex items-center justify-center py-12'>
@@ -547,28 +570,24 @@ export default function ProductModels() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Bo&apos;lim *</FormLabel>
-												<Select
-													value={field.value?.toString() ?? '0'}
-													onValueChange={(v) => {
-														field.onChange(Number(v));
-														form.setValue('branch_category', 0);
-														setSuggestedSorting(null);
-													}}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Bo'limni tanlang" />
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value='0'>Bo&apos;limni tanlang</SelectItem>
-														{categories.map((cat) => (
-															<SelectItem key={cat.id} value={String(cat.id)}>
-																{cat.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
+												<FormControl>
+													<Autocomplete
+														options={[
+															{ value: 0, label: "Bo'limni tanlang" },
+															...categories.map((cat) => ({
+																value: cat.id,
+																label: cat.name,
+															})),
+														]}
+														value={field.value ?? 0}
+														onValueChange={(v) => {
+															field.onChange(Number(v));
+															form.setValue('branch_category', 0);
+															setSuggestedSorting(null);
+														}}
+														placeholder="Bo'limni tanlang"
+													/>
+												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -580,31 +599,25 @@ export default function ProductModels() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Kategoriya turi *</FormLabel>
-												<Select
-													value={field.value?.toString() ?? '0'}
-													onValueChange={(v) => field.onChange(Number(v))}
-													disabled={!selectedBranch || selectedBranch === 0}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={
-																	selectedBranch && selectedBranch !== 0
-																		? 'Kategoriya turini tanlang'
-																		: "Avval bo'limni tanlang"
-																}
-															/>
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value='0'>Kategoriya turini tanlang</SelectItem>
-														{branchCategories.map((cat) => (
-															<SelectItem key={cat.id} value={String(cat.id)}>
-																{cat.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
+												<FormControl>
+													<Autocomplete
+														options={[
+															{ value: 0, label: 'Kategoriya turini tanlang' },
+															...branchCategories.map((cat) => ({
+																value: cat.id,
+																label: cat.name,
+															})),
+														]}
+														value={field.value ?? 0}
+														onValueChange={(v) => field.onChange(Number(v))}
+														placeholder={
+															selectedBranch && selectedBranch !== 0
+																? 'Kategoriya turini tanlang'
+																: "Avval bo'limni tanlang"
+														}
+														disabled={!selectedBranch || selectedBranch === 0}
+													/>
+												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}

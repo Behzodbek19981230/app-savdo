@@ -39,8 +39,20 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowDown, ArrowUp, ArrowUpDown, Layers, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import {
+	ArrowDown,
+	ArrowUp,
+	ArrowUpDown,
+	Filter,
+	Layers,
+	Loader2,
+	Pencil,
+	Plus,
+	Search,
+	Trash2,
+	X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
 	useProductBranchCategories,
@@ -66,6 +78,8 @@ export default function ProductBranchCategories() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [filterBranchId, setFilterBranchId] = useState<number | undefined>(undefined);
+	const [draftSearch, setDraftSearch] = useState('');
+	const [draftBranchId, setDraftBranchId] = useState<number | undefined>(undefined);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -320,38 +334,60 @@ export default function ProductBranchCategories() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className='mb-4 flex flex-col sm:flex-row gap-3'>
+					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
 						<div className='relative'>
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 							<Input
 								placeholder='Qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
+								value={draftSearch}
+								onChange={(e) => setDraftSearch(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										setSearchQuery(draftSearch);
+										setFilterBranchId(draftBranchId);
+										setCurrentPage(1);
+									}
 								}}
 								className='pl-9'
 							/>
 						</div>
-						<Select
-							value={filterBranchId?.toString() ?? 'all'}
-							onValueChange={(v) => {
-								setFilterBranchId(v === 'all' ? undefined : Number(v));
+						<Autocomplete
+							options={[
+								{ value: 'all', label: 'Barcha turlar' },
+								...branches.map((b) => ({ value: b.id, label: b.name })),
+							]}
+							value={draftBranchId ?? 'all'}
+							onValueChange={(v) => setDraftBranchId(v === 'all' ? undefined : Number(v))}
+							placeholder="Bo'lim bo'yicha filtrlash"
+							className='w-full sm:w-[220px]'
+						/>
+						<Button
+							className='bg-blue-600 hover:bg-blue-700 text-white'
+							onClick={() => {
+								setSearchQuery(draftSearch);
+								setFilterBranchId(draftBranchId);
 								setCurrentPage(1);
 							}}
 						>
-							<SelectTrigger className='w-full sm:w-[220px]'>
-								<SelectValue placeholder="Bo'lim bo'yicha filtrlash" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value='all'>Barcha turlar</SelectItem>
-								{branches.map((b) => (
-									<SelectItem key={b.id} value={String(b.id)}>
-										{b.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							<Search className='mr-2 h-4 w-4' />
+							Qidirish
+						</Button>
+						{(searchQuery || filterBranchId !== undefined) && (
+							<Button
+								onClick={() => {
+									setDraftSearch('');
+									setDraftBranchId(undefined);
+									setSearchQuery('');
+									setFilterBranchId(undefined);
+									setCurrentPage(1);
+								}}
+								variant='outline'
+								color='warning'
+							>
+								<X className='mr-2 h-4 w-4' />
+								Tozalash
+							</Button>
+						)}
 					</div>
 
 					{isLoading ? (
@@ -363,7 +399,7 @@ export default function ProductBranchCategories() {
 							<Layers className='h-12 w-12 text-muted-foreground/50 mb-3' />
 							<p className='text-muted-foreground'>Ma&apos;lumot topilmadi</p>
 							{branches.length === 0 && (
-								<p className='text-sm text-muted-foreground mt-1'>
+								<p className='text-xs text-muted-foreground mt-1'>
 									Avval &quot;Mahsulot turlari&quot; (bo&apos;limlar) sahifasida bo&apos;lim
 									qo&apos;shing
 								</p>
@@ -476,9 +512,6 @@ export default function ProductBranchCategories() {
 						<form onSubmit={form.handleSubmit(onSubmit)}>
 							<DialogHeader>
 								<DialogTitle>{editingId ? 'Tahrirlash' : "Yangi kategoriya qo'shish"}</DialogTitle>
-								<DialogDescription>
-									Mahsulot turi kategoriyasi ma&apos;lumotlarini kiriting
-								</DialogDescription>
 							</DialogHeader>
 							<div className='grid gap-4 py-4'>
 								<FormField
@@ -487,23 +520,14 @@ export default function ProductBranchCategories() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Bo&apos;lim (product branch) *</FormLabel>
-											<Select
-												onValueChange={(v) => field.onChange(Number(v))}
-												value={field.value ? String(field.value) : undefined}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Bo'limni tanlang" />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{branches.map((b) => (
-														<SelectItem key={b.id} value={String(b.id)}>
-															{b.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+											<FormControl>
+												<Autocomplete
+													options={branches.map((b) => ({ value: b.id, label: b.name }))}
+													value={field.value || undefined}
+													onValueChange={(v) => field.onChange(Number(v))}
+													placeholder="Bo'limni tanlang"
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}

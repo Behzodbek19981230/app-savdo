@@ -332,7 +332,7 @@ function SidebarContent() {
 															key={child.label}
 															to={child.path ?? '#'}
 															className={cn(
-																'flex items-center gap-2.5 rounded-md px-2 py-1 text-sm transition-colors',
+																'flex items-center gap-2.5 rounded-md px-2 py-1 text-xs transition-colors',
 																location.pathname === child.path
 																	? 'text-primary font-semibold'
 																	: 'text-sidebar-foreground hover:text-primary',

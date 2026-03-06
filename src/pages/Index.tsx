@@ -53,11 +53,11 @@ const Index = () => {
 			{/* KPI Cards */}
 			<div className='grid gap-3 lg:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
 				{isLoading ? (
-					<div className='col-span-full rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground'>
+					<div className='col-span-full rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground'>
 						Boshqaruv paneli ma'lumotlari yuklanmoqda...
 					</div>
 				) : isError ? (
-					<div className='col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive'>
+					<div className='col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive'>
 						Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi.
 					</div>
 				) : (

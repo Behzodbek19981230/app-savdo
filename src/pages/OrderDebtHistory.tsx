@@ -194,7 +194,7 @@ export default function OrderDebtHistoryPage() {
 			<div className='mb-4'>
 				<div className='flex items-center gap-2 mb-2'>
 					<ShoppingCart className='h-5 w-5 text-primary' />
-					<h2 className='text-sm font-bold'>Buyurtmalar</h2>
+					<h2 className='text-xs font-bold'>Buyurtmalar</h2>
 				</div>
 
 				{/* Buyurtmalar Total Card */}
@@ -204,25 +204,25 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Jami summa ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(orders.total.summa_total_dollar)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Mahsulot summa ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(orders.total.all_product_summa)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Dollar:</span>
-									<span className='text-sm font-semibold text-orange-600'>
+									<span className='text-xs font-semibold text-orange-600'>
 										{formatCurrency(orders.total.summa_dollar)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center'>
 									<span className='text-xs text-muted-foreground'>So'm:</span>
-									<span className='text-sm font-semibold text-orange-600'>
+									<span className='text-xs font-semibold text-orange-600'>
 										{formatCurrency(orders.total.summa_naqt)}
 									</span>
 								</div>
@@ -230,26 +230,26 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Click:</span>
-									<span className='text-sm font-semibold text-blue-600'>
+									<span className='text-xs font-semibold text-blue-600'>
 										{formatCurrency(orders.total.summa_kilik)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Terminal:</span>
-									<span className='text-sm font-semibold text-blue-600'>
+									<span className='text-xs font-semibold text-blue-600'>
 										{formatCurrency(orders.total.summa_terminal)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Transfer:</span>
-									<span className='text-sm font-semibold text-blue-600'>
+									<span className='text-xs font-semibold text-blue-600'>
 										{formatCurrency(orders.total.summa_transfer)}
 									</span>
 								</div>
 								{orders.total.discount_amount && (
 									<div className='flex justify-between items-center'>
 										<span className='text-xs text-muted-foreground'>Chegirma ($):</span>
-										<span className='text-sm font-semibold text-blue-600'>
+										<span className='text-xs font-semibold text-blue-600'>
 											{formatCurrency(orders.total.discount_amount)} $
 										</span>
 									</div>
@@ -269,7 +269,7 @@ export default function OrderDebtHistoryPage() {
 						</AccordionTrigger>
 						<AccordionContent className='p-2'>
 							{orders.items.length === 0 ? (
-								<div className='text-center py-8 text-sm text-muted-foreground'>
+								<div className='text-center py-8 text-xs text-muted-foreground'>
 									Buyurtmalar topilmadi
 								</div>
 							) : (
@@ -292,7 +292,7 @@ export default function OrderDebtHistoryPage() {
 															{formatDate(item.date)}
 														</p>
 														<p className='text-[10px] text-muted-foreground'>Jami:</p>
-														<p className='text-sm font-bold text-blue-600'>
+														<p className='text-xs font-bold text-blue-600'>
 															{formatCurrency(parseFloat(item.summa_total_dollar || '0'))}{' '}
 															$
 														</p>
@@ -317,7 +317,7 @@ export default function OrderDebtHistoryPage() {
 			<div className='mb-4'>
 				<div className='flex items-center gap-2 mb-2'>
 					<User className='h-5 w-5 text-primary' />
-					<h2 className='text-sm font-bold'>To'langan Qarzlar</h2>
+					<h2 className='text-xs font-bold'>To'langan Qarzlar</h2>
 				</div>
 
 				{/* To'langan Qarzlar Total Card */}
@@ -327,13 +327,13 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Jami to'lanadigan summa ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(orders.total.summa_total_dollar)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Jami to'langan summa ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(
 											Math.abs(parseFloat(repayments.total.summa_total_dollar || '0')),
 										)}{' '}
@@ -342,13 +342,13 @@ export default function OrderDebtHistoryPage() {
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Chegirma ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(repayments.total.discount_amount || '0')} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center'>
 									<span className='text-xs text-muted-foreground'>To'lanmagan summa ($):</span>
-									<span className='text-sm font-bold text-red-600'>
+									<span className='text-xs font-bold text-red-600'>
 										{formatCurrency(
 											parseFloat(orders.total.summa_total_dollar || '0') -
 												Math.abs(parseFloat(repayments.total.summa_total_dollar || '0')) -
@@ -361,25 +361,25 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Transfer ($):</span>
-									<span className='text-sm font-bold text-blue-600'>
+									<span className='text-xs font-bold text-blue-600'>
 										{formatCurrency(repayments.total.summa_transfer)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>So'mda:</span>
-									<span className='text-sm font-bold text-blue-600'>
+									<span className='text-xs font-bold text-blue-600'>
 										{formatCurrency(repayments.total.summa_naqt)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Kartada:</span>
-									<span className='text-sm font-bold text-blue-600'>
+									<span className='text-xs font-bold text-blue-600'>
 										{formatCurrency(repayments.total.summa_terminal)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center'>
 									<span className='text-xs text-muted-foreground'>Qaytim:</span>
-									<span className='text-sm font-bold text-blue-600'>
+									<span className='text-xs font-bold text-blue-600'>
 										{formatCurrency(repayments.total.zdacha_som)} (
 										{formatCurrency(repayments.total.zdacha_dollar || '0')} $)
 									</span>
@@ -399,7 +399,7 @@ export default function OrderDebtHistoryPage() {
 						</AccordionTrigger>
 						<AccordionContent className='p-2'>
 							{repayments.items.length === 0 ? (
-								<div className='text-center py-8 text-sm text-muted-foreground'>
+								<div className='text-center py-8 text-xs text-muted-foreground'>
 									To'langan qarzlar topilmadi
 								</div>
 							) : (
@@ -422,7 +422,7 @@ export default function OrderDebtHistoryPage() {
 															{formatDate(item.date)}
 														</p>
 														<p className='text-[10px] text-muted-foreground'>To'langan:</p>
-														<p className='text-sm font-bold text-red-600'>
+														<p className='text-xs font-bold text-red-600'>
 															{formatCurrency(
 																Math.abs(parseFloat(item.summa_total_dollar || '0')),
 															)}{' '}
@@ -444,7 +444,7 @@ export default function OrderDebtHistoryPage() {
 			<div className='mb-4'>
 				<div className='flex items-center gap-2 mb-2'>
 					<Receipt className='h-5 w-5 text-primary' />
-					<h2 className='text-sm font-bold'>Xarajatlar</h2>
+					<h2 className='text-xs font-bold'>Xarajatlar</h2>
 				</div>
 
 				{/* Xarajatlar Total Card */}
@@ -454,25 +454,25 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Jami summa ($):</span>
-									<span className='text-sm font-bold text-orange-600'>
+									<span className='text-xs font-bold text-orange-600'>
 										{formatCurrency(expenses.total.summa_total_dollar)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Dollar:</span>
-									<span className='text-sm font-semibold text-orange-600'>
+									<span className='text-xs font-semibold text-orange-600'>
 										{formatCurrency(expenses.total.summa_dollar)} $
 									</span>
 								</div>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>So'm:</span>
-									<span className='text-sm font-semibold text-orange-600'>
+									<span className='text-xs font-semibold text-orange-600'>
 										{formatCurrency(expenses.total.summa_naqt)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center'>
 									<span className='text-xs text-muted-foreground'>Click:</span>
-									<span className='text-sm font-semibold text-orange-600'>
+									<span className='text-xs font-semibold text-orange-600'>
 										{formatCurrency(expenses.total.summa_kilik)}
 									</span>
 								</div>
@@ -480,13 +480,13 @@ export default function OrderDebtHistoryPage() {
 							<div className='space-y-1.5'>
 								<div className='flex justify-between items-center border-b pb-1'>
 									<span className='text-xs text-muted-foreground'>Terminal:</span>
-									<span className='text-sm font-semibold text-blue-600'>
+									<span className='text-xs font-semibold text-blue-600'>
 										{formatCurrency(expenses.total.summa_terminal)}
 									</span>
 								</div>
 								<div className='flex justify-between items-center'>
 									<span className='text-xs text-muted-foreground'>Transfer:</span>
-									<span className='text-sm font-semibold text-blue-600'>
+									<span className='text-xs font-semibold text-blue-600'>
 										{formatCurrency(expenses.total.summa_transfer)}
 									</span>
 								</div>
@@ -505,7 +505,7 @@ export default function OrderDebtHistoryPage() {
 						</AccordionTrigger>
 						<AccordionContent className='p-2'>
 							{expenses.items.length === 0 ? (
-								<div className='text-center py-8 text-sm text-muted-foreground'>
+								<div className='text-center py-8 text-xs text-muted-foreground'>
 									Xarajatlar topilmadi
 								</div>
 							) : (
@@ -528,7 +528,7 @@ export default function OrderDebtHistoryPage() {
 															{formatDate(item.date)}
 														</p>
 														<p className='text-[10px] text-muted-foreground'>Jami:</p>
-														<p className='text-sm font-bold text-red-600'>
+														<p className='text-xs font-bold text-red-600'>
 															{formatCurrency(parseFloat(item.summa_total_dollar || '0'))}{' '}
 															$
 														</p>

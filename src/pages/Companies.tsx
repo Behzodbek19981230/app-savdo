@@ -9,50 +9,62 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/PhoneInput';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Switch } from '@/components/ui/switch';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from '@/components/ui/dialog';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { companyBaseSchema, type CompanyFormData } from '@/lib/validations/company';
 import {
-    toCompanyFormDefaults,
-    useCompanies,
-    useCreateCompany,
-    useDeleteCompany,
-    useUpdateCompany,
+	toCompanyFormDefaults,
+	useCompanies,
+	useCreateCompany,
+	useDeleteCompany,
+	useUpdateCompany,
 } from '@/hooks/api/useCompanies';
 import { useRegions, useDistricts } from '@/hooks/api/useLocations';
 import type { Company } from '@/types/company';
-import { ArrowDown, ArrowUp, ArrowUpDown, Building2, Edit, Loader2, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react';
+import {
+	ArrowDown,
+	ArrowUp,
+	ArrowUpDown,
+	Building2,
+	Edit,
+	Loader2,
+	Pencil,
+	Plus,
+	Search,
+	Trash2,
+	Upload,
+} from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -60,631 +72,615 @@ type SortField = 'name' | 'created_at' | null;
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Companies() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortField, setSortField] = useState<SortField>(null);
-    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<Company | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [searchQuery, setSearchQuery] = useState('');
+	const [sortField, setSortField] = useState<SortField>(null);
+	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [editingItem, setEditingItem] = useState<Company | null>(null);
+	const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const logoInputRef = useRef<HTMLInputElement | null>(null);
-    const [logoFile, setLogoFile] = useState<File | null>(null);
-    const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+	const logoInputRef = useRef<HTMLInputElement | null>(null);
+	const [logoFile, setLogoFile] = useState<File | null>(null);
+	const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
 
-    const form = useForm<CompanyFormData>({
-        resolver: zodResolver(companyBaseSchema),
-        defaultValues: {
-            name: '',
-            region: 0,
-            district: 0,
-            address: '',
-            phone_number: '+998',
-            logo: undefined,
-            is_active: true,
-        },
-    });
+	const form = useForm<CompanyFormData>({
+		resolver: zodResolver(companyBaseSchema),
+		defaultValues: {
+			name: '',
+			region: 0,
+			district: 0,
+			address: '',
+			phone_number: '+998',
+			logo: undefined,
+			is_active: true,
+		},
+	});
 
-    const ordering = sortField && sortDirection ? `${sortDirection === 'desc' ? '-' : ''}${sortField}` : undefined;
+	const ordering = sortField && sortDirection ? `${sortDirection === 'desc' ? '-' : ''}${sortField}` : undefined;
 
-    const selectedRegion = form.watch('region');
+	const selectedRegion = form.watch('region');
 
-    const { data, isLoading } = useCompanies({
-        page: currentPage,
-        limit: ITEMS_PER_PAGE,
-        search: searchQuery || undefined,
-        ordering,
-        is_delete: false,
-    });
+	const { data, isLoading } = useCompanies({
+		page: currentPage,
+		limit: ITEMS_PER_PAGE,
+		search: searchQuery || undefined,
+		ordering,
+		is_delete: false,
+	});
 
-    const { data: regionsData } = useRegions({ perPage: 1000 });
-    const { data: districtsData, isLoading: isDistrictsLoading } = useDistricts({
-        perPage: 1000,
-        region: selectedRegion && selectedRegion > 0 ? selectedRegion : undefined,
-    });
+	const { data: regionsData } = useRegions({ perPage: 1000 });
+	const { data: districtsData, isLoading: isDistrictsLoading } = useDistricts({
+		perPage: 1000,
+		region: selectedRegion && selectedRegion > 0 ? selectedRegion : undefined,
+	});
 
-    const createCompany = useCreateCompany();
-    const updateCompany = useUpdateCompany();
-    const deleteCompany = useDeleteCompany();
-    const isMutating = createCompany.isPending || updateCompany.isPending || deleteCompany.isPending;
+	const createCompany = useCreateCompany();
+	const updateCompany = useUpdateCompany();
+	const deleteCompany = useDeleteCompany();
+	const isMutating = createCompany.isPending || updateCompany.isPending || deleteCompany.isPending;
 
-    const companies = data?.results || [];
-    const pagination = data?.pagination;
-    const totalPages = pagination?.lastPage || 1;
-    const regions = useMemo(() => regionsData?.results || [], [regionsData?.results]);
-    const districts = useMemo(() => districtsData?.results || [], [districtsData?.results]);
+	const companies = data?.results || [];
+	const pagination = data?.pagination;
+	const totalPages = pagination?.lastPage || 1;
+	const regions = useMemo(() => regionsData?.results || [], [regionsData?.results]);
+	const districts = useMemo(() => districtsData?.results || [], [districtsData?.results]);
 
-    const handleSort = (field: SortField) => {
-        if (sortField === field) {
-            if (sortDirection === 'asc') setSortDirection('desc');
-            else if (sortDirection === 'desc') {
-                setSortField(null);
-                setSortDirection(null);
-            } else setSortDirection('asc');
-        } else {
-            setSortField(field);
-            setSortDirection('asc');
-        }
-        setCurrentPage(1);
-    };
+	const handleSort = (field: SortField) => {
+		if (sortField === field) {
+			if (sortDirection === 'asc') setSortDirection('desc');
+			else if (sortDirection === 'desc') {
+				setSortField(null);
+				setSortDirection(null);
+			} else setSortDirection('asc');
+		} else {
+			setSortField(field);
+			setSortDirection('asc');
+		}
+		setCurrentPage(1);
+	};
 
-    const getSortIcon = (field: SortField) => {
-        if (sortField !== field) return <ArrowUpDown className='h-4 w-4 ml-2 text-muted-foreground' />;
-        if (sortDirection === 'asc') return <ArrowUp className='h-4 w-4 ml-2' />;
-        return <ArrowDown className='h-4 w-4 ml-2' />;
-    };
+	const getSortIcon = (field: SortField) => {
+		if (sortField !== field) return <ArrowUpDown className='h-4 w-4 ml-2 text-muted-foreground' />;
+		if (sortDirection === 'asc') return <ArrowUp className='h-4 w-4 ml-2' />;
+		return <ArrowDown className='h-4 w-4 ml-2' />;
+	};
 
-    const revokePreview = () => {
-        if (logoPreviewUrl && logoPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(logoPreviewUrl);
-    };
+	const revokePreview = () => {
+		if (logoPreviewUrl && logoPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(logoPreviewUrl);
+	};
 
-    useEffect(() => {
-        return () => {
-            revokePreview();
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+	useEffect(() => {
+		return () => {
+			revokePreview();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-    const openLogoPicker = () => logoInputRef.current?.click();
+	const openLogoPicker = () => logoInputRef.current?.click();
 
-    const setLogoFromFile = (file: File | null) => {
-        revokePreview();
-        setLogoFile(file);
-        if (file) setLogoPreviewUrl(URL.createObjectURL(file));
-        else setLogoPreviewUrl(editingItem?.logo || null);
-    };
+	const setLogoFromFile = (file: File | null) => {
+		revokePreview();
+		setLogoFile(file);
+		if (file) setLogoPreviewUrl(URL.createObjectURL(file));
+		else setLogoPreviewUrl(editingItem?.logo || null);
+	};
 
-    const handleOpenDialog = (item?: Company) => {
-        if (item) {
-            setEditingItem(item);
-            form.reset({ ...toCompanyFormDefaults(item), logo: undefined });
-            setLogoFromFile(null);
-            setLogoPreviewUrl(item.logo || null);
-        } else {
-            setEditingItem(null);
-            form.reset({
-                name: '',
-                region: 0,
-                district: 0,
-                address: '',
-                phone_number: '+998',
-                logo: undefined,
-                is_active: true,
-            });
-            setLogoFromFile(null);
-            setLogoPreviewUrl(null);
-        }
-        setIsDialogOpen(true);
-    };
+	const handleOpenDialog = (item?: Company) => {
+		if (item) {
+			setEditingItem(item);
+			form.reset({ ...toCompanyFormDefaults(item), logo: undefined });
+			setLogoFromFile(null);
+			setLogoPreviewUrl(item.logo || null);
+		} else {
+			setEditingItem(null);
+			form.reset({
+				name: '',
+				region: 0,
+				district: 0,
+				address: '',
+				phone_number: '+998',
+				logo: undefined,
+				is_active: true,
+			});
+			setLogoFromFile(null);
+			setLogoPreviewUrl(null);
+		}
+		setIsDialogOpen(true);
+	};
 
-    // Reset district when region changes
-    useEffect(() => {
-        if (!selectedRegion || selectedRegion === 0) {
-            form.setValue('district', 0);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedRegion]);
+	// Reset district when region changes
+	useEffect(() => {
+		if (!selectedRegion || selectedRegion === 0) {
+			form.setValue('district', 0);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedRegion]);
 
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false);
-        setEditingItem(null);
-        form.reset();
-        setLogoFromFile(null);
-        setLogoPreviewUrl(null);
-    };
+	const handleCloseDialog = () => {
+		setIsDialogOpen(false);
+		setEditingItem(null);
+		form.reset();
+		setLogoFromFile(null);
+		setLogoPreviewUrl(null);
+	};
 
-    const openDeleteDialog = (id: number) => {
-        setDeletingId(id);
-        setIsDeleteDialogOpen(true);
-    };
+	const openDeleteDialog = (id: number) => {
+		setDeletingId(id);
+		setIsDeleteDialogOpen(true);
+	};
 
-    const handleDelete = async () => {
-        if (!deletingId) return;
-        try {
-            await deleteCompany.mutateAsync(deletingId);
-            setIsDeleteDialogOpen(false);
-            setDeletingId(null);
-        } catch {
-            // handled in hook toast
-        }
-    };
+	const handleDelete = async () => {
+		if (!deletingId) return;
+		try {
+			await deleteCompany.mutateAsync(deletingId);
+			setIsDeleteDialogOpen(false);
+			setDeletingId(null);
+		} catch {
+			// handled in hook toast
+		}
+	};
 
-    const onSubmit = async (values: CompanyFormData) => {
-        try {
-            if (editingItem) {
-                await updateCompany.mutateAsync({
-                    id: editingItem.id,
-                    data: {
-                        name: values.name,
-                        region: values.region || 0,
-                        district: values.district || 0,
-                        address: values.address || '',
-                        phone_number: values.phone_number || '',
-                        is_active: values.is_active ?? true,
-                        ...(logoFile ? { logo: logoFile } : {}),
-                    },
-                });
-            } else {
-                await createCompany.mutateAsync({
-                    name: values.name,
-                    region: values.region || 0,
-                    district: values.district || 0,
-                    address: values.address || '',
-                    phone_number: values.phone_number || '',
-                    is_active: values.is_active ?? true,
-                    ...(logoFile ? { logo: logoFile } : {}),
-                });
-            }
-            handleCloseDialog();
-        } catch {
-            // handled in hook toast
-        }
-    };
+	const onSubmit = async (values: CompanyFormData) => {
+		try {
+			if (editingItem) {
+				await updateCompany.mutateAsync({
+					id: editingItem.id,
+					data: {
+						name: values.name,
+						region: values.region || 0,
+						district: values.district || 0,
+						address: values.address || '',
+						phone_number: values.phone_number || '',
+						is_active: values.is_active ?? true,
+						...(logoFile ? { logo: logoFile } : {}),
+					},
+				});
+			} else {
+				await createCompany.mutateAsync({
+					name: values.name,
+					region: values.region || 0,
+					district: values.district || 0,
+					address: values.address || '',
+					phone_number: values.phone_number || '',
+					is_active: values.is_active ?? true,
+					...(logoFile ? { logo: logoFile } : {}),
+				});
+			}
+			handleCloseDialog();
+		} catch {
+			// handled in hook toast
+		}
+	};
 
-    useEffect(() => {
-        if (createCompany.isSuccess || updateCompany.isSuccess) {
-            setIsDialogOpen(false);
-            setEditingItem(null);
-            form.reset();
-            setLogoFromFile(null);
-            setLogoPreviewUrl(null);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [createCompany.isSuccess, updateCompany.isSuccess]);
+	useEffect(() => {
+		if (createCompany.isSuccess || updateCompany.isSuccess) {
+			setIsDialogOpen(false);
+			setEditingItem(null);
+			form.reset();
+			setLogoFromFile(null);
+			setLogoPreviewUrl(null);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [createCompany.isSuccess, updateCompany.isSuccess]);
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page);
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	};
 
-    const renderPaginationItems = () => {
-        const items = [];
-        const maxVisible = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+	const renderPaginationItems = () => {
+		const items = [];
+		const maxVisible = 5;
+		let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+		const endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
-        if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+		if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
 
-        if (startPage > 1) {
-            items.push(
-                <PaginationItem key='1'>
-                    <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
-                        1
-                    </PaginationLink>
-                </PaginationItem>,
-            );
-            if (startPage > 2) items.push(<PaginationEllipsis key='ellipsis-start' />);
-        }
+		if (startPage > 1) {
+			items.push(
+				<PaginationItem key='1'>
+					<PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
+						1
+					</PaginationLink>
+				</PaginationItem>,
+			);
+			if (startPage > 2) items.push(<PaginationEllipsis key='ellipsis-start' />);
+		}
 
-        for (let i = startPage; i <= endPage; i++) {
-            items.push(
-                <PaginationItem key={i}>
-                    <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
-                        {i}
-                    </PaginationLink>
-                </PaginationItem>,
-            );
-        }
+		for (let i = startPage; i <= endPage; i++) {
+			items.push(
+				<PaginationItem key={i}>
+					<PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
+						{i}
+					</PaginationLink>
+				</PaginationItem>,
+			);
+		}
 
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) items.push(<PaginationEllipsis key='ellipsis-end' />);
-            items.push(
-                <PaginationItem key={totalPages}>
-                    <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
-                        {totalPages}
-                    </PaginationLink>
-                </PaginationItem>,
-            );
-        }
+		if (endPage < totalPages) {
+			if (endPage < totalPages - 1) items.push(<PaginationEllipsis key='ellipsis-end' />);
+			items.push(
+				<PaginationItem key={totalPages}>
+					<PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
+						{totalPages}
+					</PaginationLink>
+				</PaginationItem>,
+			);
+		}
 
-        return items;
-    };
+		return items;
+	};
 
-    const headerSubtitle = useMemo(() => `Jami ${pagination?.total || 0} ta`, [pagination?.total]);
+	const headerSubtitle = useMemo(() => `Jami ${pagination?.total || 0} ta`, [pagination?.total]);
 
-    return (
-        <div className='space-y-6'>
-            <Card>
-                <CardHeader className='pb-4 flex flex-row items-center justify-between'>
-                    <div>
-                        <div className='flex items-center gap-2'>
-                            <Building2 className='h-5 w-5 text-primary' />
-                            <CardTitle className='text-lg'>Filiallar</CardTitle>
-                        </div>
-                        <CardDescription>{headerSubtitle}</CardDescription>
-                    </div>
-                    <Button onClick={() => handleOpenDialog()}>
-                        <Plus className='mr-2 h-4 w-4' />
-                        Qo'shish
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <div className='mb-4'>
-                        <div className='relative'>
-                            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-                            <Input
-                                placeholder='Qidirish...'
-                                value={searchQuery}
-                                onChange={(e) => {
-                                    setSearchQuery(e.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className='pl-9'
-                            />
-                        </div>
-                    </div>
+	return (
+		<div className='space-y-6'>
+			<Card>
+				<CardHeader className='pb-4 flex flex-row items-center justify-between'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<Building2 className='h-5 w-5 text-primary' />
+							<CardTitle className='text-lg'>Filiallar</CardTitle>
+						</div>
+						<CardDescription>{headerSubtitle}</CardDescription>
+					</div>
+					<Button onClick={() => handleOpenDialog()}>
+						<Plus className='mr-2 h-4 w-4' />
+						Qo'shish
+					</Button>
+				</CardHeader>
+				<CardContent>
+					<div className='mb-4'>
+						<div className='relative'>
+							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+							<Input
+								placeholder='Qidirish...'
+								value={searchQuery}
+								onChange={(e) => {
+									setSearchQuery(e.target.value);
+									setCurrentPage(1);
+								}}
+								className='pl-9'
+							/>
+						</div>
+					</div>
 
-                    {isLoading ? (
-                        <div className='flex items-center justify-center py-8'>
-                            <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
-                        </div>
-                    ) : companies.length === 0 ? (
-                        <div className='py-8 text-center text-muted-foreground'>Ma'lumot topilmadi</div>
-                    ) : (
-                        <>
-                            <div className='rounded-md border overflow-x-auto'>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Logo</TableHead>
-                                            <TableHead>
-                                                <button
-                                                    className='flex items-center hover:text-foreground transition-colors'
-                                                    onClick={() => handleSort('name')}
-                                                >
-                                                    Nomi
-                                                    {getSortIcon('name')}
-                                                </button>
-                                            </TableHead>
-                                            <TableHead>Telefon</TableHead>
-                                            <TableHead>Hudud</TableHead>
-                                            <TableHead>Tuman</TableHead>
-                                            <TableHead>Holati</TableHead>
-                                            <TableHead className='text-right'>Amallar</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {companies.map((c) => (
-                                            <TableRow key={c.id}>
-                                                <TableCell className='py-1'>
-                                                    <div className='h-7 w-9 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
-                                                        {c.logo ? (
-                                                            <img
-                                                                src={c.logo}
-                                                                alt={c.name}
-                                                                className='h-full w-full object-cover'
-                                                            />
-                                                        ) : (
-                                                            <Building2 className='h-4 w-4 text-muted-foreground' />
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className='font-medium'>{c.name}</TableCell>
-                                                <TableCell>{c.phone_number || '-'}</TableCell>
-                                                <TableCell className='max-w-[220px] truncate'>
-                                                    {c.region_detail?.name}
-                                                </TableCell>
-                                                <TableCell className='max-w-[220px] truncate'>
-                                                    {c.district_detail?.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span
-                                                        className={cn(
-                                                            'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                                                            c.is_active
-                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                                        )}
-                                                    >
-                                                        {c.is_active ? 'Faol' : 'Nofaol'}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className='text-right'>
-                                                    <div className='flex items-center justify-end gap-2'>
-                                                        <Button
-                                                            variant='ghost'
-                                                            size='icon'
-                                                            onClick={() => handleOpenDialog(c)}
-                                                            className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
-                                                        >
-                                                            <Pencil className='h-4 w-4' />
-                                                        </Button>
-                                                        <Button
-                                                            variant='ghost'
-                                                            size='icon'
-                                                            onClick={() => openDeleteDialog(c.id)}
-                                                            className='text-destructive hover:text-destructive hover:bg-destructive/10'
-                                                        >
-                                                            <Trash2 className='h-4 w-4' />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
+					{isLoading ? (
+						<div className='flex items-center justify-center py-8'>
+							<Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+						</div>
+					) : companies.length === 0 ? (
+						<div className='py-8 text-center text-muted-foreground'>Ma'lumot topilmadi</div>
+					) : (
+						<>
+							<div className='rounded-md border overflow-x-auto'>
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>Logo</TableHead>
+											<TableHead>
+												<button
+													className='flex items-center hover:text-foreground transition-colors'
+													onClick={() => handleSort('name')}
+												>
+													Nomi
+													{getSortIcon('name')}
+												</button>
+											</TableHead>
+											<TableHead>Telefon</TableHead>
+											<TableHead>Hudud</TableHead>
+											<TableHead>Tuman</TableHead>
+											<TableHead>Holati</TableHead>
+											<TableHead className='text-right'>Amallar</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{companies.map((c) => (
+											<TableRow key={c.id}>
+												<TableCell className='py-1'>
+													<div className='h-7 w-9 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
+														{c.logo ? (
+															<img
+																src={c.logo}
+																alt={c.name}
+																className='h-full w-full object-cover'
+															/>
+														) : (
+															<Building2 className='h-4 w-4 text-muted-foreground' />
+														)}
+													</div>
+												</TableCell>
+												<TableCell className='font-medium'>{c.name}</TableCell>
+												<TableCell>{c.phone_number || '-'}</TableCell>
+												<TableCell className='max-w-[220px] truncate'>
+													{c.region_detail?.name}
+												</TableCell>
+												<TableCell className='max-w-[220px] truncate'>
+													{c.district_detail?.name}
+												</TableCell>
+												<TableCell>
+													<span
+														className={cn(
+															'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+															c.is_active
+																? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+																: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+														)}
+													>
+														{c.is_active ? 'Faol' : 'Nofaol'}
+													</span>
+												</TableCell>
+												<TableCell className='text-right'>
+													<div className='flex items-center justify-end gap-2'>
+														<Button
+															variant='ghost'
+															size='icon'
+															onClick={() => handleOpenDialog(c)}
+															className='text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
+														>
+															<Pencil className='h-4 w-4' />
+														</Button>
+														<Button
+															variant='ghost'
+															size='icon'
+															onClick={() => openDeleteDialog(c.id)}
+															className='text-destructive hover:text-destructive hover:bg-destructive/10'
+														>
+															<Trash2 className='h-4 w-4' />
+														</Button>
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
 
-                            {totalPages > 1 && (
-                                <div className='mt-4'>
-                                    <Pagination>
-                                        <PaginationContent>
-                                            <PaginationItem>
-                                                <PaginationPrevious
-                                                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                                                    className={cn(
-                                                        currentPage === 1 && 'pointer-events-none opacity-50',
-                                                    )}
-                                                />
-                                            </PaginationItem>
-                                            {renderPaginationItems()}
-                                            <PaginationItem>
-                                                <PaginationNext
-                                                    onClick={() =>
-                                                        handlePageChange(Math.min(totalPages, currentPage + 1))
-                                                    }
-                                                    className={cn(
-                                                        currentPage === totalPages && 'pointer-events-none opacity-50',
-                                                    )}
-                                                />
-                                            </PaginationItem>
-                                        </PaginationContent>
-                                    </Pagination>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+							{totalPages > 1 && (
+								<div className='mt-4'>
+									<Pagination>
+										<PaginationContent>
+											<PaginationItem>
+												<PaginationPrevious
+													onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+													className={cn(
+														currentPage === 1 && 'pointer-events-none opacity-50',
+													)}
+												/>
+											</PaginationItem>
+											{renderPaginationItems()}
+											<PaginationItem>
+												<PaginationNext
+													onClick={() =>
+														handlePageChange(Math.min(totalPages, currentPage + 1))
+													}
+													className={cn(
+														currentPage === totalPages && 'pointer-events-none opacity-50',
+													)}
+												/>
+											</PaginationItem>
+										</PaginationContent>
+									</Pagination>
+								</div>
+							)}
+						</>
+					)}
+				</CardContent>
+			</Card>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className='w-[96vw] max-w-3xl max-h-[90vh] overflow-y-auto'>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <DialogHeader>
-                                <DialogTitle>{editingItem ? 'Tahrirlash' : "Yangi filial qo'shish"}</DialogTitle>
-                                <DialogDescription>Filial ma'lumotlarini kiriting</DialogDescription>
-                            </DialogHeader>
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogContent className='w-[96vw] max-w-3xl max-h-[90vh] overflow-y-auto'>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)}>
+							<DialogHeader>
+								<DialogTitle>{editingItem ? 'Tahrirlash' : "Yangi filial qo'shish"}</DialogTitle>
+							</DialogHeader>
 
-                            <div className='grid gap-4 py-4'>
-                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                    <FormField
-                                        control={form.control}
-                                        name='name'
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Nomi *</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder='Filial nomi' {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name='phone_number'
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Telefon raqami</FormLabel>
-                                                <FormControl>
-                                                    <PhoneInput placeholder='+998 90 123 45 67' {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+							<div className='grid gap-4 py-4'>
+								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+									<FormField
+										control={form.control}
+										name='name'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Nomi *</FormLabel>
+												<FormControl>
+													<Input placeholder='Filial nomi' {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name='phone_number'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Telefon raqami</FormLabel>
+												<FormControl>
+													<PhoneInput placeholder='+998 90 123 45 67' {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 
-                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                    <FormField
-                                        control={form.control}
-                                        name='region'
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Viloyat (Region)</FormLabel>
-                                                <Select
-                                                    onValueChange={(v) => field.onChange(Number(v))}
-                                                    value={String(field.value ?? 0)}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder='Tanlang' />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value='0'>Tanlang</SelectItem>
-                                                        {regions.map((r) => (
-                                                            <SelectItem key={r.id} value={String(r.id)}>
-                                                                {r.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+									<FormField
+										control={form.control}
+										name='region'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Viloyat (Region)</FormLabel>
+												<FormControl>
+													<Autocomplete
+														options={[
+															{ value: 0, label: 'Tanlang' },
+															...regions.map((r) => ({ value: r.id, label: r.name })),
+														]}
+														value={field.value ?? 0}
+														onValueChange={(v) => field.onChange(Number(v))}
+														placeholder='Tanlang'
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 
-                                    <FormField
-                                        control={form.control}
-                                        name='district'
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Tuman (District)</FormLabel>
-                                                <Select
-                                                    onValueChange={(v) => field.onChange(Number(v))}
-                                                    value={String(field.value ?? 0)}
-                                                    disabled={
-                                                        !selectedRegion || selectedRegion === 0 || isDistrictsLoading
-                                                    }
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue
-                                                                placeholder={
-                                                                    isDistrictsLoading ? 'Yuklanmoqda...' : 'Tanlang'
-                                                                }
-                                                            />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value='0'>Tanlang</SelectItem>
-                                                        {districts.map((d) => (
-                                                            <SelectItem key={d.id} value={String(d.id)}>
-                                                                {d.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+									<FormField
+										control={form.control}
+										name='district'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Tuman (District)</FormLabel>
+												<FormControl>
+													<Autocomplete
+														options={[
+															{ value: 0, label: 'Tanlang' },
+															...districts.map((d) => ({ value: d.id, label: d.name })),
+														]}
+														value={field.value ?? 0}
+														onValueChange={(v) => field.onChange(Number(v))}
+														placeholder={isDistrictsLoading ? 'Yuklanmoqda...' : 'Tanlang'}
+														disabled={
+															!selectedRegion ||
+															selectedRegion === 0 ||
+															isDistrictsLoading
+														}
+														isLoading={isDistrictsLoading}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 
-                                <FormField
-                                    control={form.control}
-                                    name='address'
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Manzil</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="To'liq manzil..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+								<FormField
+									control={form.control}
+									name='address'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Manzil</FormLabel>
+											<FormControl>
+												<Input placeholder="To'liq manzil..." {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                    <FormField
-                                        control={form.control}
-                                        name='logo'
-                                        render={() => (
-                                            <FormItem>
-                                                <FormLabel>Logo (ixtiyoriy)</FormLabel>
-                                                <div className='flex items-center gap-3'>
-                                                    <div className='h-14 w-14 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
-                                                        {logoPreviewUrl ? (
-                                                            <img
-                                                                src={logoPreviewUrl}
-                                                                alt='Logo'
-                                                                className='h-full w-full object-cover'
-                                                            />
-                                                        ) : (
-                                                            <Building2 className='h-5 w-5 text-muted-foreground' />
-                                                        )}
-                                                    </div>
-                                                    <div className='flex gap-2'>
-                                                        <input
-                                                            ref={logoInputRef}
-                                                            type='file'
-                                                            accept='image/*'
-                                                            className='hidden'
-                                                            onChange={(e) => {
-                                                                const f = e.target.files?.[0];
-                                                                if (f) setLogoFromFile(f);
-                                                            }}
-                                                        />
-                                                        <Button
-                                                            type='button'
-                                                            variant='outline'
-                                                            onClick={openLogoPicker}
-                                                        >
-                                                            <Upload className='mr-2 h-4 w-4' />
-                                                            Tanlash
-                                                        </Button>
-                                                        {logoFile && (
-                                                            <Button
-                                                                type='button'
-                                                                variant='ghost'
-                                                                onClick={() => setLogoFromFile(null)}
-                                                            >
-                                                                Tozalash
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+									<FormField
+										control={form.control}
+										name='logo'
+										render={() => (
+											<FormItem>
+												<FormLabel>Logo (ixtiyoriy)</FormLabel>
+												<div className='flex items-center gap-3'>
+													<div className='h-14 w-14 rounded-md border bg-muted overflow-hidden flex items-center justify-center'>
+														{logoPreviewUrl ? (
+															<img
+																src={logoPreviewUrl}
+																alt='Logo'
+																className='h-full w-full object-cover'
+															/>
+														) : (
+															<Building2 className='h-5 w-5 text-muted-foreground' />
+														)}
+													</div>
+													<div className='flex gap-2'>
+														<input
+															ref={logoInputRef}
+															type='file'
+															accept='image/*'
+															className='hidden'
+															onChange={(e) => {
+																const f = e.target.files?.[0];
+																if (f) setLogoFromFile(f);
+															}}
+														/>
+														<Button
+															type='button'
+															variant='outline'
+															onClick={openLogoPicker}
+														>
+															<Upload className='mr-2 h-4 w-4' />
+															Tanlash
+														</Button>
+														{logoFile && (
+															<Button
+																type='button'
+																variant='ghost'
+																onClick={() => setLogoFromFile(null)}
+															>
+																Tozalash
+															</Button>
+														)}
+													</div>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 
-                                    <FormField
-                                        control={form.control}
-                                        name='is_active'
-                                        render={({ field }) => (
-                                            <FormItem className='flex flex-col justify-center'>
-                                                <FormLabel>Holati</FormLabel>
-                                                <div className='flex items-center gap-2'>
-                                                    <Switch
-                                                        checked={field.value ?? true}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                    <span className='text-sm text-muted-foreground'>
-                                                        {field.value ? 'Faol' : 'Nofaol'}
-                                                    </span>
-                                                </div>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
+									<FormField
+										control={form.control}
+										name='is_active'
+										render={({ field }) => (
+											<FormItem className='flex flex-col justify-center'>
+												<FormLabel>Holati</FormLabel>
+												<div className='flex items-center gap-2'>
+													<Switch
+														checked={field.value ?? true}
+														onCheckedChange={field.onChange}
+													/>
+													<span className='text-xs text-muted-foreground'>
+														{field.value ? 'Faol' : 'Nofaol'}
+													</span>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</div>
 
-                            <DialogFooter>
-                                <Button type='button' variant='outline' onClick={handleCloseDialog}>
-                                    Bekor qilish
-                                </Button>
-                                <Button type='submit' disabled={isMutating}>
-                                    {isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                                    Saqlash
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
-                </DialogContent>
-            </Dialog>
+							<DialogFooter>
+								<Button type='button' variant='outline' onClick={handleCloseDialog}>
+									Bekor qilish
+								</Button>
+								<Button type='submit' disabled={isMutating}>
+									{isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+									Saqlash
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
 
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Bu amalni qaytarib bo'lmaydi. Filial o'chiriladi.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} disabled={isMutating}>
-                            {isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                            O'chirish
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
-    );
+			<AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Ishonchingiz komilmi?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Bu amalni qaytarib bo'lmaydi. Filial o'chiriladi.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+						<AlertDialogAction onClick={handleDelete} disabled={isMutating}>
+							{isMutating && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+							O'chirish
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
+	);
 }
