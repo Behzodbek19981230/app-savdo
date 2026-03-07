@@ -78,7 +78,7 @@ export interface OrderHistoryListResponse {
 
 export const orderHistoryService = {
 	getList: async (params?: Record<string, unknown>) => {
-		return api.get<OrderHistoryListResponse>('/order-history', { params });
+		return api.get<OrderHistoryListResponse>('/order-history/app', { params });
 	},
 	// Fetch debtor product order histories
 	debtorProduct: async (params?: Record<string, unknown>) => {

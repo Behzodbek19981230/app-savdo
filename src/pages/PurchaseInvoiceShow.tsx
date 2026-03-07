@@ -153,12 +153,6 @@ export default function PurchaseInvoiceShow() {
 								<p className='font-medium text-xs'>{moment(invoice.date).format('DD.MM.YYYY')}</p>
 							</div>
 
-							{/* Filial */}
-							<div className='flex items-baseline gap-1.5'>
-								<p className='text-xs text-muted-foreground'>Filial:</p>
-								<p className='font-medium text-xs'>{invoice.filial_detail?.name || '-'}</p>
-							</div>
-
 							{/* Ichki kirim uchun: Qaysi ombordan va Qaysi omborga */}
 							{invoice.type === PurchaseInvoiceType.INTERNAL ? (
 								<>
@@ -339,7 +333,6 @@ export default function PurchaseInvoiceShow() {
 											<TableHead>Brend</TableHead>
 											<TableHead>Mahsulot</TableHead>
 											<TableHead>O'lcham</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead className='text-right'>Miqdori</TableHead>
 											<TableHead className='text-right'>Narxi ($)</TableHead>
 											<TableHead className='text-right'>Jami ($)</TableHead>
@@ -360,9 +353,12 @@ export default function PurchaseInvoiceShow() {
 													<TableCell className='font-medium'>
 														{p.type_detail?.name || '-'}
 													</TableCell>
-													<TableCell>{p.size_detail?.size ?? '-'}</TableCell>
-													<TableCell>{p.filial_detail?.name || '-'}</TableCell>
-													<TableCell className='text-right'>{p.count}</TableCell>
+													<TableCell>
+														{p.size_detail?.size ?? '-'} -{p.size_detail?.unit_code ?? ''}
+													</TableCell>
+													<TableCell className='text-right'>
+														{p.count} {p.size_detail?.unit_code ?? ''}
+													</TableCell>
 													<TableCell className='text-right'>
 														$
 														{formatDollar(

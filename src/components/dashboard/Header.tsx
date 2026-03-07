@@ -97,7 +97,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
 	// Tanlangan filial ma'lumotlari (default: birinchi filial)
 	const selectedFilial = filials.find((f) => f.id === userFilialId) || filials[0];
-	// Tanlangan filial bo'yicha exchange rate olish
+	// Tanlangan filial bo'yicha exchange rate olish 
 	const {
 		data: exchangeRatesData,
 		isLoading: isExchangeLoading,

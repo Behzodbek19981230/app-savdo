@@ -41,13 +41,18 @@ import {
 	useDeletePurchaseInvoice,
 	purchaseInvoiceKeys,
 } from '@/hooks/api/usePurchaseInvoice';
-import { useCreateProductHistory, useProductHistories, useUpdateProductHistory } from '@/hooks/api/useProductHistory';
+import {
+	useCreateProductHistory,
+	useDeleteProductHistory,
+	useProductHistories,
+	useUpdateProductHistory,
+} from '@/hooks/api/useProductHistory';
 import { useSuppliers, useCreateSupplier } from '@/hooks/api/useSupplier';
 import { useSklads } from '@/hooks/api/useSklad';
 import { useCompanies } from '@/hooks/api/useCompanies';
 import { PurchaseInvoiceType, PurchaseInvoiceTypeLabels, CreatePurchaseInvoicePayload } from '@/types/purchaseInvoice';
 import type { ProductHistory } from '@/types/productHistory';
-import { useProducts } from '@/hooks/api/useProducts';
+import { useProduct, useProducts } from '@/hooks/api/useProducts';
 import {
 	useProductCategories,
 	useCreateProductCategory,
@@ -93,6 +98,7 @@ import {
 import moment from 'moment';
 import { Textarea } from '@/components/ui/textarea';
 import { showError } from '@/lib/toast';
+import { productService } from '@/services';
 
 // Faktura form schema
 const invoiceSchema = z
@@ -357,6 +363,7 @@ export default function PurchaseInvoiceAdd() {
 	const selectedType = productForm.watch('type');
 	const selectedUnit = productForm.watch('unit');
 	const selectedSize = productForm.watch('size');
+	const selectedSkladId = invoiceForm.watch('sklad_outgoing');
 
 	const queryClient = useQueryClient();
 
@@ -701,6 +708,7 @@ export default function PurchaseInvoiceAdd() {
 	const donePurchaseInvoice = useDonePurchaseInvoice();
 	const createProductHistory = useCreateProductHistory();
 	const updateProductHistory = useUpdateProductHistory();
+	const deleteProductHistoryMutation = useDeleteProductHistory();
 	const createSupplier = useCreateSupplier();
 	const createModel = useCreateProductModel();
 	const createProductCategory = useCreateProductCategory();
@@ -914,6 +922,79 @@ export default function PurchaseInvoiceAdd() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedBranchCategory, isProductDialogOpen]);
+	// Ichki kirimda sklad_outgoing bo'yicha tanlangan mahsulot qoldig'ini olish
+	const [skladStockCount, setSkladStockCount] = useState<number | null>(null);
+	const [isLoadingStock, setIsLoadingStock] = useState(false);
+	const checkSkladStock = async () => {
+		const products = await productService.getProducts({
+			limit: 1,
+			model: selectedModel,
+			type: selectedType,
+			branch: selectedBranch,
+			branch_category: selectedBranchCategory,
+			filial: selectedFilial,
+			size: selectedSize,
+		});
+		const product = products.results?.[0];
+
+		if (invoiceType !== PurchaseInvoiceType.INTERNAL || !product || !selectedSkladId) {
+			setSkladStockCount(null);
+			return;
+		}
+		setIsLoadingStock(true);
+		productService
+			.getProductStock({ product: product?.id, sklad: selectedSkladId })
+			.then((res) => setSkladStockCount(res.count ?? 0))
+			.catch(() => setSkladStockCount(null))
+			.finally(() => setIsLoadingStock(false));
+	};
+	useEffect(() => {
+		if (
+			invoiceType === PurchaseInvoiceType.INTERNAL &&
+			selectedSkladId &&
+			selectedModel &&
+			selectedType &&
+			selectedBranch &&
+			selectedBranchCategory &&
+			selectedSize
+		) {
+			checkSkladStock();
+		}
+	}, [selectedSize, selectedSkladId, invoiceType]);
+
+	// Tahrirlash modalida INTERNAL faktura uchun sklad qoldig'ini olish
+	const [editSkladStockCount, setEditSkladStockCount] = useState<number | null>(null);
+	const [isLoadingEditStock, setIsLoadingEditStock] = useState(false);
+	useEffect(() => {
+		const outgoingSkladId = existingInvoice
+			? ((existingInvoice as unknown as Record<string, unknown>).sklad_outgoing as number)
+			: null;
+		if (!editingProduct || existingInvoice?.type !== PurchaseInvoiceType.INTERNAL || !outgoingSkladId) {
+			setEditSkladStockCount(null);
+			return;
+		}
+		setIsLoadingEditStock(true);
+		productService
+			.getProducts({
+				limit: 1,
+				model: editingProduct.model,
+				type: editingProduct.type,
+				branch: editingProduct.branch,
+				branch_category: editingProduct.branch_category,
+				size: editingProduct.size,
+			})
+			.then(async (res) => {
+				const product = res.results?.[0];
+				if (!product) {
+					setEditSkladStockCount(null);
+					return;
+				}
+				const stock = await productService.getProductStock({ product: product.id, sklad: outgoingSkladId });
+				setEditSkladStockCount(stock?.count ?? null);
+			})
+			.catch(() => setEditSkladStockCount(null))
+			.finally(() => setIsLoadingEditStock(false));
+	}, [editingProduct, existingInvoice]);
 
 	// Mahsulot qo'shish dialogini ochish
 	const openProductDialog = () => {
@@ -937,6 +1018,18 @@ export default function PurchaseInvoiceAdd() {
 
 	// Mahsulotni listga qo'shish
 	const handleAddProduct = async (values: ProductFormData) => {
+		// Ichki kirimda sklad qoldig'idan ko'p kiritib bo'lmaydi
+		if (
+			invoiceType === PurchaseInvoiceType.INTERNAL &&
+			skladStockCount !== null &&
+			values.count > skladStockCount
+		) {
+			productForm.setError('count', {
+				type: 'manual',
+				message: `Ombordan kirita oladigan maksimal miqdor: ${skladStockCount}`,
+			});
+			return;
+		}
 		const branch = categories.find((c) => c.id === values.branch);
 		const branchCategory = branchCategories.find((c) => c.id === values.branch_category);
 		const model = models.find((m) => m.id === values.model);
@@ -994,6 +1087,7 @@ export default function PurchaseInvoiceAdd() {
 		setAddedProducts([...addedProducts, newProduct]);
 		setTempProductId(tempProductId + 1);
 		setIsProductDialogOpen(false);
+		setSkladStockCount((prev) => (prev !== null ? prev - values.count : null)); // Qo'shilgan mahsulot miqdorini sklad qoldig'idan ayirish
 		// Har bir listni yangilash — keyingi ochishda yangi ma'lumotlar bo'ladi
 		queryClient.invalidateQueries({ queryKey: PRODUCT_CATEGORY_KEYS.lists() });
 		queryClient.invalidateQueries({ queryKey: PRODUCT_BRANCH_CATEGORY_KEYS.lists() });
@@ -1005,6 +1099,18 @@ export default function PurchaseInvoiceAdd() {
 	// Mahsulotni listdan o'chirish
 	const handleRemoveProduct = (id: number) => {
 		setAddedProducts(addedProducts.filter((p) => p.id !== id));
+	};
+
+	const [deletingProductHistoryId, setDeletingProductHistoryId] = useState<number | null>(null);
+
+	const handleDeleteProductHistory = (id: number) => {
+		setDeletingProductHistoryId(id);
+	};
+
+	const confirmDeleteProductHistory = async () => {
+		if (deletingProductHistoryId === null) return;
+		await deleteProductHistoryMutation.mutateAsync(deletingProductHistoryId);
+		setDeletingProductHistoryId(null);
 	};
 
 	// Jami summani hisoblash
@@ -1166,7 +1272,15 @@ export default function PurchaseInvoiceAdd() {
 			{/* Faktura ma'lumotlari - existingInvoice bo'lsa Show sahifasidagidek faqat o'qiladigan */}
 			<Card>
 				<CardHeader className='flex flex-row items-center justify-between flex-wrap gap-2'>
-					<CardTitle className='flex items-center gap-2 text-base'>Faktura ma'lumotlari</CardTitle>
+					<CardTitle className='flex items-center gap-2 text-base'>
+						{(existingInvoice?.type ?? invoiceType) === PurchaseInvoiceType.INTERNAL
+							? existingInvoice
+								? 'Ichki kirim'
+								: 'Ichki kirim yaratish'
+							: existingInvoice
+								? 'Tashqi kirim'
+								: 'Tashqi kirim yaratish'}
+					</CardTitle>
 					{existingInvoice?.is_karzinka && (
 						<CardDescription className='flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2'>
 							<ShoppingCart className='h-4 w-4 shrink-0' />
@@ -1247,12 +1361,6 @@ export default function PurchaseInvoiceAdd() {
 									<p className='font-medium text-xs'>
 										{moment(existingInvoice.date).format('DD.MM.YYYY')}
 									</p>
-								</div>
-
-								{/* Filial */}
-								<div className='flex items-baseline gap-1.5'>
-									<p className='text-xs text-muted-foreground'>Filial:</p>
-									<p className='font-medium text-xs'>{existingInvoice.filial_detail?.name || '-'}</p>
 								</div>
 
 								{/* Ichki kirim uchun: Qaysi ombordan va Qaysi omborga */}
@@ -1598,10 +1706,6 @@ export default function PurchaseInvoiceAdd() {
 						<div className='flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-lg'>
 							<Package className='h-12 w-12 text-muted-foreground/50 mb-4' />
 							<p className='text-muted-foreground'>Mahsulotlar qo'shilmagan</p>
-							<Button variant='outline' className='mt-1' onClick={openProductDialog}>
-								<Plus className='h-4 w-4 mr-2' />
-								Qo'shish
-							</Button>
 						</div>
 					) : (
 						<>
@@ -1615,7 +1719,6 @@ export default function PurchaseInvoiceAdd() {
 											<TableHead>Brend</TableHead>
 											<TableHead>Mahsulot</TableHead>
 											<TableHead>O'lcham</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead className='text-right'>Miqdori</TableHead>
 											<TableHead className='text-right'>Narxi ($)</TableHead>
 											<TableHead className='text-right'>Jami ($)</TableHead>
@@ -1637,9 +1740,12 @@ export default function PurchaseInvoiceAdd() {
 													<TableCell className='font-medium'>
 														{p.type_detail?.name || '-'}
 													</TableCell>
-													<TableCell>{p.size_detail?.size ?? '-'}</TableCell>
-													<TableCell>{p.filial_detail?.name || '-'}</TableCell>
-													<TableCell className='text-right'>{p.count}</TableCell>
+													<TableCell>
+														{p.size_detail?.size ?? '-'} -{p.size_detail?.unit_code ?? ''}
+													</TableCell>
+													<TableCell className='text-right'>
+														{p.count} {p.size_detail?.unit_code ?? ''}
+													</TableCell>
 													<TableCell className='text-right'>
 														$
 														{formatDollar(
@@ -1653,17 +1759,7 @@ export default function PurchaseInvoiceAdd() {
 														${formatDollar(p.count * (realPrice || 0))}
 													</TableCell>
 													{existingInvoice && (
-														<TableCell>
-															{existingInvoice.is_karzinka && (
-																<Button
-																	variant='ghost'
-																	size='icon'
-																	onClick={() => setViewingProduct(p)}
-																	title="Ko'rish"
-																>
-																	<ShoppingBag className='h-4 w-4 text-blue-600' />
-																</Button>
-															)}
+														<TableCell className='min-w-24'>
 															<Button
 																variant='ghost'
 																size='icon'
@@ -1681,6 +1777,15 @@ export default function PurchaseInvoiceAdd() {
 																className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
 															>
 																<Pencil className='h-4 w-4' />
+															</Button>
+															<Button
+																variant='ghost'
+																size='icon'
+																onClick={() => handleDeleteProductHistory(p.id)}
+																title="O'chirish"
+																className=' text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30'
+															>
+																<Trash2 className='h-4 w-4' />
 															</Button>
 														</TableCell>
 													)}
@@ -1733,11 +1838,35 @@ export default function PurchaseInvoiceAdd() {
 			</Card>
 
 			{/* Mahsulot qo'shish modal */}
-			<Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+			<Dialog
+				open={isProductDialogOpen}
+				onOpenChange={(open) => {
+					setIsProductDialogOpen(open);
+					if (!open) {
+						productForm.reset({
+							product: 0,
+							reserve_limit: 100,
+							is_weight: false,
+							branch: 0,
+							branch_category: 0,
+							model: 0,
+							type: 0,
+							size: 0,
+							unit: 0,
+							count: 0,
+							real_price: 0,
+							min_price: 0,
+							note: '',
+						});
+						setSkladStockCount(null);
+					}
+				}}
+			>
 				<DialogContent className='w-[95vw] max-w-[800px] max-h-[90vh] overflow-y-auto'>
 					<DialogHeader>
 						<DialogTitle className='text-xl'>Yangi mahsulot qo'shish</DialogTitle>
 					</DialogHeader>
+
 					<Form {...productForm}>
 						<form onSubmit={productForm.handleSubmit(handleAddProduct)} className='space-y-3'>
 							{/* Bo'lim va Kategoriya turi */}
@@ -2025,16 +2154,65 @@ export default function PurchaseInvoiceAdd() {
 									name='count'
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												Miqdori <span className='text-destructive'>*</span>
+											<FormLabel className='flex items-center gap-2'>
+												<span>
+													Miqdori <span className='text-destructive'>*</span>
+												</span>
+												{invoiceType === PurchaseInvoiceType.INTERNAL && (
+													<span className='text-xs font-normal'>
+														{isLoadingStock ? (
+															<span className='text-muted-foreground'>
+																yuklanmoqda...
+															</span>
+														) : skladStockCount !== null ? (
+															<span className='text-destructive font-semibold'>
+																(Qoldiq: {skladStockCount})
+															</span>
+														) : null}
+													</span>
+												)}
 											</FormLabel>
 											<div className='flex'>
 												<FormControl>
 													<Input
 														type='number'
-														placeholder='0'
-														{...field}
-														className='rounded-r-none'
+														placeholder=''
+														value={field.value === 0 ? '' : field.value}
+														onChange={(e) => {
+															const val =
+																e.target.value === '' ? 0 : Number(e.target.value);
+															field.onChange(val);
+															if (
+																invoiceType === PurchaseInvoiceType.INTERNAL &&
+																skladStockCount !== null
+															) {
+																if (val > skladStockCount) {
+																	productForm.setError('count', {
+																		type: 'manual',
+																		message: `Maksimal miqdor: ${skladStockCount}`,
+																	});
+																} else {
+																	productForm.clearErrors('count');
+																}
+															}
+														}}
+														onBlur={field.onBlur}
+														name={field.name}
+														ref={field.ref}
+														min={0}
+														max={
+															invoiceType === PurchaseInvoiceType.INTERNAL &&
+															skladStockCount !== null
+																? skladStockCount
+																: undefined
+														}
+														className={`rounded-r-none ${
+															invoiceType === PurchaseInvoiceType.INTERNAL &&
+															skladStockCount !== null &&
+															field.value > skladStockCount
+																? 'border-destructive focus-visible:ring-destructive text-destructive'
+																: ''
+														}`}
 													/>
 												</FormControl>
 												<span className='inline-flex items-center px-3 bg-muted border border-l-0 rounded-r-md text-xs text-muted-foreground'>
@@ -2422,6 +2600,13 @@ export default function PurchaseInvoiceAdd() {
 							className='space-y-4'
 							onSubmit={(e) => {
 								e.preventDefault();
+								if (
+									existingInvoice?.type === PurchaseInvoiceType.INTERNAL &&
+									editSkladStockCount !== null &&
+									productEditForm.count > editSkladStockCount
+								) {
+									return;
+								}
 								updateProductHistory.mutateAsync(
 									{
 										id: editingProduct.id,
@@ -2446,19 +2631,61 @@ export default function PurchaseInvoiceAdd() {
 							<p className='text-xs text-muted-foreground'>
 								Faqat miqdor va narxni o'zgartirish mumkin. Boshqa ma'lumotlar o'zgartirilmaydi.
 							</p>
+							{existingInvoice?.type === PurchaseInvoiceType.INTERNAL && (
+								<div className='flex items-center gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm'>
+									<Warehouse className='h-4 w-4 shrink-0 text-destructive' />
+									<span className='text-muted-foreground'>
+										Ichki kirim ombordan:{' '}
+										<span className='font-semibold text-foreground'>
+											{sklads.find(
+												(s) =>
+													s.id ===
+													((existingInvoice as unknown as Record<string, unknown>)
+														.sklad_outgoing as number),
+											)?.name ?? '-'}
+										</span>
+									</span>
+									{isLoadingEditStock ? (
+										<span className='ml-auto text-muted-foreground'>yuklanmoqda...</span>
+									) : editSkladStockCount !== null ? (
+										<span className='ml-auto font-bold text-destructive'>
+											Qoldiq: {editSkladStockCount}
+										</span>
+									) : null}
+								</div>
+							)}
 							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<div>
 									<label className='text-xs font-medium mb-2 block'>Miqdori</label>
 									<Input
 										type='number'
 										min={1}
-										value={productEditForm.count}
-										onChange={(e) =>
-											setProductEditForm((prev) =>
-												prev ? { ...prev, count: parseInt(e.target.value, 10) || 0 } : null,
-											)
+										max={
+											existingInvoice?.type === PurchaseInvoiceType.INTERNAL &&
+											editSkladStockCount !== null
+												? editSkladStockCount
+												: undefined
+										}
+										value={productEditForm.count === 0 ? '' : productEditForm.count}
+										onChange={(e) => {
+											const val = parseInt(e.target.value, 10) || 0;
+											setProductEditForm((prev) => (prev ? { ...prev, count: val } : null));
+										}}
+										className={
+											existingInvoice?.type === PurchaseInvoiceType.INTERNAL &&
+											editSkladStockCount !== null &&
+											productEditForm.count > editSkladStockCount
+												? 'border-destructive focus-visible:ring-destructive text-destructive'
+												: ''
 										}
 									/>
+									{existingInvoice?.type === PurchaseInvoiceType.INTERNAL &&
+										editSkladStockCount !== null &&
+										productEditForm.count > editSkladStockCount && (
+											<p className='text-xs text-destructive mt-1'>
+												Maksimal miqdor: {editSkladStockCount}
+											</p>
+										)}
 								</div>
 								<div>
 									<label className='text-xs font-medium mb-2 block'>Narxi ($)</label>
@@ -2499,7 +2726,11 @@ export default function PurchaseInvoiceAdd() {
 			<Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
 				<DialogContent className='sm:max-w-[420px]'>
 					<DialogHeader>
-						<DialogTitle>Faktura ma'lumotlarini tahrirlash</DialogTitle>
+						<DialogTitle>
+							{existingInvoice?.type === PurchaseInvoiceType.INTERNAL
+								? 'Ichki kirim tahrirlash'
+								: 'Tashqi kirim tahrirlash'}
+						</DialogTitle>
 					</DialogHeader>
 					{existingInvoice && (
 						<form
@@ -2513,6 +2744,9 @@ export default function PurchaseInvoiceAdd() {
 										data: {
 											date: inv.date,
 											sklad: inv.sklad,
+											...(existingInvoice?.type === PurchaseInvoiceType.INTERNAL
+												? { sklad_outgoing: inv.sklad_outgoing }
+												: { supplier: inv.supplier }),
 										},
 									},
 									{
@@ -2548,24 +2782,74 @@ export default function PurchaseInvoiceAdd() {
 											</FormItem>
 										)}
 									/>
-									<FormField
-										control={invoiceForm.control}
-										name='sklad'
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Ombor</FormLabel>
-												<FormControl>
-													<Autocomplete
-														options={sklads.map((s) => ({ value: s.id, label: s.name }))}
-														value={field.value || undefined}
-														onValueChange={(v) => field.onChange(Number(v))}
-														placeholder='Omborni tanlang'
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+									{existingInvoice?.type === PurchaseInvoiceType.INTERNAL ? (
+										<>
+											<FormField
+												control={invoiceForm.control}
+												name='sklad_outgoing'
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Qaysi ombordan</FormLabel>
+														<FormControl>
+															<Autocomplete
+																options={sklads.map((s) => ({
+																	value: s.id,
+																	label: s.name,
+																}))}
+																value={field.value || undefined}
+																onValueChange={(v) => field.onChange(Number(v))}
+																placeholder='Omborni tanlang'
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={invoiceForm.control}
+												name='sklad'
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Qaysi omborga</FormLabel>
+														<FormControl>
+															<Autocomplete
+																options={sklads.map((s) => ({
+																	value: s.id,
+																	label: s.name,
+																}))}
+																value={field.value || undefined}
+																onValueChange={(v) => field.onChange(Number(v))}
+																placeholder='Omborni tanlang'
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</>
+									) : (
+										<FormField
+											control={invoiceForm.control}
+											name='supplier'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Ta'minotchi</FormLabel>
+													<FormControl>
+														<Autocomplete
+															options={suppliers.map((s) => ({
+																value: s.id,
+																label: s.name,
+															}))}
+															value={field.value || undefined}
+															onValueChange={(v) => field.onChange(Number(v))}
+															placeholder="Ta'minotchini tanlang"
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
 								</div>
 							</Form>
 
@@ -2623,6 +2907,36 @@ export default function PurchaseInvoiceAdd() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			{/* Mahsulot tarixini o'chirish tasdiq oynasi */}
+			<AlertDialog
+				open={deletingProductHistoryId !== null}
+				onOpenChange={(open) => {
+					if (!open) setDeletingProductHistoryId(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Mahsulotni o'chirish</AlertDialogTitle>
+						<AlertDialogDescription>
+							Bu mahsulot fakturadan o'chiriladi. Amalni davom ettirasizmi?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Yo'q</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={confirmDeleteProductHistory}
+							disabled={deleteProductHistoryMutation.isPending}
+							className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+						>
+							{deleteProductHistoryMutation.isPending && (
+								<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+							)}
+							Ha, o'chirish
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			{/* Bekor qilish (o'chirish) tasdiq oynasi */}
 			<AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>

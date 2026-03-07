@@ -101,6 +101,7 @@ export interface ProductHistory {
 		type_detail?: unknown;
 		sorting?: number;
 		is_delete?: boolean;
+		unit_code?: string;
 	};
 	count: number;
 	real_price: number | string;

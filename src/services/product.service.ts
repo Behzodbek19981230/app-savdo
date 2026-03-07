@@ -182,6 +182,7 @@ export interface ProductQueryParams {
 	branch?: number;
 	branch_category?: number;
 	filial?: number;
+	size?: number;
 }
 
 export const productService = {
@@ -191,7 +192,23 @@ export const productService = {
 			params,
 		});
 	},
-
+	// Skladda mahsulot qoldig'i (product + sklad bo'yicha). API pagination qaytaradi — faqat birinchi natijani olamiz.
+	getProductStock: async (params: {
+		product: number;
+		sklad: number;
+	}): Promise<{ product: number; sklad: number; count: number }> => {
+		const queryParams = new URLSearchParams();
+		queryParams.append('product', params.product.toString());
+		queryParams.append('sklad', params.sklad.toString());
+		const response = await api.get<{ results?: { product: number; sklad: number; count: number }[] }>(
+			`product-stock/?${queryParams.toString()}`,
+		);
+		const results = response?.results;
+		const first = Array.isArray(results) && results.length > 0 ? results[0] : null;
+		return first != null
+			? { product: first.product, sklad: first.sklad, count: first.count ?? 0 }
+			: { product: params.product, sklad: params.sklad, count: 0 };
+	},
 	// Get product by ID
 	getProductById: async (id: number) => {
 		return api.get<Product>(API_ENDPOINTS.products.byId(id.toString()));

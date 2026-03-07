@@ -426,7 +426,7 @@ export default function PurchaseInvoices() {
 						</div>
 
 						<Tabs value={activeTab} onValueChange={handleTabChange}>
-							<TabsList className='grid w-full grid-cols-2 h-11 bg-muted dark:bg-muted/80 p-1'>
+							<TabsList className='grid w-full grid-cols-2 h-9 bg-muted dark:bg-muted/80 p-1'>
 								<TabsTrigger
 									value={PurchaseInvoiceType.EXTERNAL}
 									className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
@@ -452,14 +452,6 @@ export default function PurchaseInvoices() {
 						<div className='flex flex-col items-center justify-center py-10 text-center'>
 							<Package className='h-12 w-12 text-muted-foreground/50 mb-4' />
 							<p className='text-muted-foreground'>Hozircha fakturalar mavjud emas</p>
-							<Button
-								variant='outline'
-								className='mt-4'
-								onClick={() => navigate('/purchase-invoices/add')}
-							>
-								<Plus className='h-4 w-4 mr-2' />
-								Birinchi fakturani qo'shing
-							</Button>
 						</div>
 					) : (
 						<>
