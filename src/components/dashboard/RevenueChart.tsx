@@ -1,5 +1,6 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import type { FilialDashboardMonthlyItem } from '@/services/filialDashboard.service';
+import { formatNumber } from '@/lib/utils';
 
 interface RevenueChartProps {
 	data?: FilialDashboardMonthlyItem[];
@@ -65,7 +66,7 @@ export function RevenueChart({ data = [], isLoading = false }: RevenueChartProps
 								axisLine={false}
 								tickLine={false}
 								tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-								tickFormatter={(value) => `$${value}`}
+								tickFormatter={(value) => `$${formatNumber(value as number)}`}
 								width={55}
 							/>
 							<Tooltip
@@ -77,7 +78,7 @@ export function RevenueChart({ data = [], isLoading = false }: RevenueChartProps
 									padding: '8px 12px',
 									boxShadow: '0 6px 18px rgba(15, 23, 42, 0.06)',
 								}}
-								formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+								formatter={(value: number, name: string) => [`$${formatNumber(value)}`, name]}
 							/>
 							<Legend
 								verticalAlign='top'

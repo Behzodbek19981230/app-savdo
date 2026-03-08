@@ -99,6 +99,7 @@ import moment from 'moment';
 import { Textarea } from '@/components/ui/textarea';
 import { showError } from '@/lib/toast';
 import { productService } from '@/services';
+import { formatNumber } from '@/lib/utils';
 
 // Faktura form schema
 const invoiceSchema = z
@@ -901,10 +902,8 @@ export default function PurchaseInvoiceAdd() {
 		return new Intl.NumberFormat('uz-UZ').format(value);
 	};
 
-	// Dollar formatlagich
-	const formatDollar = (value: number) => {
-		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-	};
+	// Dollar formatlagich (use shared formatter)
+	const formatDollar = (value: number) => formatNumber(value);
 
 	// Branch o'zgarganda branch_category va model ni tozalash
 	useEffect(() => {

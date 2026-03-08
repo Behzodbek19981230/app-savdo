@@ -44,6 +44,7 @@ import { useCompanies, useNotes, useUpdateNote, useMarkAllNotesAsRead } from '@/
 import moment from 'moment';
 import { Label } from '../ui/label';
 import { authService, type NoteItem } from '@/services';
+import { formatNumber, formatCurrency } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { AUTH_KEYS } from '@/hooks/api/useAuth';
 
@@ -97,7 +98,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
 	// Tanlangan filial ma'lumotlari (default: birinchi filial)
 	const selectedFilial = filials.find((f) => f.id === userFilialId) || filials[0];
-	// Tanlangan filial bo'yicha exchange rate olish 
+	// Tanlangan filial bo'yicha exchange rate olish
 	const {
 		data: exchangeRatesData,
 		isLoading: isExchangeLoading,
@@ -190,10 +191,6 @@ export function Header({ onMenuClick }: HeaderProps) {
 			return;
 		}
 		setIsExchangeDialogOpen(open);
-	};
-
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('uz-UZ').format(value);
 	};
 
 	const formatNoteDate = (rawDate?: string) => {
@@ -795,11 +792,9 @@ function ExchangeRateHistoryContent({ rateId }: { rateId: number }) {
 				{history.map((hist: ExchangeRateHistory, histIndex: number) => (
 					<TableRow key={hist.id}>
 						<TableCell className='font-medium'>{histIndex + 1}</TableCell>
-						<TableCell className='text-muted-foreground'>
-							{new Intl.NumberFormat('uz-UZ').format(Number(hist.old_dollar))} so'm
-						</TableCell>
+						<TableCell className='text-muted-foreground'>{formatNumber(hist.old_dollar)} so'm</TableCell>
 						<TableCell className='font-semibold text-green-600'>
-							{new Intl.NumberFormat('uz-UZ').format(Number(hist.new_dollar))} so'm
+							{formatNumber(hist.new_dollar)} so'm
 						</TableCell>
 						<TableCell className='text-muted-foreground'>
 							{hist.created_time

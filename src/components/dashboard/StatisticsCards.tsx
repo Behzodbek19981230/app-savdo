@@ -16,6 +16,7 @@ import { reportsService } from '../../services/reports.service';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { useNavigate } from 'react-router-dom';
 import { FinancialSummary } from './FinancialSummary';
+import { formatNumber } from '@/lib/utils';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 const baseCards = [
@@ -347,14 +348,7 @@ export function StatisticsCards() {
 															</span>
 														</div>
 														<span className='font-semibold text-xs text-foreground'>
-															{safeNum(data.orders.payments.dollar).toLocaleString(
-																'en-US',
-																{
-																	minimumFractionDigits: 2,
-																	maximumFractionDigits: 2,
-																},
-															)}{' '}
-															$
+															{formatNumber(safeNum(data.orders.payments.dollar))} $
 														</span>
 													</div>
 													<div className='flex justify-between items-center p-2 bg-green-50/60 dark:bg-green-950/30 rounded-lg border border-green-200/50 dark:border-green-800/30'>
@@ -430,14 +424,7 @@ export function StatisticsCards() {
 															Jami (USD)
 														</span>
 														<span className='font-bold text-base text-emerald-700 dark:text-emerald-400'>
-															{safeNum(data.orders.total_paid_usd).toLocaleString(
-																'en-US',
-																{
-																	minimumFractionDigits: 2,
-																	maximumFractionDigits: 2,
-																},
-															)}{' '}
-															$
+															{formatNumber(safeNum(data.orders.total_paid_usd))} $
 														</span>
 													</div>
 												</>
@@ -454,14 +441,7 @@ export function StatisticsCards() {
 															</span>
 														</div>
 														<span className='font-semibold text-xs text-foreground'>
-															{safeNum(data.vozvrat.payments.dollar).toLocaleString(
-																'en-US',
-																{
-																	minimumFractionDigits: 2,
-																	maximumFractionDigits: 2,
-																},
-															)}{' '}
-															$
+															{formatNumber(safeNum(data.vozvrat.payments.dollar))} $
 														</span>
 													</div>
 													<div className='flex justify-between items-center p-2 bg-green-50/60 dark:bg-green-950/30 rounded-lg border border-green-200/50 dark:border-green-800/30'>
@@ -537,14 +517,7 @@ export function StatisticsCards() {
 															Jami (USD)
 														</span>
 														<span className='font-bold text-base text-orange-700 dark:text-orange-400'>
-															{safeNum(data.vozvrat.total_refunded_usd).toLocaleString(
-																'en-US',
-																{
-																	minimumFractionDigits: 2,
-																	maximumFractionDigits: 2,
-																},
-															)}{' '}
-															$
+															{formatNumber(safeNum(data.vozvrat.total_refunded_usd))} $
 														</span>
 													</div>
 												</>
@@ -561,14 +534,7 @@ export function StatisticsCards() {
 															</span>
 														</div>
 														<span className='font-semibold text-xs text-foreground'>
-															{safeNum(data.expenses.payments.dollar).toLocaleString(
-																'en-US',
-																{
-																	minimumFractionDigits: 2,
-																	maximumFractionDigits: 2,
-																},
-															)}{' '}
-															$
+															{formatNumber(safeNum(data.expenses.payments.dollar))} $
 														</span>
 													</div>
 													<div className='flex justify-between items-center p-2 bg-green-50/60 dark:bg-green-950/30 rounded-lg border border-green-200/50 dark:border-green-800/30'>
@@ -644,11 +610,7 @@ export function StatisticsCards() {
 															Jami (USD)
 														</span>
 														<span className='font-bold text-base text-rose-700 dark:text-rose-400'>
-															{safeNum(data.expenses.total_usd).toLocaleString('en-US', {
-																minimumFractionDigits: 2,
-																maximumFractionDigits: 2,
-															})}{' '}
-															$
+															{formatNumber(safeNum(data.expenses.total_usd))} $
 														</span>
 													</div>
 												</>
@@ -665,12 +627,9 @@ export function StatisticsCards() {
 															</span>
 														</div>
 														<span className='font-semibold text-xs text-foreground'>
-															{safeNum(
-																data.debt_repayments.payments.dollar,
-															).toLocaleString('en-US', {
-																minimumFractionDigits: 2,
-																maximumFractionDigits: 2,
-															})}{' '}
+															{formatNumber(
+																safeNum(data.debt_repayments.payments.dollar),
+															)}{' '}
 															$
 														</span>
 													</div>
@@ -744,12 +703,7 @@ export function StatisticsCards() {
 															Jami (USD)
 														</span>
 														<span className='font-bold text-base text-emerald-700 dark:text-emerald-400'>
-															{safeNum(
-																data.debt_repayments.total_paid_usd,
-															).toLocaleString('en-US', {
-																minimumFractionDigits: 2,
-																maximumFractionDigits: 2,
-															})}{' '}
+															{formatNumber(safeNum(data.debt_repayments.total_paid_usd))}{' '}
 															$
 														</span>
 													</div>

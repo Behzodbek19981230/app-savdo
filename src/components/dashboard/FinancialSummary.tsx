@@ -1,5 +1,6 @@
 import { ShoppingCart, RotateCcw, TrendingDown, DollarSign, Calendar, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatNumber } from '@/lib/utils';
 import { useAuth } from '@/hooks/api';
 interface FinancialSummaryData {
 	filters: {
@@ -76,11 +77,6 @@ interface FinancialSummaryData {
 
 interface FinancialSummaryProps {
 	data: FinancialSummaryData;
-}
-
-function formatNumber(value: string | number): string {
-	const num = typeof value === 'string' ? parseFloat(value) : value;
-	return isNaN(num) ? '0.00' : num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function isNegative(value: string | number): boolean {

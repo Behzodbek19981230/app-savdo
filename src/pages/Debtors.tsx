@@ -118,7 +118,7 @@ export default function DebtorsPage() {
 					<div className='mb-6 p-1 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200'>
 						<div className='flex items-center justify-between'>
 							<span className='text-xs font-medium text-muted-foreground'>Jami qarz miqdori:</span>
-							<span className='text-xl font-bold text-red-600'>{formatCurrency(total_debt_summ)} $</span>
+							<span className='text-sm font-bold text-red-600'>{formatCurrency(total_debt_summ)} $</span>
 						</div>
 					</div>
 

@@ -1,95 +1,96 @@
 import React from 'react';
 import { CartItem, Customer } from '@/types';
+import { formatNumber } from '@/lib/utils';
 
 interface ReceiptProps {
-    items: CartItem[];
-    totalAmount: number;
-    usdAmount: string;
-    usdRate: number;
-    customer?: Customer;
-    kassirName?: string;
-    orderNumber: string;
-    date: Date;
-    paidAmount?: number;
-    remainingDebt?: number;
-    filialLogo?: string | null;
-    hodimLayout?: boolean;
+	items: CartItem[];
+	totalAmount: number;
+	usdAmount: string;
+	usdRate: number;
+	customer?: Customer;
+	kassirName?: string;
+	orderNumber: string;
+	date: Date;
+	paidAmount?: number;
+	remainingDebt?: number;
+	filialLogo?: string | null;
+	hodimLayout?: boolean;
 }
 
 function formatDate(date: Date) {
-    return date
-        .toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        })
-        .replace(/\//g, '.');
+	return date
+		.toLocaleDateString('ru-RU', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+		})
+		.replace(/\//g, '.');
 }
 
 export function renderReceiptHtml(props: ReceiptProps) {
-    const {
-        items,
-        totalAmount,
-        usdRate,
-        customer,
-        kassirName,
-        orderNumber,
-        date,
-        paidAmount = 0,
-        remainingDebt,
-        filialLogo,
-        filialName = 'Elegant',
-        filialAddress = '',
-        filialPhone = '',
-    } = props;
+	const {
+		items,
+		totalAmount,
+		usdRate,
+		customer,
+		kassirName,
+		orderNumber,
+		date,
+		paidAmount = 0,
+		remainingDebt,
+		filialLogo,
+		filialName = 'Elegant',
+		filialAddress = '',
+		filialPhone = '',
+	} = props;
 
-    const totalInUsd = totalAmount / usdRate;
-    const paidInUsd = paidAmount / usdRate;
-    const remaining = remainingDebt !== undefined ? remainingDebt : Math.max(0, totalAmount - paidAmount);
-    const remainingInUsd = remaining / usdRate;
+	const totalInUsd = totalAmount / usdRate;
+	const paidInUsd = paidAmount / usdRate;
+	const remaining = remainingDebt !== undefined ? remainingDebt : Math.max(0, totalAmount - paidAmount);
+	const remainingInUsd = remaining / usdRate;
 
-    const formattedDate = formatDate(date);
-    const formattedDateTime = `${date.toLocaleDateString('ru-RU')} ${date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-    })}`;
-    const customerName = (customer as any)?.name || 'Mijoz';
-    const logoUrl = filialLogo
-        ? filialLogo.startsWith('http')
-            ? filialLogo
-            : filialLogo.startsWith('/')
-                ? filialLogo
-                : '/' + filialLogo
-        : '/logo.png';
+	const formattedDate = formatDate(date);
+	const formattedDateTime = `${date.toLocaleDateString('ru-RU')} ${date.toLocaleTimeString('ru-RU', {
+		hour: '2-digit',
+		minute: '2-digit',
+	})}`;
+	const customerName = (customer as any)?.name || 'Mijoz';
+	const logoUrl = filialLogo
+		? filialLogo.startsWith('http')
+			? filialLogo
+			: filialLogo.startsWith('/')
+				? filialLogo
+				: '/' + filialLogo
+		: '/logo.png';
 
-    const rows = items
-        .map((it, i) => {
-            const priceInUsd = Math.round(Number(it.price || 0) / usdRate);
-            const totalPriceInUsd = Math.round(Number((it as any).totalPrice ?? it.priceSum ?? 0) / usdRate);
-            const model = (it as any).modelName || '-';
-            const unit = it.unit || (it as any).unitCode || '-';
-            return `
+	const rows = items
+		.map((it, i) => {
+			const priceInUsd = Math.round(Number(it.price || 0) / usdRate);
+			const totalPriceInUsd = Math.round(Number((it as any).totalPrice ?? it.priceSum ?? 0) / usdRate);
+			const model = (it as any).modelName || '-';
+			const unit = it.unit || (it as any).unitCode || '-';
+			return `
         <tr>
 						<td class="cell cell-center">${i + 1}</td>
 						<td class="cell cell-left">${escapeHtml(model)}</td>
 						<td class="cell cell-left">${escapeHtml(String(it.name || '-'))}</td>
 						<td class="cell cell-center">${Number(it.quantity || 0)}</td>
 						<td class="cell cell-center">${escapeHtml(unit)}</td>
-						<td class="cell cell-right">${priceInUsd}</td>
-						<td class="cell cell-right">${totalPriceInUsd}</td>
+                        <td class="cell cell-right">${formatNumber(priceInUsd)}</td>
+                        <td class="cell cell-right">${formatNumber(totalPriceInUsd)}</td>
         </tr>`;
-        })
-        .join('\n');
+		})
+		.join('\n');
 
-    // If hodimLayout requested, build a simplified rows string using JOY, MODEL, NOMI, TIP, SONI
-    const hodimRows = items
-        .map((it) => {
-            const joy = escapeHtml(((it as any).joy as string) || '');
-            const model = escapeHtml(((it as any).modelName as string) || '-');
-            const name = escapeHtml(String(it.name || '-'));
-            const tip = escapeHtml(((it as any).unit as string) || '');
-            const soni = Number(it.quantity || 0);
-            return `
+	// If hodimLayout requested, build a simplified rows string using JOY, MODEL, NOMI, TIP, SONI
+	const hodimRows = items
+		.map((it) => {
+			const joy = escapeHtml(((it as any).joy as string) || '');
+			const model = escapeHtml(((it as any).modelName as string) || '-');
+			const name = escapeHtml(String(it.name || '-'));
+			const tip = escapeHtml(((it as any).unit as string) || '');
+			const soni = Number(it.quantity || 0);
+			return `
 					<tr style="background:#e6fff0">
 						<td style="border:1px solid #000;padding:6px;text-align:left">${joy}</td>
 						<td style="border:1px solid #000;padding:6px;text-align:left">${model}</td>
@@ -97,12 +98,12 @@ export function renderReceiptHtml(props: ReceiptProps) {
 						<td style="border:1px solid #000;padding:6px;text-align:center">${tip}</td>
 						<td style="border:1px solid #000;padding:6px;text-align:center">${soni}</td>
 					</tr>`;
-        })
-        .join('\n');
+		})
+		.join('\n');
 
-    if (props.hodimLayout) {
-        const totalCount = items.reduce((s, it) => s + Number(it.quantity || 0), 0);
-        return `<!doctype html>
+	if (props.hodimLayout) {
+		const totalCount = items.reduce((s, it) => s + Number(it.quantity || 0), 0);
+		return `<!doctype html>
 	<html>
 	<head>
 		<meta charset="utf-8" />
@@ -160,8 +161,8 @@ export function renderReceiptHtml(props: ReceiptProps) {
 		</div>
 	</body>
 	</html>`;
-    } else
-        return `<!doctype html>
+	} else
+		return `<!doctype html>
   <html>
   <head>
     <meta charset="utf-8" />
@@ -269,67 +270,67 @@ export function renderReceiptHtml(props: ReceiptProps) {
           ${rows}
           <tr>
 						<td colspan="6" class="cell cell-center"><b>Jami</b></td>
-						<td class="cell cell-right"><b>${totalInUsd.toFixed(2)}</b></td>
+                                                <td class="cell cell-right"><b>${formatNumber(totalInUsd)}</b></td>
           </tr>
         </tbody>
       </table>
 
 			<div class="summary">
-				<div class="summary-main">
-					<div style="color:orange;font-weight:bold;font-size:14px">Ostatka ($): ${totalInUsd.toFixed(2)} $</div>
-          <div>Olingan tovarlar summasi ($): ${totalInUsd.toFixed(2)} $</div>
-          <div>Jami to'langan summa ($): ${paidInUsd.toFixed(2)} $</div>
-        </div>
-				<div class="summary-side">To'langan summa dollarda ($): ${paidInUsd.toFixed(2)} $</div>
+                    <div class="summary-main">
+                                        <div style="color:orange;font-weight:bold;font-size:14px">Ostatka ($): ${formatNumber(totalInUsd)} $</div>
+                    <div>Olingan tovarlar summasi ($): ${formatNumber(totalInUsd)} $</div>
+                    <div>Jami to'langan summa ($): ${formatNumber(paidInUsd)} $</div>
+                </div>
+                                <div class="summary-side">To'langan summa dollarda ($): ${formatNumber(paidInUsd)} $</div>
       </div>
 
-			<div class="debt">Qolgan qarz ($): ${remainingInUsd.toFixed(2)} $</div>
+            <div class="debt">Qolgan qarz ($): ${formatNumber(remainingInUsd)} $</div>
     </div>
   </body>
   </html>`;
 }
 
 function escapeHtml(str: string) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+	return String(str)
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
 }
 
 export function Receipt(props: ReceiptProps) {
-    const {
-        items,
-        totalAmount,
-        usdRate,
-        customer,
-        kassirName,
-        orderNumber,
-        date,
-        paidAmount = 0,
-        remainingDebt,
-        filialLogo,
-    } = props;
+	const {
+		items,
+		totalAmount,
+		usdRate,
+		customer,
+		kassirName,
+		orderNumber,
+		date,
+		paidAmount = 0,
+		remainingDebt,
+		filialLogo,
+	} = props;
 
-    const totalInUsd = totalAmount / usdRate;
-    const paidInUsd = paidAmount / usdRate;
-    const remaining = remainingDebt !== undefined ? remainingDebt : Math.max(0, totalAmount - paidAmount);
-    const remainingInUsd = remaining / usdRate;
+	const totalInUsd = totalAmount / usdRate;
+	const paidInUsd = paidAmount / usdRate;
+	const remaining = remainingDebt !== undefined ? remainingDebt : Math.max(0, totalAmount - paidAmount);
+	const remainingInUsd = remaining / usdRate;
 
-    const formattedDate = formatDate(date);
-    const customerName = (customer as any)?.name || 'Mijoz';
-    const logoUrl = filialLogo
-        ? filialLogo.startsWith('http')
-            ? filialLogo
-            : filialLogo.startsWith('/')
-                ? filialLogo
-                : '/' + filialLogo
-        : '/logo.png';
+	const formattedDate = formatDate(date);
+	const customerName = (customer as any)?.name || 'Mijoz';
+	const logoUrl = filialLogo
+		? filialLogo.startsWith('http')
+			? filialLogo
+			: filialLogo.startsWith('/')
+				? filialLogo
+				: '/' + filialLogo
+		: '/logo.png';
 
-    return (
-        <div id='receipt-print' style={{ fontFamily: '"Times New Roman", serif', margin: 0, padding: 0 }}>
-            <style>{`
+	return (
+		<div id='receipt-print' style={{ fontFamily: '"Times New Roman", serif', margin: 0, padding: 0 }}>
+			<style>{`
         @page { size: A4 landscape; margin: 8mm; }
         .page { width: 281mm; margin: 0 auto; background: #fff; padding: 8mm; box-sizing: border-box; }
         img.print-logo { display:block; width:80px; height:auto; margin-bottom:8px }
@@ -338,135 +339,135 @@ export function Receipt(props: ReceiptProps) {
         th { background:#f5f5f5; font-weight:bold; font-size:9px }
         td { font-size:9px }
       `}</style>
-            <div className='page'>
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: 6,
-                    }}
-                >
-                    <div style={{ width: 100, flexShrink: 0 }}>
-                        <img
-                            className='print-logo'
-                            src={logoUrl}
-                            alt='Logo'
-                            onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
-                        />
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'center', padding: '0 8px' }}>
-                        <div style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>{formattedDate}</div>
-                        <div style={{ fontSize: 16, fontWeight: 'bold', color: 'red' }}>{customerName}</div>
-                    </div>
-                    <div style={{ width: 100 }} />
-                </div>
+			<div className='page'>
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'flex-start',
+						marginBottom: 6,
+					}}
+				>
+					<div style={{ width: 100, flexShrink: 0 }}>
+						<img
+							className='print-logo'
+							src={logoUrl}
+							alt='Logo'
+							onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+						/>
+					</div>
+					<div style={{ flex: 1, textAlign: 'center', padding: '0 8px' }}>
+						<div style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>{formattedDate}</div>
+						<div style={{ fontSize: 16, fontWeight: 'bold', color: 'red' }}>{customerName}</div>
+					</div>
+					<div style={{ width: 100 }} />
+				</div>
 
-                <hr style={{ margin: '10px 0 12px', border: 0, borderTop: '1px solid #000' }} />
+				<hr style={{ margin: '10px 0 12px', border: 0, borderTop: '1px solid #000' }} />
 
-                <div
-                    style={{ display: 'flex', justifyContent: 'space-between', gap: 20, fontSize: 11, marginBottom: 8 }}
-                >
-                    <div style={{ width: '48%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Do'kon:</span>
-                            <span style={{ textAlign: 'right' }}>Elegant</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Firma:</span>
-                            <span style={{ textAlign: 'right' }}>Elegant</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Telefon nomer1:</span>
-                            <span style={{ textAlign: 'right' }}>+99899-811-00-23</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}></span>
-                            <span style={{ textAlign: 'right' }}>+99890-812-94-44</span>
-                        </div>
-                    </div>
-                    <div style={{ width: '48%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Supermarket 1-2 Do'kon</span>
-                            <span></span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold', color: 'green' }}>Dollar kursi:</span>
-                            <span style={{ textAlign: 'right', color: 'green', fontWeight: 'bold' }}>
-                                {Number(usdRate).toLocaleString()} so'm
-                            </span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Manzil:</span>
-                            <span style={{ textAlign: 'right' }}>Toshkent viloyati, Chirchiq shahri</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 'bold' }}>Telefon:</span>
-                            <span style={{ textAlign: 'right' }}>+99899-793-62-87</span>
-                        </div>
-                    </div>
-                </div>
+				<div
+					style={{ display: 'flex', justifyContent: 'space-between', gap: 20, fontSize: 11, marginBottom: 8 }}
+				>
+					<div style={{ width: '48%' }}>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Do'kon:</span>
+							<span style={{ textAlign: 'right' }}>Elegant</span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Firma:</span>
+							<span style={{ textAlign: 'right' }}>Elegant</span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Telefon nomer1:</span>
+							<span style={{ textAlign: 'right' }}>+99899-811-00-23</span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}></span>
+							<span style={{ textAlign: 'right' }}>+99890-812-94-44</span>
+						</div>
+					</div>
+					<div style={{ width: '48%' }}>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Supermarket 1-2 Do'kon</span>
+							<span></span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold', color: 'green' }}>Dollar kursi:</span>
+							<span style={{ textAlign: 'right', color: 'green', fontWeight: 'bold' }}>
+								{Number(usdRate).toLocaleString()} so'm
+							</span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Manzil:</span>
+							<span style={{ textAlign: 'right' }}>Toshkent viloyati, Chirchiq shahri</span>
+						</div>
+						<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+							<span style={{ fontWeight: 'bold' }}>Telefon:</span>
+							<span style={{ textAlign: 'right' }}>+99899-793-62-87</span>
+						</div>
+					</div>
+				</div>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th style={{ width: 20 }}>№</th>
-                            <th style={{ width: 100 }}>MODEL</th>
-                            <th style={{ width: 100 }}>NOMI</th>
-                            <th style={{ width: 100 }}>SONI</th>
-                            <th style={{ width: 100 }}>TIP</th>
-                            <th style={{ width: 100 }}>NARXI ($)</th>
-                            <th style={{ width: 100 }}>UMUMIY NARXI ($)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items.map((it, i) => {
-                            const priceInUsd = Math.round(Number(it.price || 0) / usdRate);
-                            const totalPriceInUsd = Math.round(Number(it.totalPrice || 0) / usdRate);
-                            const model = (it as any).modelName || '-';
-                            const unit = it.unit || (it as any).unitCode || '-';
-                            return (
-                                <tr key={it.id}>
-                                    <td className='px-2 py-1'>{i + 1}</td>
-                                    <td className='px-2 py-1'>{model}</td>
-                                    <td className='px-2 py-1'>{it.name}</td>
-                                    <td className='px-2 py-1'>{it.quantity}</td>
-                                    <td className='px-2 py-1'>{unit}</td>
-                                    <td className='px-2 py-1'>{priceInUsd}</td>
-                                    <td className='px-2 py-1'>{totalPriceInUsd}</td>
-                                </tr>
-                            );
-                        })}
-                        <tr>
-                            <td colSpan={6} className='px-2 py-1' style={{ textAlign: 'center' }}>
-                                <b>Jami</b>
-                            </td>
-                            <td className='px-2 py-1' style={{ textAlign: 'center' }}>
-                                <b>{totalInUsd.toFixed(2)}</b>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+				<table>
+					<thead>
+						<tr>
+							<th style={{ width: 20 }}>№</th>
+							<th style={{ width: 100 }}>MODEL</th>
+							<th style={{ width: 100 }}>NOMI</th>
+							<th style={{ width: 100 }}>SONI</th>
+							<th style={{ width: 100 }}>TIP</th>
+							<th style={{ width: 100 }}>NARXI ($)</th>
+							<th style={{ width: 100 }}>UMUMIY NARXI ($)</th>
+						</tr>
+					</thead>
+					<tbody>
+						{items.map((it, i) => {
+							const priceInUsd = Math.round(Number(it.price || 0) / usdRate);
+							const totalPriceInUsd = Math.round(Number(it.totalPrice || 0) / usdRate);
+							const model = (it as any).modelName || '-';
+							const unit = it.unit || (it as any).unitCode || '-';
+							return (
+								<tr key={it.id}>
+									<td className='px-2 py-1'>{i + 1}</td>
+									<td className='px-2 py-1'>{model}</td>
+									<td className='px-2 py-1'>{it.name}</td>
+									<td className='px-2 py-1'>{it.quantity}</td>
+									<td className='px-2 py-1'>{unit}</td>
+									<td className='px-2 py-1'>{formatNumber(priceInUsd)}</td>
+									<td className='px-2 py-1'>{formatNumber(totalPriceInUsd)}</td>
+								</tr>
+							);
+						})}
+						<tr>
+							<td colSpan={6} className='px-2 py-1' style={{ textAlign: 'center' }}>
+								<b>Jami</b>
+							</td>
+							<td className='px-2 py-1' style={{ textAlign: 'center' }}>
+								<b>{formatNumber(totalInUsd)}</b>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 
-                <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                    <div style={{ width: '60%' }}>
-                        <div style={{ color: 'orange', fontWeight: 'bold', fontSize: 13 }}>
-                            Ostatka ($): {totalInUsd.toFixed(2)} $
-                        </div>
-                        <div style={{ fontSize: 11 }}>Olingan tovarlar summasi ($): {totalInUsd.toFixed(2)} $</div>
-                        <div style={{ fontSize: 11 }}>Jami to'langan summa ($): {paidInUsd.toFixed(2)} $</div>
-                    </div>
-                    <div style={{ width: '38%', textAlign: 'right', fontSize: 11 }}>
-                        To'langan summa dollarda ($): {paidInUsd.toFixed(2)} $
-                    </div>
-                </div>
+				<div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+					<div style={{ width: '60%' }}>
+						<div style={{ color: 'orange', fontWeight: 'bold', fontSize: 13 }}>
+							Ostatka ($): {formatNumber(totalInUsd)} $
+						</div>
+						<div style={{ fontSize: 11 }}>Olingan tovarlar summasi ($): {formatNumber(totalInUsd)} $</div>
+						<div style={{ fontSize: 11 }}>Jami to'langan summa ($): {formatNumber(paidInUsd)} $</div>
+					</div>
+					<div style={{ width: '38%', textAlign: 'right', fontSize: 11 }}>
+						To'langan summa dollarda ($): {formatNumber(paidInUsd)} $
+					</div>
+				</div>
 
-                <div style={{ color: 'red', fontWeight: 'bold', fontSize: 14, marginTop: 12 }}>
-                    Qolgan qarz ($): {remainingInUsd.toFixed(2)} $
-                </div>
-            </div>
-        </div>
-    );
+				<div style={{ color: 'red', fontWeight: 'bold', fontSize: 14, marginTop: 12 }}>
+					Qolgan qarz ($): {formatNumber(remainingInUsd)} $
+				</div>
+			</div>
+		</div>
+	);
 }
 
 export default Receipt;

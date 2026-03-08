@@ -13,6 +13,7 @@ import {
 	X,
 	Pencil,
 } from 'lucide-react';
+import { formatNumber } from '@/lib/utils';
 import { renderReceiptHtml } from '@/components/Receipt';
 import {
 	Dialog,
@@ -448,7 +449,7 @@ export function OrderShowPage() {
 							Jami summa
 						</p>
 						<p className='font-bold text-indigo-700 dark:text-indigo-300 text-base mb-0.5'>
-							{(Number(order_history.all_product_summa || 0) / usdRate).toFixed(2)} USD
+							{formatNumber(Number(order_history.all_product_summa || 0) / usdRate)} USD
 						</p>
 						<p className='text-xs font-semibold text-indigo-600 dark:text-indigo-300'>
 							{Number(order_history.all_product_summa || 0).toLocaleString()} UZS
@@ -484,11 +485,11 @@ export function OrderShowPage() {
 								To'lanishi kerak
 							</p>
 							<p className='font-bold text-emerald-700 dark:text-emerald-300 text-base mb-0.5'>
-								{(
+								{formatNumber(
 									(Number(order_history.all_product_summa || 0) -
 										Number(order_history.discount_amount || 0)) /
-									usdRate
-								).toFixed(2)}{' '}
+										usdRate,
+								)}{' '}
 								USD
 							</p>
 							<p className='text-xs font-semibold text-emerald-600 dark:text-emerald-300'>
@@ -508,7 +509,7 @@ export function OrderShowPage() {
 						</p>
 						<div className='text-right'>
 							<div className='font-bold text-lg sm:text-xl text-indigo-700 dark:text-indigo-300'>
-								{totalPaidUSD ? totalPaidUSD.toFixed(2) : '0.00'} USD
+								{totalPaidUSD ? formatNumber(totalPaidUSD) : '0.00'} USD
 							</div>
 							<div className='text-xs sm:text-base text-gray-500 dark:text-muted-foreground'>
 								{totalPaidUZS.toLocaleString()} UZS
@@ -521,7 +522,7 @@ export function OrderShowPage() {
 							Qarz ma'lumotlari
 						</p>
 						<p className='font-bold text-red-700 dark:text-red-300 text-base'>
-							{Number(order_history.client_detail?.total_debt || 0).toFixed(2)} USD
+							{formatNumber(Number(order_history.client_detail?.total_debt || 0))} USD
 						</p>
 						<p className='text-xs text-red-600 dark:text-red-300 mt-0.5'>
 							{(Number(order_history.client_detail?.total_debt || 0) * usdRate).toLocaleString()} UZS
@@ -535,7 +536,7 @@ export function OrderShowPage() {
 								Foyda
 							</p>
 							<p className='font-bold text-lime-700 dark:text-lime-300 text-base'>
-								{Number(order_history.all_profit_dollar).toFixed(2)} USD
+								{formatNumber(Number(order_history.all_profit_dollar))} USD
 							</p>
 							<p className='text-xs text-lime-600 dark:text-lime-300 mt-0.5'>
 								{(Number(order_history.all_profit_dollar) * usdRate).toLocaleString()} UZS
@@ -562,7 +563,7 @@ export function OrderShowPage() {
 									<div className='p-1.5 sm:p-2 bg-white dark:bg-card'>
 										<div className='text-right flex items-center justify-end gap-1'>
 											<p className='font-semibold text-xs text-gray-800 dark:text-foreground'>
-												{Number(order_history.summa_dollar).toFixed(2)}
+												{formatNumber(Number(order_history.summa_dollar))}
 											</p>
 											<span className='text-[10px] font-medium text-gray-500 dark:text-muted-foreground'>
 												USD
@@ -657,7 +658,7 @@ export function OrderShowPage() {
 											Qaytim dollarda
 										</p>
 										<p className='font-bold text-gray-800 dark:text-foreground text-xs'>
-											{Number(order_history.zdacha_dollar).toFixed(2)} USD
+											{formatNumber(Number(order_history.zdacha_dollar))} USD
 										</p>
 									</div>
 								)}
