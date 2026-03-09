@@ -265,6 +265,7 @@ export const API_ENDPOINTS = {
 		debtors: '/reports/debtors',
 		soldProductsHistory: '/reports/sold-products-history',
 		soldProductsHistoryDetail: '/reports/sold-products-history-detail',
+		ordersAndDebtsReport: '/reports/orders-and-debts-report',
 	},
 } as const;
 

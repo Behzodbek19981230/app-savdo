@@ -32,6 +32,8 @@ import { ExpenseModal } from '@/components/expenses/ExpenseModal';
 import { useExpenseCategories } from '@/hooks/api/useExpenseCategories';
 import { Expense } from '@/services/expenseService';
 import { toast } from 'sonner';
+import { useRole } from '@/hooks/useRole';
+import { format } from 'date-fns';
 
 const ITEMS_PER_PAGE = 50;
 
@@ -49,6 +51,7 @@ interface ExpenseItem {
 	category_detail?: { id: number; name?: string };
 	employee_detail?: { full_name?: string };
 	filial?: number;
+	created_time?: string;
 }
 
 interface ExpenseGroup {
@@ -76,6 +79,8 @@ interface ExpensesGroupResponse {
 
 export default function ExpensesPage() {
 	const { selectedFilialId } = useAuthContext();
+	const roles = useRole();
+	const today = format(new Date(), 'yyyy-MM-dd');
 	const [page, setPage] = useState(1);
 	const [data, setData] = useState<ExpensesGroupResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -336,27 +341,33 @@ export default function ExpensesPage() {
 															{formatCurrency(it.summa_transfer)}
 														</TableCell>
 														<TableCell className='text-right'>
-															<div className='flex items-center justify-end '>
-																<Button
-																	size='icon'
-																	variant='ghost'
-																	className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
-																	onClick={() => openEdit(it)}
-																>
-																	<Pencil className='h-4 w-4' />
-																</Button>
-																<Button
-																	size='icon'
-																	variant='ghost'
-																	className=' text-destructive hover:text-destructive hover:bg-destructive/10'
-																	onClick={() => {
-																		setDeletingId(it.id);
-																		setIsDeleteDialogOpen(true);
-																	}}
-																>
-																	<Trash2 className='h-4 w-4' />
-																</Button>
-															</div>
+															{format(it.created_time, 'yyyy-MM-dd') === today ||
+															roles.isAdmin ||
+															roles.isSuperAdmin ? (
+																<div className='flex items-center justify-end '>
+																	<Button
+																		size='icon'
+																		variant='ghost'
+																		className=' text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30'
+																		onClick={() => openEdit(it)}
+																	>
+																		<Pencil className='h-4 w-4' />
+																	</Button>
+																	<Button
+																		size='icon'
+																		variant='ghost'
+																		className=' text-destructive hover:text-destructive hover:bg-destructive/10'
+																		onClick={() => {
+																			setDeletingId(it.id);
+																			setIsDeleteDialogOpen(true);
+																		}}
+																	>
+																		<Trash2 className='h-4 w-4' />
+																	</Button>
+																</div>
+															) : (
+																''
+															)}
 														</TableCell>
 													</TableRow>
 												))}

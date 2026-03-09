@@ -70,12 +70,16 @@ const Login = () => {
 				title: 'Xush kelibsiz!',
 				description: 'Tizimga muvaffaqiyatli kirdingiz.',
 			});
-			if (user?.role_detail.some((role) => role.key === 'admin' || role.key === 'super_admin')) {
-				console.log(user);
 
-				navigate('/dashboard');
+			if (user?.role_detail.some((role) => role.key === 'seller' || role.key === 'manager')) {
+				toast({
+					title: 'Cheklangan kirish',
+					description: "Siz admin paneliga kira olmaysiz, mahsulotlar sahifasiga yo'naltirilasiz.",
+					variant: 'destructive',
+				});
+				return;
 			} else {
-				navigate('/products');
+				navigate('/dashboard');
 			}
 		} catch (error) {
 			toast({

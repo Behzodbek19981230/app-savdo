@@ -44,6 +44,7 @@ import DebtorsPage from './pages/Debtors';
 import SupplierAccountPage from './pages/SupplierAccount';
 import SoldProductsHistoryPage from './pages/SoldProductsHistory';
 import SoldProductsHistoryDetailPage from './pages/SoldProductsHistoryDetail';
+import OrdersAndDebtsReportPage from './pages/OrdersAndDebtsReport';
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -210,6 +211,10 @@ const protectedRoutes = [
 	{
 		path: '/reports/sold-products-history-detail/:date',
 		element: <SoldProductsHistoryDetailPage />,
+	},
+	{
+		path: '/reports/orders-and-debts',
+		element: <OrdersAndDebtsReportPage />,
 	},
 ];
 

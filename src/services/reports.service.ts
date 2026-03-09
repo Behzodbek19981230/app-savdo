@@ -255,4 +255,86 @@ export const reportsService = {
 	},
 };
 
+export interface OrdersAndDebtsReportParams {
+	filial_id: number;
+	date_from?: string;
+	date_to?: string;
+	client_id?: number;
+	page?: number;
+	limit?: number;
+}
+
+export interface OrdersAndDebtsReportItem {
+	id: number;
+	client_id: number | null;
+	client_name: string;
+	employee_name: string;
+	all_product_summa: string;
+	summa_total_dollar: string;
+	summa_dollar: string;
+	summa_naqt: string;
+	summa_kilik: string;
+	summa_terminal: string;
+	summa_transfer: string;
+	all_profit_dollar: string;
+	remaining_debt: string;
+	datetime: string;
+	type: 'order' | 'debt_repayment';
+}
+
+export interface OrdersAndDebtsReportGroup {
+	date: string;
+	date_label: string;
+	items: OrdersAndDebtsReportItem[];
+	totals: {
+		all_product_summa: number;
+		summa_total_dollar: number;
+		summa_dollar: number;
+		summa_naqt: number;
+		summa_kilik: number;
+		summa_terminal: number;
+		summa_transfer: number;
+		all_profit_dollar: number;
+		remaining_debt: number;
+	};
+}
+
+export interface OrdersAndDebtsReportResponse {
+	pagination: {
+		currentPage: number;
+		lastPage: number;
+		perPage: number;
+		total: number;
+	};
+	results: OrdersAndDebtsReportGroup[];
+	summary: {
+		all_product_summa: number;
+		summa_total_dollar: number;
+		summa_dollar: number;
+		summa_naqt: number;
+		summa_kilik: number;
+		summa_terminal: number;
+		summa_transfer: number;
+		all_profit_dollar: number;
+		remaining_debt: number;
+	} | null;
+}
+
+export const ordersAndDebtsReportService = {
+	getReport: async (params: OrdersAndDebtsReportParams): Promise<OrdersAndDebtsReportResponse> => {
+		const query = new URLSearchParams();
+		query.append('filial_id', String(params.filial_id));
+		if (params.date_from) query.append('date_from', params.date_from);
+		if (params.date_to) query.append('date_to', params.date_to);
+		if (params.client_id) query.append('client_id', String(params.client_id));
+		if (params.page) query.append('page', String(params.page));
+		if (params.limit) query.append('limit', String(params.limit));
+
+		const res = await api.get<OrdersAndDebtsReportResponse>(
+			`${API_ENDPOINTS.reports.ordersAndDebtsReport}?${query.toString()}`,
+		);
+		return res;
+	},
+};
+
 export default reportsService;
