@@ -1,14 +1,17 @@
 import { Fragment, useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 import { DateRangePicker } from '@/components/ui/date-picker';
-import { useOrderHistory, useOrderHistoryDebtorProduct } from '@/hooks/api/useOrderHistory';
+import { useOrderHistory, useOrderHistoryDebtorProduct, ORDER_HISTORY_KEYS } from '@/hooks/api/useOrderHistory';
+import { orderHistoryService } from '@/services/orderHistory.service';
+import { showSuccess, showError } from '@/lib/toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/api/useUsers';
-import { Loader2, Eye, Package, SearchIcon, X } from 'lucide-react';
+import { Loader2, Eye, Package, SearchIcon, X, CheckCircle2, CheckSquare2, ShoppingCart } from 'lucide-react';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { useClients } from '@/hooks/api/useClients';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -23,6 +26,8 @@ import {
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tooltip } from '@/components/ui/tooltip';
+import clsx from 'clsx';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -44,6 +49,56 @@ function OrderHistoryTable({
 	formatCurrency: (value: string | number | undefined) => string;
 	navigate: (path: string) => void;
 }) {
+	const queryClient = useQueryClient();
+	const [confirmUpdateModalOpen, setConfirmUpdateModalOpen] = useState(false);
+	const [endedOrderModalOpen, setEndedOrderModalOpen] = useState(false);
+	const [orderToConfirm, setOrderToConfirm] = useState<any>(null);
+	const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
+
+	const handleOpenConfirmModal = (order: any) => {
+		setOrderToConfirm(order);
+		setConfirmUpdateModalOpen(true);
+	};
+	const handleOpenEndedOrderModal = (order: any) => {
+		setOrderToConfirm(order);
+		setEndedOrderModalOpen(true);
+	};
+
+	const handleApproveUpdate = async () => {
+		if (!orderToConfirm) return;
+		setConfirmingOrderId(orderToConfirm.id);
+		try {
+			await orderHistoryService.confirmUpdateStatus(orderToConfirm.id, 0);
+			showSuccess('Buyurtma muvaffaqiyatli tasdiqlandi');
+			queryClient.invalidateQueries({ queryKey: ORDER_HISTORY_KEYS.all });
+			setConfirmUpdateModalOpen(false);
+			setOrderToConfirm(null);
+		} catch (error: unknown) {
+			const err = error as { response?: { data?: { detail?: string } }; message?: string };
+			const errorMessage = err?.response?.data?.detail || err?.message || 'Tasdiqlashda xatolik yuz berdi';
+			showError(errorMessage);
+		} finally {
+			setConfirmingOrderId(null);
+		}
+	};
+	const handleEndedOrderApprove = async () => {
+		if (!orderToConfirm) return;
+		setConfirmingOrderId(orderToConfirm.id);
+		try {
+			await orderHistoryService.patchOrderStatus(orderToConfirm.id, true);
+			showSuccess('Buyurtma muvaffaqiyatli yakunlandi');
+			queryClient.invalidateQueries({ queryKey: ORDER_HISTORY_KEYS.all });
+			await refetch();
+			setEndedOrderModalOpen(false);
+			setOrderToConfirm(null);
+		} catch (error: any) {
+			const errorMessage = error?.response?.data?.detail || error?.message || 'Yakunlashda xatolik yuz berdi';
+			showError(errorMessage);
+		} finally {
+			setConfirmingOrderId(null);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className='flex items-center justify-center py-10'>
@@ -106,14 +161,9 @@ function OrderHistoryTable({
 										const totalProfit = parseFloat(it.all_profit_dollar || '0');
 
 										return (
-											<TableRow
-												key={it.id}
-												className={
-													it.order_status === false ? 'bg-red-50 dark:bg-[#7b5858]' : ''
-												}
-											>
+											<TableRow key={it.id}>
 												{' '}
-												<TableCell className='font-medium'>
+												<TableCell className='font-medium flex items-center gap-1'>
 													{it.number || it.order || '-'}
 												</TableCell>
 												{idx === 0 && (
@@ -126,60 +176,177 @@ function OrderHistoryTable({
 														</div>
 													</TableCell>
 												)}
-												<TableCell>{it.client_detail?.full_name || `#${it.client}`}</TableCell>
-												<TableCell>{it.created_by_detail?.full_name || '-'}</TableCell>
-												<TableCell className='text-right text-blue-600 font-semibold'>
+												<TableCell
+													className={clsx(
+														'p-1 text-left text-gray-800 text-xs',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
+													{it.client_detail?.full_name || `#${it.client}`}
+												</TableCell>
+												<TableCell
+													className={clsx(
+														'p-1 text-left text-gray-800 text-xs',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
+													{it.created_by_detail?.full_name || '-'}
+												</TableCell>
+												<TableCell
+													className={clsx(
+														'text-right text-blue-600 font-semibold',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													<Link to={`/order-history/${it.id}`}>
 														{formatCurrency(payable)}
 													</Link>
 												</TableCell>
-												<TableCell className='text-right'>{formatCurrency(paid)}</TableCell>
-												<TableCell className='text-right'>
-													{changeDollar > 0 || changeSom > 0
-														? `${formatCurrency(changeDollar)}$${changeSom > 0 ? ` / ${formatCurrency(changeSom)} so'm` : ''}`
-														: '-'}
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
+													{formatCurrency(paid)}
 												</TableCell>
-												<TableCell className='text-right'>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
+													{formatCurrency(changeDollar)}
+												</TableCell>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													{formatCurrency(todayDebt)}
 												</TableCell>
-												<TableCell className='text-right text-red-600 dark:text-red-400 font-semibold'>
+												<TableCell
+													className={clsx(
+														'text-right text-red-600 dark:text-red-400 font-semibold',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													{formatCurrency(totalDebt)}
 												</TableCell>
-												<TableCell className='text-right text-green-600 dark:text-green-400 font-semibold'>
+												<TableCell
+													className={clsx(
+														'text-right text-green-600 dark:text-green-400 font-semibold',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													{formatCurrency(totalProfit)}
 												</TableCell>
-												<TableCell className='text-right'>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													{it.created_time
 														? moment(it.created_time).format('DD.MM.YYYY HH:mm')
 														: '-'}
 												</TableCell>
-												<TableCell className='text-right'>
-													{it.is_karzinka ? (
-														<span className='px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs'>
-															Korzinkada
-														</span>
-													) : it.order_status ? (
-														<span className='px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs'>
-															Yakunlangan
-														</span>
-													) : (
-														<span className='px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs dark:bg-red-900 dark:text-red-200'>
-															Yakunlanmagan
-														</span>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
 													)}
-												</TableCell>
-												<TableCell className='text-right'>
+												></TableCell>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													{formatCurrency(it.client_detail?.keshbek || '0')}
 												</TableCell>
-												<TableCell className='text-right'>
+												<TableCell
+													className={clsx(
+														'text-right',
+														it.update_status === 1
+															? '!bg-amber-100 group-hover:!bg-amber-200/70 dark:!bg-amber-900/30 '
+															: !it.order_status
+																? 'bg-red-50 dark:bg-[#7b5858]'
+																: 'group-hover:bg-blue-50/30',
+													)}
+												>
 													<div className='flex items-center justify-end gap-1'>
+														{it.order_status === false && (
+															<button
+																onClick={() => handleOpenEndedOrderModal(it)}
+																disabled={confirmingOrderId === it.id}
+																className='p-1 rounded hover:bg-red-200 text-red-700 transition-colors disabled:opacity-50'
+																title='Tasdiqlash'
+															>
+																<CheckSquare2 size={15} />
+															</button>
+														)}
+														{it.update_status === 1 && (
+															<button
+																onClick={() => handleOpenConfirmModal(it)}
+																className='p-1 rounded hover:bg-yellow-200 text-yellow-700 transition-colors'
+																title='Tasdiqlash'
+															>
+																<CheckCircle2 size={15} />
+															</button>
+														)}
 														<Button
 															variant='ghost'
 															size='icon'
 															className='h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30'
 															onClick={() => navigate(`/order-history/${it.id}`)}
 														>
-															<Eye className='h-4 w-4' />
+															<Eye size={15} />
 														</Button>
 													</div>
 												</TableCell>
@@ -225,6 +392,124 @@ function OrderHistoryTable({
 							</PaginationItem>
 						</PaginationContent>
 					</Pagination>
+				</div>
+			)}
+			{/* Confirm update_status Modal */}
+			{confirmUpdateModalOpen && (
+				<div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+					<div className='bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-2 border-yellow-200'>
+						<div className='flex justify-between items-center p-5 border-b-2 border-yellow-100 bg-yellow-50'>
+							<h3 className='text-xl font-bold text-gray-900'>Buyurtmani tasdiqlash</h3>
+							<button
+								onClick={() => {
+									setConfirmUpdateModalOpen(false);
+									setOrderToConfirm(null);
+								}}
+								disabled={confirmingOrderId !== null}
+								className='text-gray-500 hover:text-yellow-600 hover:bg-white p-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+							>
+								<X size={24} />
+							</button>
+						</div>
+						<div className='p-6 bg-white'>
+							<p className='text-gray-700 mb-4'>
+								Buyurtma #{orderToConfirm?.id} ni tasdiqlaysizmi? Tasdiqlangandan so'ng o'zgarish qabul
+								qilinadi.
+							</p>
+							{orderToConfirm?.note && (
+								<div className='mb-5 rounded-lg border border-yellow-200 bg-yellow-50 p-3'>
+									<p className='text-[11px] font-semibold text-yellow-700 mb-1'>Izoh:</p>
+									<p className='text-sm text-gray-700 whitespace-pre-wrap'>{orderToConfirm.note}</p>
+								</div>
+							)}
+							<div className='flex gap-3 justify-end'>
+								<button
+									onClick={() => {
+										setConfirmUpdateModalOpen(false);
+										setOrderToConfirm(null);
+									}}
+									disabled={confirmingOrderId !== null}
+									className='px-3 py-1.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors font-semibold text-xs disabled:opacity-50 disabled:cursor-not-allowed'
+								>
+									Bekor qilish
+								</button>
+								<button
+									onClick={handleApproveUpdate}
+									disabled={confirmingOrderId !== null}
+									className='px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition-all duration-200 font-semibold text-xs shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5'
+								>
+									{confirmingOrderId !== null ? (
+										<>
+											<Loader2 className='w-4 h-4 animate-spin' />
+											<span>Tasdiqlanmoqda...</span>
+										</>
+									) : (
+										<>
+											<CheckCircle2 className='w-4 h-4' />
+											<span>Ha, tasdiqlash</span>
+										</>
+									)}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+			{endedOrderModalOpen && (
+				<div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+					<div className='bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-2 border-red-200'>
+						<div className='flex justify-between items-center p-5 border-b-2 border-red-100 bg-red-50'>
+							<h3 className='text-xl font-bold text-gray-900'>Buyurtmani tasdiqlash</h3>
+							<button
+								onClick={() => {
+									setEndedOrderModalOpen(false);
+									setOrderToConfirm(null);
+								}}
+								disabled={confirmingOrderId !== null}
+								className='text-gray-500 hover:text-red-600 hover:bg-white p-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+							>
+								<X size={24} />
+							</button>
+						</div>
+						<div className='p-6 bg-white'>
+							<p className='text-gray-700 mb-4'>Buyurtma #{orderToConfirm?.id} ni tasdiqlaysizmi?</p>
+							{orderToConfirm?.note && (
+								<div className='mb-5 rounded-lg border border-red-200 bg-red-50 p-3'>
+									<p className='text-[11px] font-semibold text-red-700 mb-1'>Izoh:</p>
+									<p className='text-sm text-gray-700 whitespace-pre-wrap'>{orderToConfirm.note}</p>
+								</div>
+							)}
+							<div className='flex gap-3 justify-end'>
+								<button
+									onClick={() => {
+										setEndedOrderModalOpen(false);
+										setOrderToConfirm(null);
+									}}
+									disabled={confirmingOrderId !== null}
+									className='px-3 py-1.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors font-semibold text-xs disabled:opacity-50 disabled:cursor-not-allowed'
+								>
+									Bekor qilish
+								</button>
+								<button
+									onClick={handleEndedOrderApprove}
+									disabled={confirmingOrderId !== null}
+									className='px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-all duration-200 font-semibold text-xs shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5'
+								>
+									{confirmingOrderId !== null ? (
+										<>
+											<Loader2 className='w-4 h-4 animate-spin' />
+											<span>Tasdiqlanmoqda...</span>
+										</>
+									) : (
+										<>
+											<CheckCircle2 className='w-4 h-4' />
+											<span>Ha, tasdiqlash</span>
+										</>
+									)}
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 		</>

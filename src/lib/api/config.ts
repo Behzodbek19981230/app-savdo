@@ -263,6 +263,8 @@ export const API_ENDPOINTS = {
 		topClient: '/reports/top-client',
 		orderDebtHistory: '/reports/order-debt-history',
 		debtors: '/reports/debtors',
+		soldProductsHistory: '/reports/sold-products-history',
+		soldProductsHistoryDetail: '/reports/sold-products-history-detail',
 	},
 } as const;
 

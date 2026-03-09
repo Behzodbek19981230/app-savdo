@@ -27,6 +27,7 @@ import {
 	Receipt,
 	Calendar,
 	AlertCircle,
+	ShoppingBag,
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -79,6 +80,7 @@ const adminSection: NavSection[] = [
 			{ icon: TrendingUp, label: "Top mijozlar bo'yicha", path: '/reports/top-clients' },
 			{ icon: Calendar, label: 'Kunlik hisobotlar', path: '/reports/order-debt-history' },
 			{ icon: AlertCircle, label: "Qarzdorlar ro'yxati", path: '/reports/debtors' },
+			{ icon: ShoppingBag, label: 'Sotilgan tovarlar tarixi', path: '/reports/sold-products-history' },
 		],
 	},
 	{

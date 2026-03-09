@@ -99,4 +99,11 @@ export const orderHistoryService = {
 	restoreKorzinka: async (id: number | string) => {
 		return api.put(`/order-history/karzinka/${id}/restore`);
 	},
+	// Confirm update_status (set to 0)
+	confirmUpdateStatus: async (id: number | string, update_status: number) => {
+		return api.patch(`/order-history/${id}`, { update_status });
+	},
+	patchOrderStatus: async (id: number | string, order_status: boolean) => {
+		return api.patch(`/order-history/${id}`, { order_status });
+	},
 };
