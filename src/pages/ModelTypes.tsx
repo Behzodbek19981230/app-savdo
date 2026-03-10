@@ -56,6 +56,8 @@ export default function ModelTypes() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [draftSearch, setDraftSearch] = useState('');
+	const [filterModelId, setFilterModelId] = useState<number | undefined>(undefined);
+	const [draftFilterModelId, setDraftFilterModelId] = useState<number | undefined>(undefined);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -83,6 +85,7 @@ export default function ModelTypes() {
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
+		madel: filterModelId,
 	});
 
 	const { data: modelsData } = useProductModels({
@@ -270,9 +273,8 @@ export default function ModelTypes() {
 				</CardHeader>
 				<CardContent>
 					{/* Search */}
-					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
-						<div className='relative'>
-							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+					<div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+						<div className='w-full sm:w-auto'>
 							<Input
 								placeholder='Qidirish...'
 								value={draftSearch}
@@ -280,34 +282,52 @@ export default function ModelTypes() {
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
 										setSearchQuery(draftSearch);
+										setFilterModelId(draftFilterModelId);
 										setCurrentPage(1);
 									}
 								}}
-								className='pl-9'
+								className='w-full sm:min-w-[220px]'
 							/>
 						</div>
-						<Button
-							className='bg-blue-600 hover:bg-blue-700 text-white'
-							onClick={() => {
-								setSearchQuery(draftSearch);
-								setCurrentPage(1);
-							}}
-						>
-							<Search className='mr-2 h-4 w-4' />
-							Qidirish
-						</Button>
-						{searchQuery && (
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha modellar' },
+									...models.map((m) => ({ value: String(m.id), label: m.name })),
+								]}
+								value={draftFilterModelId ? String(draftFilterModelId) : 'all'}
+								onValueChange={(v) => setDraftFilterModelId(v === 'all' ? undefined : Number(v))}
+								placeholder='Model bo\'yicha filtrlash'
+								className='w-full sm:w-[220px]'
+							/>
+						</div>
+						<div className='w-full sm:w-auto flex gap-2 items-center'>
 							<Button
+								className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'
 								onClick={() => {
-									setDraftSearch('');
-									setSearchQuery('');
+									setSearchQuery(draftSearch);
+									setFilterModelId(draftFilterModelId);
 									setCurrentPage(1);
 								}}
 							>
-								<X className='mr-2 h-4 w-4' />
+								<Search className='h-3.5 w-3.5 mr-1' />
+								Qidirish
+							</Button>
+							<Button
+								variant='outline'
+								className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
+								onClick={() => {
+									setDraftSearch('');
+									setDraftFilterModelId(undefined);
+									setSearchQuery('');
+									setFilterModelId(undefined);
+									setCurrentPage(1);
+								}}
+							>
+								<X className='h-3.5 w-3.5 mr-1' />
 								Tozalash
 							</Button>
-						)}
+						</div>
 					</div>
 
 					{/* Table */}

@@ -107,7 +107,6 @@ const invoiceSchema = z
 		type: z.enum([PurchaseInvoiceType.EXTERNAL, PurchaseInvoiceType.INTERNAL]),
 		supplier: z.coerce.number().min(0).optional(),
 		sklad_outgoing: z.coerce.number().min(0).optional(),
-		filial: z.coerce.number().positive('Filial tanlanishi shart'),
 		sklad: z.coerce.number().positive('Ombor tanlanishi shart'),
 		date: z.string().min(1, 'Sana kiritilishi shart'),
 		employee: z.coerce.number().positive('Xodim tanlanishi shart'),
@@ -247,7 +246,6 @@ export default function PurchaseInvoiceAdd() {
 			type: PurchaseInvoiceType.EXTERNAL,
 			supplier: 0,
 			sklad_outgoing: 0,
-			filial: (selectedFilialId ?? user?.filials_detail?.[0]?.id) || 0,
 			sklad: 0,
 			date: moment().format('YYYY-MM-DD'),
 			employee: user?.id || 0,
@@ -257,12 +255,6 @@ export default function PurchaseInvoiceAdd() {
 	// Watch type to conditionally show supplier or sklad_outgoing
 	const invoiceType = invoiceForm.watch('type');
 
-	// Sync form filial when global selected filial changes
-	useEffect(() => {
-		if (selectedFilialId) {
-			invoiceForm.setValue('filial', selectedFilialId);
-		}
-	}, [selectedFilialId]);
 
 	// Load existing invoice data into form
 	useEffect(() => {
@@ -271,7 +263,6 @@ export default function PurchaseInvoiceAdd() {
 				type: existingInvoice.type as PurchaseInvoiceType,
 				supplier: existingInvoice.supplier || 0,
 				sklad_outgoing: ((existingInvoice as unknown as Record<string, unknown>).sklad_outgoing as number) || 0,
-				filial: existingInvoice.filial,
 				sklad: existingInvoice.sklad,
 				date: existingInvoice.date,
 				employee: existingInvoice.employee,
@@ -309,7 +300,6 @@ export default function PurchaseInvoiceAdd() {
 				type: existingInvoice.type as PurchaseInvoiceType,
 				supplier: existingInvoice.supplier || 0,
 				sklad_outgoing: ((existingInvoice as unknown as Record<string, unknown>).sklad_outgoing as number) || 0,
-				filial: existingInvoice.filial,
 				sklad: existingInvoice.sklad,
 				date: existingInvoice.date,
 				employee: existingInvoice.employee,
@@ -357,7 +347,6 @@ export default function PurchaseInvoiceAdd() {
 		},
 	});
 
-	const selectedFilial = invoiceForm.watch('filial');
 	const selectedBranch = productForm.watch('branch');
 	const selectedBranchCategory = productForm.watch('branch_category');
 	const selectedModel = productForm.watch('model');
@@ -442,7 +431,7 @@ export default function PurchaseInvoiceAdd() {
 			: undefined,
 	);
 
-	const { data: exchangeRatesData } = useExchangeRates(selectedFilial ? { filial: selectedFilial } : undefined);
+	const { data: exchangeRatesData } = useExchangeRates(selectedFilialId ? { filial: selectedFilialId } : undefined);
 
 	const users = usersData?.results || [];
 	const suppliers = suppliersData?.results || [];
@@ -931,7 +920,7 @@ export default function PurchaseInvoiceAdd() {
 			type: selectedType,
 			branch: selectedBranch,
 			branch_category: selectedBranchCategory,
-			filial: selectedFilial,
+			filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 			size: selectedSize,
 		});
 		const product = products.results?.[0];
@@ -1162,7 +1151,7 @@ export default function PurchaseInvoiceAdd() {
 			// Prepare payload based on type
 			const payload: CreatePurchaseInvoicePayload = {
 				type: values.type ?? PurchaseInvoiceType.EXTERNAL,
-				filial: values.filial,
+				filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 				sklad: values.sklad,
 				date: values.date,
 				employee: values.employee,
@@ -1218,7 +1207,7 @@ export default function PurchaseInvoiceAdd() {
 						wholesale_price: 0,
 						min_price: product.min_price,
 						note: product.note,
-						filial_id: values.filial,
+						filial_id: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 					});
 				}
 			}
@@ -1617,24 +1606,6 @@ export default function PurchaseInvoiceAdd() {
 										)}
 									/>
 								)}
-								<FormField
-									control={invoiceForm.control}
-									name='filial'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Filial</FormLabel>
-											<FormControl>
-												<Autocomplete
-													options={companies.map((c) => ({ value: c.id, label: c.name }))}
-													value={field.value || undefined}
-													onValueChange={(v) => field.onChange(Number(v))}
-													placeholder='Tanlang'
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
 								<FormField
 									control={invoiceForm.control}
 									name='sklad'

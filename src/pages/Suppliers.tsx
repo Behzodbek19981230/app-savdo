@@ -60,6 +60,8 @@ import {
 	Truck,
 	MapPin,
 	Building2,
+	SearchIcon,
+	X,
 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
@@ -70,7 +72,6 @@ type SortDirection = 'asc' | 'desc' | null;
 // Form schema
 const supplierSchema = z.object({
 	name: z.string().min(1, 'Nom kiritilishi shart'),
-	filial: z.coerce.number().positive('Filial tanlanishi shart'),
 	region: z.coerce.number().positive('Viloyat tanlanishi shart'),
 	district: z.coerce.number().positive('Tuman tanlanishi shart'),
 	address: z.string().optional(),
@@ -83,7 +84,12 @@ type SupplierFormData = z.infer<typeof supplierSchema>;
 export default function Suppliers() {
 	const { user, selectedFilialId } = useAuthContext();
 	const [currentPage, setCurrentPage] = useState(1);
+	// Applied filters (used for querying)
 	const [searchQuery, setSearchQuery] = useState('');
+	const [statusFilter, setStatusFilter] = useState<string>('all'); // 'all', 'active', 'inactive'
+	// Form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formStatus, setFormStatus] = useState<string>('all');
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,7 +102,6 @@ export default function Suppliers() {
 		resolver: zodResolver(supplierSchema),
 		defaultValues: {
 			name: '',
-			filial: (selectedFilialId ?? user?.filials_detail?.[0]?.id) || 0,
 			region: 0,
 			district: 0,
 			address: '',
@@ -104,13 +109,6 @@ export default function Suppliers() {
 			is_active: true,
 		},
 	});
-
-	// Sync form filial when global selected filial changes
-	useEffect(() => {
-		if (selectedFilialId) {
-			form.setValue('filial', selectedFilialId);
-		}
-	}, [selectedFilialId]);
 
 	const selectedRegion = form.watch('region');
 
@@ -124,6 +122,7 @@ export default function Suppliers() {
 		search: searchQuery || undefined,
 		ordering,
 		is_delete: false,
+		is_active: statusFilter === 'all' ? undefined : statusFilter === 'active',
 		filial: selectedFilialId ?? undefined,
 	});
 
@@ -172,7 +171,6 @@ export default function Suppliers() {
 			setEditingId(item.id);
 			form.reset({
 				name: item.name || '',
-				filial: item.filial || user?.filials_detail?.[0]?.id || 0,
 				region: item.region || 0,
 				district: item.district || 0,
 				address: item.address || '',
@@ -183,7 +181,6 @@ export default function Suppliers() {
 			setEditingId(null);
 			form.reset({
 				name: '',
-				filial: user?.filials_detail?.[0]?.id || 0,
 				region: 0,
 				district: 0,
 				address: '',
@@ -204,7 +201,7 @@ export default function Suppliers() {
 		try {
 			const submitData = {
 				name: data.name,
-				filial: data.filial,
+				filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 				region: data.region,
 				district: data.district,
 				address: data.address,
@@ -246,6 +243,20 @@ export default function Suppliers() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 
+	const handleFilter = () => {
+		setSearchQuery(formSearch);
+		setStatusFilter(formStatus);
+		setCurrentPage(1);
+	};
+
+	const handleClear = () => {
+		setFormSearch('');
+		setFormStatus('all');
+		setSearchQuery('');
+		setStatusFilter('all');
+		setCurrentPage(1);
+	};
+
 	// Close dialog after successful mutation
 	useEffect(() => {
 		if (createSupplier.isSuccess || updateSupplier.isSuccess) {
@@ -273,19 +284,42 @@ export default function Suppliers() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					{/* Search */}
-					<div className='flex items-center gap-4 mb-4'>
-						<div className='relative flex-1 max-w-sm'>
-							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+					{/* Filters */}
+					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 mb-4'>
+						<div className='w-full sm:w-auto'>
 							<Input
 								placeholder="Ta'minotchi qidirish..."
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
-								}}
-								className='pl-9'
+								value={formSearch}
+								onChange={(e) => setFormSearch(e.target.value)}
+								className='w-full sm:min-w-[220px]'
 							/>
+						</div>
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha holatlar' },
+									{ value: 'active', label: 'Faol' },
+									{ value: 'inactive', label: 'Nofaol' },
+								]}
+								value={formStatus}
+								onValueChange={(v) => setFormStatus(String(v))}
+								placeholder='Holat boʻyicha'
+								className='w-full sm:min-w-[140px]'
+							/>
+						</div>
+						<div className='w-full sm:w-auto flex gap-2 items-center'>
+							<Button onClick={handleFilter} className='bg-blue-600 hover:bg-blue-700 text-white'>
+								<SearchIcon className='h-4 w-4' />
+								Qidirish
+							</Button>
+							<Button
+								variant='outline'
+								onClick={handleClear}
+								className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+							>
+								<X className='h-4 w-4' />
+								Tozalash
+							</Button>
 						</div>
 					</div>
 
@@ -442,30 +476,6 @@ export default function Suppliers() {
 										<FormLabel>Nomi *</FormLabel>
 										<FormControl>
 											<Input placeholder="Ta'minotchi nomi" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name='filial'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Filial *</FormLabel>
-										<FormControl>
-											<Autocomplete
-												options={
-													user?.filials_detail?.map((f) => ({
-														value: f.id,
-														label: f.name,
-													})) ?? []
-												}
-												value={field.value || undefined}
-												onValueChange={(value) => field.onChange(Number(value))}
-												placeholder='Filialni tanlang'
-											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

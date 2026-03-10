@@ -35,7 +35,7 @@ function DateCard({ item, filialId }: { item: SoldProductsHistoryItem; filialId:
 		<div className='relative' onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
 			<div
 				className='flex items-center gap-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg px-4 py-3 cursor-pointer transition-colors duration-150 select-none'
-				onClick={() => navigate(`/reports/sold-products-history-detail/${item.date}?filial_id=${filialId}`)}
+				onClick={() => navigate(`/reports/sold-products-history/${item.date}?filial_id=${filialId}`)}
 			>
 				<Calendar className='h-4 w-4 text-orange-400 shrink-0' />
 				<span className='text-sm font-medium text-gray-700'>{item.date_label}</span>

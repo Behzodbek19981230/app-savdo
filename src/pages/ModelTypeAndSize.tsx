@@ -5,7 +5,7 @@
  */
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -67,6 +67,8 @@ import { useProductBranchCategories } from '@/hooks/api/useProductBranchCategori
 import { modelTypeService, type ProductTypeCreateItem, type ProductTypeSizeItem } from '@/services/modelType.service';
 import { modelTypeKeys } from '@/hooks/api/useModelTypes';
 import ModelSizes from '@/pages/ModelSizes';
+import { productBranchCategoryService, productCategoryService, productModelService } from '@/services';
+import { unitService } from '@/services/unit.service';
 
 const ITEMS_PER_PAGE = 10;
 const defaultSizeRow = (): ProductTypeSizeItem => ({ size: '', unit: '' });
@@ -86,12 +88,14 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 
 	// Tab 1: list state
 	const [currentPage, setCurrentPage] = useState(1);
+	// Applied filters (used for querying)
 	const [searchQuery, setSearchQuery] = useState('');
-	const [draftSearch, setDraftSearch] = useState('');
-	const [draftFilterModelId, setDraftFilterModelId] = useState<number | undefined>(undefined);
+	const [filterModelId, setFilterModelId] = useState<number | undefined>(undefined);
+	// Form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formFilterModelId, setFormFilterModelId] = useState<number | undefined>(undefined);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
-	const [filterModelId, setFilterModelId] = useState<number | undefined>(undefined);
 
 	// Add modal state
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -104,6 +108,14 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 	const [productTypeSizeRows, setProductTypeSizeRows] = useState<ProductTypeSizeItem[]>([defaultSizeRow()]);
 	const [suggestedSorting, setSuggestedSorting] = useState<number | null>(null);
 	const [isLoadingSuggestedSorting, setIsLoadingSuggestedSorting] = useState(false);
+	// Autocomplete search states
+	const [filterModelSearch, setFilterModelSearch] = useState('');
+	const [branchSearch, setBranchSearch] = useState('');
+	const [branchCategorySearch, setBranchCategorySearch] = useState('');
+	const [editBranchSearch, setEditBranchSearch] = useState('');
+	const [editBranchCategorySearch, setEditBranchCategorySearch] = useState('');
+	const [unitSearch, setUnitSearch] = useState('');
+	const [editUnitSearch, setEditUnitSearch] = useState('');
 
 	// Edit modal state
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -117,7 +129,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 	const [editModelSizes, setEditModelSizes] = useState<ProductTypeSizeItem[]>([]);
 	const [editSuggestedSorting, setEditSuggestedSorting] = useState<number | null>(null);
 	const [isLoadingEditSuggestedSorting, setIsLoadingEditSuggestedSorting] = useState(false);
-
+	const AUTOCOMPLETE_PAGE_SIZE = 10;
 	// Delete dialog state
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -162,11 +174,25 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 				}
 			: undefined,
 	);
-	// Edit uchun barcha branch-category'larni olish (branch va branchCategory ni topish uchun)
-	const { data: allBranchCategoriesForEditData } = useProductBranchCategories({
-		limit: 1000,
-		is_delete: false,
+	// Edit uchun barcha branch-category'larni olish (branch va branchCategory ni topish uchun) - infinite query
+	const allBranchCategoriesForEditInfinite = useInfiniteQuery({
+		queryKey: ['productBranchCategories', 'edit-all', { is_delete: false }],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
 	});
+	const allBranchCategoriesForEdit = useMemo(
+		() => allBranchCategoriesForEditInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[allBranchCategoriesForEditInfinite.data?.pages],
+	);
 
 	// Edit uchun branch-category listini olish
 	const { data: editBranchCategoriesData } = useProductBranchCategories(
@@ -179,11 +205,25 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 			: undefined,
 	);
 
-	// Edit uchun barcha modellarni olish (branch va branchCategory ni topish uchun)
-	const { data: allModelsForEditData } = useProductModels({
-		limit: 1000,
-		is_delete: false,
+	// Edit uchun barcha modellarni olish (branch va branchCategory ni topish uchun) - infinite query
+	const allModelsForEditInfinite = useInfiniteQuery({
+		queryKey: ['productModels', 'edit-all', { is_delete: false }],
+		queryFn: ({ pageParam }) =>
+			productModelService.getModels({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
 	});
+	const allModelsForEdit = useMemo(
+		() => allModelsForEditInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[allModelsForEditInfinite.data?.pages],
+	);
 
 	// Edit uchun branch-category tanlanganda, shu branch-category bo'yicha product-model listini olish
 	const { data: modelsEditData, isLoading: isModelsEditLoading } = useProductModels(
@@ -196,11 +236,172 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 				}
 			: undefined,
 	);
-	// Filter uchun barcha modellarni olish
-	const { data: filterModelsData } = useProductModels({
-		limit: 1000,
-		is_delete: false,
+	// Infinite queries for Autocomplete
+	const filterModelsInfinite = useInfiniteQuery({
+		queryKey: ['productModels', 'filter', { is_delete: false, search: filterModelSearch }],
+		queryFn: ({ pageParam }) =>
+			productModelService.getModels({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: filterModelSearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
 	});
+
+	const branchesInfinite = useInfiniteQuery({
+		queryKey: ['productCategories', 'list', { is_delete: false, search: branchSearch }],
+		queryFn: ({ pageParam }) =>
+			productCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: branchSearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
+	const branchCategoriesInfinite = useInfiniteQuery({
+		queryKey: [
+			'productBranchCategories',
+			'list',
+			{ product_branch: branch, is_delete: false, search: branchCategorySearch },
+		],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				search: branchCategorySearch || undefined,
+				is_delete: false,
+				product_branch: branch,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+			} as Parameters<typeof productBranchCategoryService.getCategories>[0]),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+		enabled: !!branch && branch !== 0,
+	});
+
+	const modelsInfinite = useInfiniteQuery({
+		queryKey: ['productModels', 'list', { branch_category: branchCategory, is_delete: false, search: modelSearch }],
+		queryFn: ({ pageParam }) =>
+			productModelService.getModels({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: modelSearch || undefined,
+				is_delete: false,
+				branch_category: branchCategory,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+		enabled: !!branchCategory && branchCategory !== 0,
+	});
+
+	const unitsInfinite = useInfiniteQuery({
+		queryKey: ['units', 'list', { is_active: true, search: unitSearch }],
+		queryFn: ({ pageParam }) =>
+			unitService.getUnits({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: unitSearch || undefined,
+				is_active: true,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
+	// Edit infinite queries
+	const editBranchesInfinite = useInfiniteQuery({
+		queryKey: ['productCategories', 'edit', { is_delete: false, search: editBranchSearch }],
+		queryFn: ({ pageParam }) =>
+			productCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: editBranchSearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
+	const editBranchCategoriesInfinite = useInfiniteQuery({
+		queryKey: [
+			'productBranchCategories',
+			'edit',
+			{ product_branch: editBranch, is_delete: false, search: editBranchCategorySearch },
+		],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				search: editBranchCategorySearch || undefined,
+				is_delete: false,
+				product_branch: editBranch,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+			} as Parameters<typeof productBranchCategoryService.getCategories>[0]),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+		enabled: !!editBranch && editBranch !== 0,
+	});
+
+	const editModelsInfinite = useInfiniteQuery({
+		queryKey: [
+			'productModels',
+			'edit',
+			{ branch_category: editBranchCategory, is_delete: false, search: editModelSearch },
+		],
+		queryFn: ({ pageParam }) =>
+			productModelService.getModels({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: editModelSearch || undefined,
+				is_delete: false,
+				branch_category: editBranchCategory,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+		enabled: !!editBranchCategory && editBranchCategory !== 0,
+	});
+
+	const editUnitsInfinite = useInfiniteQuery({
+		queryKey: ['units', 'edit', { is_active: true, search: editUnitSearch }],
+		queryFn: ({ pageParam }) =>
+			unitService.getUnits({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: editUnitSearch || undefined,
+				is_active: true,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
 	const { data: unitsData } = useUnits({ limit: 1000, is_active: true });
 	const { data: modelSizesData, isLoading: isModelSizesLoading } = useModelSizes(
 		editingId ? { product_type: editingId, limit: 1000, is_delete: false } : undefined,
@@ -212,13 +413,39 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 	const modelTypes = data?.results ?? [];
 	const pagination = data?.pagination;
 	const totalPages = pagination?.lastPage || 1;
-	const branches = useMemo(() => branchesData?.results ?? [], [branchesData?.results]);
-	const branchCategories = branchCategoriesData?.results ?? [];
-	const models = modelsData?.results ?? [];
-	const editBranchCategories = editBranchCategoriesData?.results ?? [];
-	const modelsEdit = useMemo(() => modelsEditData?.results ?? [], [modelsEditData?.results]);
-	const filterModels = filterModelsData?.results ?? [];
-	const units = unitsData?.results ?? [];
+	const branches = useMemo(
+		() => branchesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[branchesInfinite.data?.pages],
+	);
+	const branchCategories = useMemo(
+		() => branchCategoriesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[branchCategoriesInfinite.data?.pages],
+	);
+	const models = useMemo(
+		() => modelsInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[modelsInfinite.data?.pages],
+	);
+	const editBranches = useMemo(
+		() => editBranchesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[editBranchesInfinite.data?.pages],
+	);
+	const editBranchCategories = useMemo(
+		() => editBranchCategoriesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[editBranchCategoriesInfinite.data?.pages],
+	);
+	const modelsEdit = useMemo(
+		() => editModelsInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[editModelsInfinite.data?.pages],
+	);
+	const filterModels = useMemo(
+		() => filterModelsInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[filterModelsInfinite.data?.pages],
+	);
+	const units = useMemo(() => unitsInfinite.data?.pages.flatMap((p) => p.results) ?? [], [unitsInfinite.data?.pages]);
+	const editUnits = useMemo(
+		() => editUnitsInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[editUnitsInfinite.data?.pages],
+	);
 	const modelSizes = useMemo(() => modelSizesData?.results ?? [], [modelSizesData?.results]);
 
 	const updateModelType = useUpdateModelType();
@@ -429,11 +656,10 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 		}
 
 		// Agar madel_detail da branch/branch_category bo'lmasa, allModels/allBranchCategories orqali topamiz
-		if (!branchId && modelId && allBranchCategoriesForEditData?.results && allModelsForEditData?.results) {
-			const allBranchCategories = allBranchCategoriesForEditData.results;
-			const model = allModelsForEditData.results.find((m: { id: number }) => m.id === modelId);
+		if (!branchId && modelId && allBranchCategoriesForEdit.length > 0 && allModelsForEdit.length > 0) {
+			const model = allModelsForEdit.find((m: { id: number }) => m.id === modelId);
 			if (model?.branch_category) {
-				const branchCategory = allBranchCategories.find(
+				const branchCategory = allBranchCategoriesForEdit.find(
 					(bc: { id: number }) => bc.id === model.branch_category,
 				);
 				if (branchCategory) {
@@ -446,7 +672,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 		setTimeout(() => {
 			isLoadingEditFormRef.current = false;
 		}, 0);
-	}, [editingId, editingModelTypeData, allBranchCategoriesForEditData, allModelsForEditData]);
+	}, [editingId, editingModelTypeData, allBranchCategoriesForEdit, allModelsForEdit]);
 
 	// Edit uchun branch o'zgarganda branchCategory va madel ni tozalash (faqat foydalanuvchi o'zgartirganda)
 	useEffect(() => {
@@ -556,14 +782,14 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 	};
 	const editModelOptions = useMemo(() => {
 		const list = modelsEdit.map((m) => ({ value: m.id, label: m.name }));
-		if (editingId != null && editMadel && allModelsForEditData?.results) {
-			const model = allModelsForEditData.results.find((m) => m.id === editMadel);
+		if (editingId != null && editMadel && allModelsForEdit.length > 0) {
+			const model = allModelsForEdit.find((m) => m.id === editMadel);
 			if (model && !list.some((o) => o.value === editMadel)) {
 				return [{ value: editMadel, label: model.name }, ...list];
 			}
 		}
 		return list;
-	}, [modelsEdit, editingId, editMadel, allModelsForEditData]);
+	}, [modelsEdit, editingId, editMadel, allModelsForEdit]);
 
 	// Model sizes yuklanganida editModelSizes'ni yangilash (faqat getById dan product_type_size bo'lmasa)
 	useEffect(() => {
@@ -612,6 +838,20 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 		window.scrollTo({ top: 0, behavior: 'smooth' });
+	};
+
+	const handleFilter = () => {
+		setSearchQuery(formSearch);
+		setFilterModelId(formFilterModelId);
+		setCurrentPage(1);
+	};
+
+	const handleClear = () => {
+		setFormSearch('');
+		setFormFilterModelId(undefined);
+		setSearchQuery('');
+		setFilterModelId(undefined);
+		setCurrentPage(1);
 	};
 	const renderPaginationItems = () => {
 		const items = [];
@@ -678,59 +918,49 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 							</Button>
 						</CardHeader>
 						<CardContent>
-							<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
-								<div className='relative flex-1'>
-									<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+							<div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+								<div className='w-full sm:w-auto'>
 									<Input
 										placeholder='Qidirish...'
-										value={draftSearch}
-										onChange={(e) => setDraftSearch(e.target.value)}
-										onKeyDown={(e) => {
-											if (e.key === 'Enter') {
-												setSearchQuery(draftSearch);
-												setFilterModelId(draftFilterModelId);
-												setCurrentPage(1);
-											}
-										}}
-										className='pl-9'
+										value={formSearch}
+										onChange={(e) => setFormSearch(e.target.value)}
+										className='w-full sm:min-w-[220px]'
 									/>
 								</div>
-								<Autocomplete
-									options={[
-										{ value: 'all', label: 'Barcha modellar' },
-										...filterModels.map((model) => ({ value: model.id, label: model.name })),
-									]}
-									value={draftFilterModelId ?? 'all'}
-									onValueChange={(v) => setDraftFilterModelId(v === 'all' ? undefined : Number(v))}
-									placeholder="Model bo'yicha filtrlash"
-									className='w-full sm:w-[220px]'
-								/>
-								<Button
-									className='bg-blue-600 hover:bg-blue-700 text-white'
-									onClick={() => {
-										setSearchQuery(draftSearch);
-										setFilterModelId(draftFilterModelId);
-										setCurrentPage(1);
-									}}
-								>
-									<Search className='mr-2 h-4 w-4' />
-									Qidirish
-								</Button>
-								{(searchQuery || filterModelId !== undefined) && (
+								<div className='w-full sm:w-auto'>
+									<Autocomplete
+										options={[
+											{ value: 'all', label: 'Barcha modellar' },
+											...filterModels.map((model) => ({ value: model.id, label: model.name })),
+										]}
+										value={formFilterModelId ?? 'all'}
+										onValueChange={(v) => setFormFilterModelId(v === 'all' ? undefined : Number(v))}
+										placeholder="Model bo'yicha filtrlash"
+										className='w-full sm:w-[220px]'
+										onSearchChange={setFilterModelSearch}
+										onScrollToBottom={() => filterModelsInfinite.fetchNextPage()}
+										hasMore={!!filterModelsInfinite.hasNextPage}
+										isLoadingMore={filterModelsInfinite.isFetchingNextPage}
+										isLoading={filterModelsInfinite.isLoading}
+									/>
+								</div>
+								<div className='w-full sm:w-auto flex gap-2 items-center'>
 									<Button
-										onClick={() => {
-											setDraftSearch('');
-											setDraftFilterModelId(undefined);
-											setSearchQuery('');
-											setFilterModelId(undefined);
-											setCurrentPage(1);
-										}}
-										variant='outline'
+										onClick={handleFilter}
+										className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'
 									>
-										<X className='mr-2 h-4 w-4' />
+										<Search className='h-3.5 w-3.5 mr-1' />
+										Qidirish
+									</Button>
+									<Button
+										onClick={handleClear}
+										variant='outline'
+										className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
+									>
+										<X className='h-3.5 w-3.5 mr-1' />
 										Tozalash
 									</Button>
-								)}
+								</div>
 							</div>
 							{isLoading ? (
 								<div className='flex justify-center py-8'>
@@ -876,6 +1106,12 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 										setSuggestedSorting(null);
 									}}
 									placeholder="Bo'limni tanlang"
+									searchPlaceholder="Bo'lim qidirish..."
+									onSearchChange={setBranchSearch}
+									onScrollToBottom={() => branchesInfinite.fetchNextPage()}
+									hasMore={!!branchesInfinite.hasNextPage}
+									isLoadingMore={branchesInfinite.isFetchingNextPage}
+									isLoading={branchesInfinite.isLoading}
 								/>
 							</div>
 
@@ -896,6 +1132,12 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 										branch && branch !== 0 ? 'Kategoriya turini tanlang' : "Avval bo'limni tanlang"
 									}
 									disabled={!branch || branch === 0}
+									searchPlaceholder='Kategoriya qidirish...'
+									onSearchChange={setBranchCategorySearch}
+									onScrollToBottom={() => branchCategoriesInfinite.fetchNextPage()}
+									hasMore={!!branchCategoriesInfinite.hasNextPage}
+									isLoadingMore={branchCategoriesInfinite.isFetchingNextPage}
+									isLoading={branchCategoriesInfinite.isLoading}
 								/>
 							</div>
 						</div>
@@ -915,7 +1157,10 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 									searchPlaceholder='Model qidirish...'
 									emptyText='Model topilmadi'
 									onSearchChange={setModelSearch}
-									isLoading={isModelsLoading}
+									onScrollToBottom={() => modelsInfinite.fetchNextPage()}
+									hasMore={!!modelsInfinite.hasNextPage}
+									isLoadingMore={modelsInfinite.isFetchingNextPage}
+									isLoading={modelsInfinite.isLoading || isModelsLoading}
 									disabled={!branchCategory || branchCategory === 0}
 								/>
 							</div>
@@ -974,6 +1219,11 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 											searchPlaceholder='Birlik qidirish...'
 											emptyText='Topilmadi'
 											className='w-[140px]'
+											onSearchChange={setUnitSearch}
+											onScrollToBottom={() => unitsInfinite.fetchNextPage()}
+											hasMore={!!unitsInfinite.hasNextPage}
+											isLoadingMore={unitsInfinite.isFetchingNextPage}
+											isLoading={unitsInfinite.isLoading}
 										/>
 										<Button
 											type='button'
@@ -1019,7 +1269,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 									<Autocomplete
 										options={[
 											{ value: 0, label: "Bo'limni tanlang" },
-											...branches.map((b) => ({ value: b.id, label: b.name })),
+											...editBranches.map((b) => ({ value: b.id, label: b.name })),
 										]}
 										value={editBranch ?? 0}
 										onValueChange={(v) => {
@@ -1029,6 +1279,12 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 											setEditSuggestedSorting(null);
 										}}
 										placeholder="Bo'limni tanlang"
+										searchPlaceholder="Bo'lim qidirish..."
+										onSearchChange={setEditBranchSearch}
+										onScrollToBottom={() => editBranchesInfinite.fetchNextPage()}
+										hasMore={!!editBranchesInfinite.hasNextPage}
+										isLoadingMore={editBranchesInfinite.isFetchingNextPage}
+										isLoading={editBranchesInfinite.isLoading}
 									/>
 								</div>
 
@@ -1051,6 +1307,12 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 												: "Avval bo'limni tanlang"
 										}
 										disabled={!editBranch || editBranch === 0}
+										searchPlaceholder='Kategoriya qidirish...'
+										onSearchChange={setEditBranchCategorySearch}
+										onScrollToBottom={() => editBranchCategoriesInfinite.fetchNextPage()}
+										hasMore={!!editBranchCategoriesInfinite.hasNextPage}
+										isLoadingMore={editBranchCategoriesInfinite.isFetchingNextPage}
+										isLoading={editBranchCategoriesInfinite.isLoading}
 									/>
 								</div>
 							</div>
@@ -1074,6 +1336,9 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 										onSearchChange={setEditModelSearch}
 										isLoading={isModelsEditLoading}
 										disabled={!editMadel && (!editBranchCategory || editBranchCategory === 0)}
+										onScrollToBottom={() => editModelsInfinite.fetchNextPage()}
+										hasMore={!!editModelsInfinite.hasNextPage}
+										isLoadingMore={editModelsInfinite.isFetchingNextPage}
 									/>
 								</div>
 
@@ -1136,7 +1401,7 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 														}
 													/>
 													<Autocomplete
-														options={units.map((u) => ({ value: u.id, label: u.code }))}
+														options={editUnits.map((u) => ({ value: u.id, label: u.code }))}
 														value={row.unit ? Number(row.unit) : undefined}
 														onValueChange={(v) =>
 															updateEditSizeRow(index, 'unit', Number(v))
@@ -1145,6 +1410,11 @@ export default function ModelTypeAndSize({ defaultTab = 'model-type' }: ModelTyp
 														searchPlaceholder='Birlik qidirish...'
 														emptyText='Topilmadi'
 														className='w-[140px]'
+														onSearchChange={setEditUnitSearch}
+														onScrollToBottom={() => editUnitsInfinite.fetchNextPage()}
+														hasMore={!!editUnitsInfinite.hasNextPage}
+														isLoadingMore={editUnitsInfinite.isFetchingNextPage}
+														isLoading={editUnitsInfinite.isLoading}
 													/>
 													<Button
 														type='button'

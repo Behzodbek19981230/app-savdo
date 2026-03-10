@@ -209,7 +209,7 @@ const protectedRoutes = [
 		element: <SoldProductsHistoryPage />,
 	},
 	{
-		path: '/reports/sold-products-history-detail/:date',
+		path: '/reports/sold-products-history/:date',
 		element: <SoldProductsHistoryDetailPage />,
 	},
 	{

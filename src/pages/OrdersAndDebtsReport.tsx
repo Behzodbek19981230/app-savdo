@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import apiClient from '@/lib/api/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, SearchIcon, X, FileText, Eye } from 'lucide-react';
+import { Loader2, SearchIcon, X, FileText, Eye, Printer } from 'lucide-react';
 import {
 	ordersAndDebtsReportService,
 	OrdersAndDebtsReportGroup,
@@ -94,6 +95,22 @@ function ItemRow({
 	navigate: ReturnType<typeof useNavigate>;
 }) {
 	const isOrder = item.type === 'order';
+	const [isPrinting, setIsPrinting] = useState(false);
+
+	const handlePrint = async (id: number) => {
+		setIsPrinting(true);
+		try {
+			const endpoint = isOrder ? `/pdf/order-history/${id}/client` : `/pdf/debt-repayment/${id}/client`;
+			const response = await apiClient.get(endpoint, { responseType: 'blob' });
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+		} catch (e) {
+			console.error('PDF yuklab olishda xatolik:', e);
+		} finally {
+			setIsPrinting(false);
+		}
+	};
 
 	return (
 		<TableRow className='hover:bg-muted/50 text-sm'>
@@ -120,23 +137,22 @@ function ItemRow({
 				<TypeBadge type={item.type} />
 			</TableCell>
 			<TableCell className='px-3 py-2'>
-				{isOrder && (
-					<Button
-						size='icon'
-						variant='ghost'
-						className='h-7 w-7 text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30'
-						onClick={() => navigate(`/order-history/${item.id}`)}
-					>
-						<Eye className='h-4 w-4' />
-					</Button>
-				)}
+				<Button
+					size='icon'
+					variant='default'
+					className='h-6 w-6 bg-amber-500 hover:bg-amber-600 text-white'
+					onClick={() => handlePrint(item.object_id)}
+					disabled={isPrinting}
+				>
+					{isPrinting ? <Loader2 size={15} className='animate-spin' /> : <Printer size={15} />}
+				</Button>
 			</TableCell>
 		</TableRow>
 	);
 }
 
 function TotalsRow({ group }: { group: OrdersAndDebtsReportGroup }) {
-	const t = group.totals;
+	const t = group.totals as any;
 
 	const toNum = (v: string | number | null | undefined) => {
 		if (!v) return 0;
@@ -144,18 +160,29 @@ function TotalsRow({ group }: { group: OrdersAndDebtsReportGroup }) {
 		return isNaN(n) ? 0 : n;
 	};
 
-	const orderItems = group.items.filter((i) => i.type === 'order');
-	const debtItems = group.items.filter((i) => i.type === 'debt_repayment');
+	// Backenddan kelgan totals.orders va totals.debts dan foydalanish
+	const orderTotals = t.orders || {};
+	const debtTotals = t.debts || {};
 
-	const calcGroup = (items: OrdersAndDebtsReportItem[]) => ({
-		jami: items.reduce((s, i) => s + toNum(i.summa_total_dollar), 0),
-		dollar: items.reduce((s, i) => s + toNum(i.summa_dollar), 0),
-		naqt: items.reduce((s, i) => s + toNum(i.summa_naqt), 0),
-		karta: items.reduce((s, i) => s + toNum(i.summa_kilik) + toNum(i.summa_terminal) + toNum(i.summa_transfer), 0),
-	});
+	const orderT = {
+		jami: toNum(orderTotals.summa_total_dollar || 0),
+		dollar: toNum(orderTotals.summa_dollar || 0),
+		naqt: toNum(orderTotals.summa_naqt || 0),
+		karta:
+			toNum(orderTotals.summa_kilik || 0) +
+			toNum(orderTotals.summa_terminal || 0) +
+			toNum(orderTotals.summa_transfer || 0),
+	};
 
-	const orderT = calcGroup(orderItems);
-	const debtT = calcGroup(debtItems);
+	const debtT = {
+		jami: toNum(debtTotals.summa_total_dollar || 0),
+		dollar: toNum(debtTotals.summa_dollar || 0),
+		naqt: toNum(debtTotals.summa_naqt || 0),
+		karta:
+			toNum(debtTotals.summa_kilik || 0) +
+			toNum(debtTotals.summa_terminal || 0) +
+			toNum(debtTotals.summa_transfer || 0),
+	};
 
 	const MultiLine = ({ data }: { data: { jami: number; dollar: number; naqt: number; karta: number } }) => (
 		<div className='space-y-0.5 text-right'>
@@ -184,7 +211,7 @@ function TotalsRow({ group }: { group: OrdersAndDebtsReportGroup }) {
 				<span className='text-muted-foreground'>Umumiy summa:</span>
 			</TableCell>
 			<TableCell className='px-3 py-2 text-right text-blue-600 dark:text-blue-400'>
-				{fmtAlways(t.all_product_summa)}
+				{fmtAlways(t.totalproduct_summa || t.all_product_summa)}
 			</TableCell>
 			<TableCell className='px-3 py-2'>
 				<MultiLine data={orderT} />
@@ -193,10 +220,10 @@ function TotalsRow({ group }: { group: OrdersAndDebtsReportGroup }) {
 				<MultiLine data={debtT} />
 			</TableCell>
 			<TableCell className='px-3 py-2 text-right text-green-600 dark:text-green-400'>
-				{fmtAlways(t.all_profit_dollar)}
+				{fmtAlways(t.totalprofit || t.all_profit_dollar)}
 			</TableCell>
 			<TableCell className='px-3 py-2 text-right text-red-600 dark:text-red-400'>
-				{fmtAlways(t.remaining_debt)}
+				{fmtAlways(t.total_all_qarz || t.remaining_debt)}
 			</TableCell>
 			<TableCell colSpan={3} />
 		</TableRow>

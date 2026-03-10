@@ -8,265 +8,265 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.ex
 
 // API Endpoints
 export const API_ENDPOINTS = {
-	// Auth endpoints
-	auth: {
-		login: '/auth/token',
-		logout: '/auth/logout',
-		register: '/auth/register',
-		refreshToken: '/auth/token/refresh',
-		me: '/user-view',
-		forgotPassword: '/auth/forgot-password',
-		resetPassword: '/auth/reset-password',
-	},
+    // Auth endpoints
+    auth: {
+        login: '/auth/token',
+        logout: '/auth/logout',
+        register: '/auth/register',
+        refreshToken: '/auth/token/refresh',
+        me: '/user-view',
+        forgotPassword: '/auth/forgot-password',
+        resetPassword: '/auth/reset-password',
+    },
 
-	// User endpoints
-	users: {
-		list: '/users',
-		byId: (id: string) => `/users/${id}`,
-		create: '/users',
-		update: (id: string) => `/users/${id}`,
-		delete: (id: string) => `/users/${id}`,
-	},
+    // User endpoints
+    users: {
+        list: '/users',
+        byId: (id: string) => `/users/${id}`,
+        create: '/users',
+        update: (id: string) => `/users/${id}`,
+        delete: (id: string) => `/users/${id}`,
+    },
 
-	// Role endpoints
-	roles: {
-		list: '/role',
-		byId: (id: string) => `/role/${id}`,
-		create: '/role',
-		update: (id: string) => `/role/${id}`,
-		delete: (id: string) => `/role/${id}`,
-	},
+    // Role endpoints
+    roles: {
+        list: '/role',
+        byId: (id: string) => `/role/${id}`,
+        create: '/role',
+        update: (id: string) => `/role/${id}`,
+        delete: (id: string) => `/role/${id}`,
+    },
 
-	// App User endpoints (admin users)
-	// NOTE: Frontend route: /user, backend endpoint: /user
-	appUsers: {
-		list: '/user',
-		byId: (id: string) => `/user/${id}`,
-		create: '/user',
-		update: (id: string) => `/user/${id}`,
-		delete: (id: string) => `/user/${id}`,
-	},
+    // App User endpoints (admin users)
+    // NOTE: Frontend route: /user, backend endpoint: /user
+    appUsers: {
+        list: '/user',
+        byId: (id: string) => `/user/${id}`,
+        create: '/user',
+        update: (id: string) => `/user/${id}`,
+        delete: (id: string) => `/user/${id}`,
+    },
 
-	// Company endpoints
-	// NOTE: Frontend route: /company, backend endpoint: /company
-	companies: {
-		list: '/filial',
-		byId: (id: string) => `/filial/${id}`,
-		create: '/filial',
-		update: (id: string) => `/filial/${id}`,
-		delete: (id: string) => `/filial/${id}`,
-	},
+    // Company endpoints
+    // NOTE: Frontend route: /company, backend endpoint: /company
+    companies: {
+        list: '/filial',
+        byId: (id: string) => `/filial/${id}`,
+        create: '/filial',
+        update: (id: string) => `/filial/${id}`,
+        delete: (id: string) => `/filial/${id}`,
+    },
 
-	// Customer endpoints
-	customers: {
-		list: '/customers',
-		byId: (id: string) => `/customers/${id}`,
-		create: '/customers',
-		update: (id: string) => `/customers/${id}`,
-		delete: (id: string) => `/customers/${id}`,
-		search: '/customers/search',
-	},
+    // Customer endpoints
+    customers: {
+        list: '/customers',
+        byId: (id: string) => `/customers/${id}`,
+        create: '/customers',
+        update: (id: string) => `/customers/${id}`,
+        delete: (id: string) => `/customers/${id}`,
+        search: '/customers/search',
+    },
 
-	// Client endpoints (Mijozlar)
-	// NOTE: Frontend route: /customers, backend endpoint: /client
-	clients: {
-		list: '/client',
-		byId: (id: string) => `/client/${id}`,
-		create: '/client',
-		update: (id: string) => `/client/${id}`,
-		delete: (id: string) => `/client/${id}`,
-	},
+    // Client endpoints (Mijozlar)
+    // NOTE: Frontend route: /customers, backend endpoint: /client
+    clients: {
+        list: '/client',
+        byId: (id: string) => `/client/${id}`,
+        create: '/client',
+        update: (id: string) => `/client/${id}`,
+        delete: (id: string) => `/client/${id}`,
+    },
 
-	// Order endpoints
-	orders: {
-		list: '/orders',
-		byId: (id: string) => `/orders/${id}`,
-		create: '/orders',
-		update: (id: string) => `/orders/${id}`,
-		delete: (id: string) => `/orders/${id}`,
-		recent: '/orders/recent',
-	},
+    // Order endpoints
+    orders: {
+        list: '/orders',
+        byId: (id: string) => `/orders/${id}`,
+        create: '/orders',
+        update: (id: string) => `/orders/${id}`,
+        delete: (id: string) => `/orders/${id}`,
+        recent: '/orders/recent',
+    },
 
-	// Product endpoints
-	products: {
-		list: '/product',
-		byId: (id: string) => `/product/${id}`,
-		create: '/product',
-		update: (id: string) => `/product/${id}`,
-		delete: (id: string) => `/product/${id}`,
-		top: '/products/top',
-	},
+    // Product endpoints
+    products: {
+        list: '/product',
+        byId: (id: string) => `/product/${id}`,
+        create: '/product',
+        update: (id: string) => `/product/${id}`,
+        delete: (id: string) => `/product/${id}`,
+        top: '/products/top',
+    },
 
-	// Product Image endpoints
-	// NOTE: Backend endpoint nomi shu bo'lishi kerak: /product-image
-	productImages: {
-		list: '/product-image',
-		byId: (id: string) => `/product-image/${id}`,
-		create: '/product-image',
-		update: (id: string) => `/product-image/${id}`,
-		delete: (id: string) => `/product-image/${id}`,
-	},
+    // Product Image endpoints
+    // NOTE: Backend endpoint nomi shu bo'lishi kerak: /product-image
+    productImages: {
+        list: '/product-image',
+        byId: (id: string) => `/product-image/${id}`,
+        create: '/product-image',
+        update: (id: string) => `/product-image/${id}`,
+        delete: (id: string) => `/product-image/${id}`,
+    },
 
-	// Analytics endpoints
-	analytics: {
-		dashboard: '/analytics/dashboard',
-		revenue: '/analytics/revenue',
-		sales: '/analytics/sales',
-	},
+    // Analytics endpoints
+    analytics: {
+        dashboard: '/analytics/dashboard',
+        revenue: '/analytics/revenue',
+        sales: '/analytics/sales',
+    },
 
-	// Location endpoints
-	locations: {
-		countries: '/country',
-		regions: '/region',
-		districts: '/district',
-		countryById: (id: string) => `/country/${id}`,
-		regionById: (id: string) => `/region/${id}`,
-		districtById: (id: string) => `/district/${id}`,
-	},
+    // Location endpoints
+    locations: {
+        countries: '/country',
+        regions: '/region',
+        districts: '/district',
+        countryById: (id: string) => `/country/${id}`,
+        regionById: (id: string) => `/region/${id}`,
+        districtById: (id: string) => `/district/${id}`,
+    },
 
-	// Product Category endpoints (Bo'limlar)
-	productCategories: {
-		list: '/product-branch',
-		byId: (id: string) => `/product-branch/${id}`,
-		create: '/product-branch',
-		update: (id: string) => `/product-branch/${id}`,
-		delete: (id: string) => `/product-branch/${id}`,
-		suggestedSorting: '/product-branch/sorting',
-	},
+    // Product Category endpoints (Bo'limlar)
+    productCategories: {
+        list: '/product-branch',
+        byId: (id: string) => `/product-branch/${id}`,
+        create: '/product-branch',
+        update: (id: string) => `/product-branch/${id}`,
+        delete: (id: string) => `/product-branch/${id}`,
+        suggestedSorting: '/product-branch/sorting',
+    },
 
-	// Product Branch Category endpoints (Mahsulot turlari kategoriyasi)
-	productBranchCategories: {
-		list: '/product-branch-category',
-		byId: (id: string) => `/product-branch-category/${id}`,
-		create: '/product-branch-category/',
-		update: (id: string) => `/product-branch-category/${id}`,
-		delete: (id: string) => `/product-branch-category/${id}`,
-		suggestedSorting: (productBranchId: string) => `/product-branch-category/${productBranchId}/sorting`,
-	},
+    // Product Branch Category endpoints (Mahsulot turlari kategoriyasi)
+    productBranchCategories: {
+        list: '/product-branch-category',
+        byId: (id: string) => `/product-branch-category/${id}`,
+        create: '/product-branch-category/',
+        update: (id: string) => `/product-branch-category/${id}`,
+        delete: (id: string) => `/product-branch-category/${id}`,
+        suggestedSorting: (productBranchId: string) => `/product-branch-category/${productBranchId}/sorting`,
+    },
 
-	// Product Model endpoints
-	productModels: {
-		list: '/product-model',
-		byId: (id: string) => `/product-model/${id}`,
-		create: '/product-model',
-		update: (id: string) => `/product-model/${id}`,
-		delete: (id: string) => `/product-model/${id}`,
-		suggestedSorting: (branchCategoryId: string) => `/product-model/${branchCategoryId}/sorting`,
-	},
+    // Product Model endpoints
+    productModels: {
+        list: '/product-model',
+        byId: (id: string) => `/product-model/${id}`,
+        create: '/product-model',
+        update: (id: string) => `/product-model/${id}`,
+        delete: (id: string) => `/product-model/${id}`,
+        suggestedSorting: (branchCategoryId: string) => `/product-model/${branchCategoryId}/sorting`,
+    },
 
-	// Model Size endpoints
-	modelSizes: {
-		list: '/product-type-size',
-		byId: (id: string) => `/product-type-size/${id}`,
-		create: '/product-type-size',
-		update: (id: string) => `/product-type-size/${id}`,
-		delete: (id: string) => `/product-type-size/${id}`,
-	},
+    // Model Size endpoints
+    modelSizes: {
+        list: '/product-type-size',
+        byId: (id: string) => `/product-type-size/${id}`,
+        create: '/product-type-size',
+        update: (id: string) => `/product-type-size/${id}`,
+        delete: (id: string) => `/product-type-size/${id}`,
+    },
 
-	// Model Type endpoints
-	modelTypes: {
-		list: '/product-type',
-		byId: (id: string) => `/product-type/${id}`,
-		create: '/product-type',
-		createBulk: '/product-type/create',
-		update: (id: string) => `/product-type/${id}`,
-		delete: (id: string) => `/product-type/${id}`,
-		suggestedSorting: (madelId: string) => `/product-type/${madelId}/sorting`,
-	},
+    // Model Type endpoints
+    modelTypes: {
+        list: '/product-type',
+        byId: (id: string) => `/product-type/${id}`,
+        create: '/product-type',
+        createBulk: '/product-type/create',
+        update: (id: string) => `/product-type/${id}`,
+        delete: (id: string) => `/product-type/${id}`,
+        suggestedSorting: (madelId: string) => `/product-type/${madelId}/sorting`,
+    },
 
-	// Exchange Rate endpoints
-	exchangeRate: {
-		list: '/exchange-rate',
-		byId: (id: string) => `/exchange-rate/${id}`,
-		create: '/exchange-rate',
-		update: (id: string) => `/exchange-rate/${id}`,
-		delete: (id: string) => `/exchange-rate/${id}`,
-		history: '/exchange-rate-history',
-	},
+    // Exchange Rate endpoints
+    exchangeRate: {
+        list: '/exchange-rate',
+        byId: (id: string) => `/exchange-rate/${id}`,
+        create: '/exchange-rate',
+        update: (id: string) => `/exchange-rate/${id}`,
+        delete: (id: string) => `/exchange-rate/${id}`,
+        history: '/exchange-rate-history',
+    },
 
-	// Purchase Invoice endpoints (Tovar kirimi / Faktura)
-	purchaseInvoices: {
-		list: '/purchase-invoice',
-		byId: (id: string) => `/purchase-invoice/${id}`,
-		create: '/purchase-invoice',
-		update: (id: string) => `/purchase-invoice/${id}`,
-		done: (id: string) => `/purchase-invoice/${id}/done`,
-		delete: (id: string) => `/purchase-invoice/${id}`,
-	},
+    // Purchase Invoice endpoints (Tovar kirimi / Faktura)
+    purchaseInvoices: {
+        list: '/purchase-invoice',
+        byId: (id: string) => `/purchase-invoice/${id}`,
+        create: '/purchase-invoice',
+        update: (id: string) => `/purchase-invoice/${id}`,
+        done: (id: string) => `/purchase-invoice/${id}/done`,
+        delete: (id: string) => `/purchase-invoice/${id}`,
+    },
 
-	// Product History endpoints (Kirim bo'lgan mahsulotlar tarixi)
-	productHistories: {
-		list: '/product-history',
-		byId: (id: string) => `/product-history/${id}`,
-		create: '/product-history',
-		update: (id: string) => `/product-history/${id}`,
-		delete: (id: string) => `/product-history/${id}`,
-	},
+    // Product History endpoints (Kirim bo'lgan mahsulotlar tarixi)
+    productHistories: {
+        list: '/product-history',
+        byId: (id: string) => `/product-history/${id}`,
+        create: '/product-history',
+        update: (id: string) => `/product-history/${id}`,
+        delete: (id: string) => `/product-history/${id}`,
+    },
 
-	// Supplier endpoints (Ta'minotchilar)
-	suppliers: {
-		list: '/supplier',
-		byId: (id: string) => `/supplier/${id}`,
-		create: '/supplier',
-		update: (id: string) => `/supplier/${id}`,
-		delete: (id: string) => `/supplier/${id}`,
-	},
+    // Supplier endpoints (Ta'minotchilar)
+    suppliers: {
+        list: '/supplier',
+        byId: (id: string) => `/supplier/${id}`,
+        create: '/supplier',
+        update: (id: string) => `/supplier/${id}`,
+        delete: (id: string) => `/supplier/${id}`,
+    },
 
-	// Sklad (Warehouse) endpoints
-	sklads: {
-		list: '/sklad',
-		byId: (id: string) => `/sklad/${id}`,
-		create: '/sklad',
-		update: (id: string) => `/sklad/${id}`,
-		delete: (id: string) => `/sklad/${id}`,
-	},
+    // Sklad (Warehouse) endpoints
+    sklads: {
+        list: '/sklad',
+        byId: (id: string) => `/sklad/${id}`,
+        create: '/sklad',
+        update: (id: string) => `/sklad/${id}`,
+        delete: (id: string) => `/sklad/${id}`,
+    },
 
-	// Unit endpoints (O'lchov birliklari - kg, ta, dona, etc.)
-	units: {
-		list: '/unit',
-		byId: (id: string) => `/unit/${id}`,
-		create: '/unit',
-		update: (id: string) => `/unit/${id}`,
-		delete: (id: string) => `/unit/${id}`,
-	},
+    // Unit endpoints (O'lchov birliklari - kg, ta, dona, etc.)
+    units: {
+        list: '/unit',
+        byId: (id: string) => `/unit/${id}`,
+        create: '/unit',
+        update: (id: string) => `/unit/${id}`,
+        delete: (id: string) => `/unit/${id}`,
+    },
 
-	// Product Type Size endpoints (Mahsulot turi o'lchamlari)
-	productTypeSizes: {
-		list: '/product-type-size',
-		byId: (id: string) => `/product-type-size/${id}`,
-		create: '/product-type-size',
-		update: (id: string) => `/product-type-size/${id}`,
-		delete: (id: string) => `/product-type-size/${id}`,
-	},
+    // Product Type Size endpoints (Mahsulot turi o'lchamlari)
+    productTypeSizes: {
+        list: '/product-type-size',
+        byId: (id: string) => `/product-type-size/${id}`,
+        create: '/product-type-size',
+        update: (id: string) => `/product-type-size/${id}`,
+        delete: (id: string) => `/product-type-size/${id}`,
+    },
 
-	// Expense Category endpoints (Xarajat kategoriyalari)
-	expenseCategories: {
-		list: '/expense-category',
-		byId: (id: string) => `/expense-category/${id}`,
-		create: '/expense-category',
-		update: (id: string) => `/expense-category/${id}`,
-		delete: (id: string) => `/expense-category/${id}`,
-	},
+    // Expense Category endpoints (Xarajat kategoriyalari)
+    expenseCategories: {
+        list: '/expense-category',
+        byId: (id: string) => `/expense-category/${id}`,
+        create: '/expense-category',
+        update: (id: string) => `/expense-category/${id}`,
+        delete: (id: string) => `/expense-category/${id}`,
+    },
 
-	// Expense endpoints (Xarajatlar)
-	expenses: {
-		list: '/expense',
-		byId: (id: string) => `/expense/${id}`,
-		create: '/expense',
-		update: (id: string) => `/expense/${id}`,
-		delete: (id: string) => `/expense/${id}`,
-		groupByDate: '/expense/group-by-date',
-	},
+    // Expense endpoints (Xarajatlar)
+    expenses: {
+        list: '/expense',
+        byId: (id: string) => `/expense/${id}`,
+        create: '/expense',
+        update: (id: string) => `/expense/${id}`,
+        delete: (id: string) => `/expense/${id}`,
+        groupByDate: '/expense/group-by-date',
+    },
 
-	// Reports endpoints (Hisobotlar)
-	reports: {
-		topClient: '/reports/top-client',
-		orderDebtHistory: '/reports/order-debt-history',
-		debtors: '/reports/debtors',
-		soldProductsHistory: '/reports/sold-products-history',
-		soldProductsHistoryDetail: '/reports/sold-products-history-detail',
-		ordersAndDebtsReport: '/reports/orders-and-debts-report',
-	},
+    // Reports endpoints (Hisobotlar)
+    reports: {
+        topClient: '/reports/top-client',
+        orderDebtHistory: '/reports/order-debt-history',
+        debtors: '/reports/debtors',
+        soldProductsHistory: '/reports/sold-products-history',
+        soldProductsHistoryDetail: '/reports/sold-products-history-detail',
+        ordersAndDebtsReport: '/reports/orders-and-debts-report',
+    },
 } as const;
 
 // Request timeout (milliseconds)
@@ -274,7 +274,7 @@ export const REQUEST_TIMEOUT = 30000;
 
 // Retry configuration
 export const RETRY_CONFIG = {
-	maxRetries: 3,
-	retryDelay: 1000,
-	retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+    maxRetries: 3,
+    retryDelay: 1000,
+    retryableStatusCodes: [408, 429, 500, 502, 503, 504],
 };

@@ -49,7 +49,6 @@ import { useRegions, useDistricts } from '@/hooks/api/useLocations';
 import { useAuthContext } from '@/contexts/AuthContext';
 import type { Sklad } from '@/types/sklad';
 import {
-	Search,
 	ArrowUpDown,
 	ArrowUp,
 	ArrowDown,
@@ -60,6 +59,8 @@ import {
 	Warehouse,
 	MapPin,
 	Phone,
+    SearchIcon,
+    X,
 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
@@ -70,7 +71,6 @@ type SortDirection = 'asc' | 'desc' | null;
 // Form schema
 const skladSchema = z.object({
 	name: z.string().min(1, 'Nom kiritilishi shart'),
-	filial: z.coerce.number().positive('Filial tanlanishi shart'),
 	region: z.coerce.number().positive('Viloyat tanlanishi shart'),
 	district: z.coerce.number().positive('Tuman tanlanishi shart'),
 	address: z.string().optional(),
@@ -85,6 +85,7 @@ export default function SkladPage() {
 	const { user, selectedFilialId } = useAuthContext();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
+    const [formSearch, setFormSearch] = useState('');
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -97,7 +98,6 @@ export default function SkladPage() {
 		resolver: zodResolver(skladSchema),
 		defaultValues: {
 			name: '',
-			filial: user?.filials_detail?.[0]?.id || 0,
 			region: 0,
 			district: 0,
 			address: '',
@@ -140,6 +140,7 @@ export default function SkladPage() {
 	// Reset district when region changes
 	useEffect(() => {
 		form.setValue('district', 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedRegion]);
 
 	const handleSort = (field: SortField) => {
@@ -167,7 +168,6 @@ export default function SkladPage() {
 			setEditingId(item.id);
 			form.reset({
 				name: item.name || '',
-				filial: item.filial || user?.filials_detail?.[0]?.id || 0,
 				region: item.region || 0,
 				district: item.district || 0,
 				address: item.address || '',
@@ -179,7 +179,6 @@ export default function SkladPage() {
 			setEditingId(null);
 			form.reset({
 				name: '',
-				filial: user?.filials_detail?.[0]?.id || 0,
 				region: 0,
 				district: 0,
 				address: '',
@@ -201,7 +200,7 @@ export default function SkladPage() {
 		try {
 			const submitData = {
 				name: data.name,
-				filial: data.filial,
+                filial: selectedFilialId,
 				region: data.region,
 				district: data.district,
 				address: data.address,
@@ -244,6 +243,17 @@ export default function SkladPage() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 
+    const handleFilter = () => {
+        setSearchQuery(formSearch);
+        setCurrentPage(1);
+    };
+
+    const handleClear = () => {
+        setFormSearch('');
+        setSearchQuery('');
+        setCurrentPage(1);
+    };
+
 	// Close dialog after successful mutation
 	useEffect(() => {
 		if (createSklad.isSuccess || updateSklad.isSuccess) {
@@ -271,20 +281,31 @@ export default function SkladPage() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					{/* Search */}
-					<div className='flex items-center gap-4 mb-4'>
-						<div className='relative flex-1 max-w-sm'>
-							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                    {/* Search and Filter */}
+                    <div className='flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 mb-4'>
+                        <div className='relative flex-1 sm:max-w-sm'>
+                            <SearchIcon className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
 							<Input
 								placeholder='Ombor qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
-									setCurrentPage(1);
-								}}
+                                value={formSearch}
+                                onChange={(e) => setFormSearch(e.target.value)}
 								className='pl-9'
 							/>
 						</div>
+                        <div className='flex gap-2'>
+                            <Button onClick={handleFilter} className='bg-blue-600 hover:bg-blue-700 text-white'>
+                                <SearchIcon className='h-4 w-4' />
+                                Qidirish
+                            </Button>
+                            <Button
+                                variant='outline'
+                                onClick={handleClear}
+                                className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+                            >
+                                <X className='h-4 w-4' />
+                                Tozalash
+                            </Button>
+                        </div>
 					</div>
 
 					{/* Table */}
@@ -313,7 +334,6 @@ export default function SkladPage() {
 													{getSortIcon('name')}
 												</button>
 											</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead>Viloyat</TableHead>
 											<TableHead>Tuman</TableHead>
 											<TableHead>Manzil</TableHead>
@@ -329,7 +349,6 @@ export default function SkladPage() {
 													{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
 												</TableCell>
 												<TableCell className='font-medium'>{sklad.name}</TableCell>
-												<TableCell>{sklad.filial_detail?.name || '-'}</TableCell>
 												<TableCell>
 													<div className='flex items-center gap-1'>
 														<MapPin className='h-3 w-3 text-muted-foreground' />
@@ -457,29 +476,6 @@ export default function SkladPage() {
 								)}
 							/>
 
-							<FormField
-								control={form.control}
-								name='filial'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Filial *</FormLabel>
-										<FormControl>
-											<Autocomplete
-												options={
-													user?.filials_detail?.map((f) => ({
-														value: f.id,
-														label: f.name,
-													})) || []
-												}
-												value={field.value || undefined}
-												onValueChange={(v) => field.onChange(Number(v))}
-												placeholder='Filialni tanlang'
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
 
 							<div className='grid grid-cols-2 gap-4'>
 								<FormField

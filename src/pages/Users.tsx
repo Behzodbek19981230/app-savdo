@@ -458,7 +458,6 @@ export default function Users() {
 													{getSortIcon('full_name')}
 												</button>
 											</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead>
 												<button
 													className='flex items-center hover:text-foreground transition-colors'
@@ -500,13 +499,6 @@ export default function Users() {
 												</TableCell>
 												<TableCell className='font-medium'>{u.username}</TableCell>
 												<TableCell>{u.full_name}</TableCell>
-												<TableCell className='flex min-w-[200px] flex-wrap'>
-													{u.filials_detail?.map((c) => (
-														<span key={c.id} className='mr-1 text-wrap'>
-															{c.name}
-														</span>
-													)) || getCompaniesNames(u.filials)}
-												</TableCell>
 												<TableCell className='max-w-[320px] truncate'>
 													{formatRoles(u)}
 												</TableCell>

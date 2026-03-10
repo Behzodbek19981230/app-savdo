@@ -296,7 +296,9 @@ function SidebarContent() {
 						<div className={cn(openSections[section.title] ? 'block' : 'hidden')}>
 							<nav className='space-y-1.5'>
 								{section.items.map((item) => {
-									const isActive = location.pathname === item.path;
+									const isActive =
+										item.path &&
+										(location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
 									const hasChildren = !!item.children && item.children.length > 0;
 									const itemKey = `${section.title}::${item.label}`;
 
@@ -330,13 +332,18 @@ function SidebarContent() {
 														'pl-6 mt-1 space-y-1',
 													)}
 												>
-													{item.children!.map((child) => (
+													{item.children!.map((child) => {
+														const isChildActive =
+															child.path &&
+															(location.pathname === child.path ||
+																location.pathname.startsWith(child.path + '/'));
+														return (
 														<Link
 															key={child.label}
 															to={child.path ?? '#'}
 															className={cn(
 																'flex items-center gap-2.5 rounded-md px-2 py-1 text-xs transition-colors',
-																location.pathname === child.path
+																	isChildActive
 																	? 'text-primary font-semibold'
 																	: 'text-sidebar-foreground hover:text-primary',
 															)}
@@ -344,7 +351,8 @@ function SidebarContent() {
 															<child.icon className='h-4 w-4 opacity-80' />
 															<span className='truncate'>{child.label}</span>
 														</Link>
-													))}
+														);
+													})}
 												</div>
 											</div>
 										);
@@ -399,7 +407,9 @@ function SidebarContent() {
 				{/* Bottom Navigation */}
 				<nav className='space-y-1.5'>
 					{bottomNavItems.map((item) => {
-						const isActive = location.pathname === item.path;
+						const isActive =
+							item.path &&
+							(location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
 						return (
 							<Link
 								key={item.label}

@@ -85,7 +85,6 @@ export default function CustomersAdmin() {
 			phone_number: '+998',
 			region: 0,
 			district: 0,
-			filial: selectedFilialId ?? user?.filials_detail?.[0]?.id ?? 0,
 			total_debt: 0,
 			keshbek: 0,
 			type: 'dona',
@@ -130,11 +129,6 @@ export default function CustomersAdmin() {
 		form.setValue('district', 0);
 	}, [selectedRegion, editingId]);
 
-	useEffect(() => {
-		if (selectedFilialId) {
-			form.setValue('filial', selectedFilialId);
-		}
-	}, [selectedFilialId]);
 
 	useEffect(() => {
 		if (editingId && clientDetailData && isDialogOpen) {
@@ -176,7 +170,6 @@ export default function CustomersAdmin() {
 				phone_number: '+998',
 				region: 0,
 				district: 0,
-				filial: selectedFilialId ?? user?.filials_detail?.[0]?.id ?? 0,
 				total_debt: 0,
 				keshbek: 0,
 				type: 'dona',
@@ -308,7 +301,6 @@ export default function CustomersAdmin() {
 											</TableHead>
 											<TableHead>Yaratgan xodim</TableHead>
 											<TableHead>Telefon</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead>
 												<button
 													className='flex items-center hover:text-foreground transition-colors'
@@ -332,9 +324,6 @@ export default function CustomersAdmin() {
 												<TableCell className='font-medium'>{client.full_name || '-'}</TableCell>
 												<TableCell>{getCreatedByName(client)}</TableCell>
 												<TableCell>{client.phone_number || '-'}</TableCell>
-												<TableCell>
-													{client.filial_detail?.name || client.filial || '-'}
-												</TableCell>
 												<TableCell>{getMoney(client.total_debt)}</TableCell>
 												<TableCell>{getMoney(client.keshbek)}</TableCell>
 
@@ -504,28 +493,6 @@ export default function CustomersAdmin() {
 														field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
 													}
 													className='w-full [&>button]:h-7'
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name='filial'
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Filial *</FormLabel>
-											<FormControl>
-												<Autocomplete
-													options={companies.map((company) => ({
-														value: company.id,
-														label: company.name,
-													}))}
-													value={field.value || undefined}
-													onValueChange={(value) => field.onChange(Number(value))}
-													placeholder='Filial tanlang'
-													className='h-7'
 												/>
 											</FormControl>
 											<FormMessage />

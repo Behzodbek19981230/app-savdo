@@ -280,6 +280,7 @@ export interface OrdersAndDebtsReportItem {
 	remaining_debt: string;
 	datetime: string;
 	type: 'order' | 'debt_repayment';
+	object_id: number;
 }
 
 export interface OrdersAndDebtsReportGroup {

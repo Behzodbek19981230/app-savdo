@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { useDebtKorzinka } from '@/hooks/api/useDebtKorzinka';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, Eye, Trash2, RotateCw } from 'lucide-react';
+import { Loader2, Eye, Trash2, RotateCw, SearchIcon, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { debtRepaymentService } from '@/services/debtRepayment.service';
@@ -11,6 +11,11 @@ import { ORDER_HISTORY_KEYS } from '@/hooks/api/useOrderHistory';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useDeleteDebtKorzinka } from '@/hooks/api/useDeleteDebtKorzinka';
+import { Input } from '@/components/ui/input';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { DateRangePicker } from '@/components/ui/date-picker';
+import { useUsers } from '@/hooks/api/useUsers';
+import { useClients } from '@/hooks/api/useClients';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -26,7 +31,82 @@ import { formatCurrency } from '@/lib/utils';
 
 const DebtKorzinkaPage: React.FC = () => {
 	const { selectedFilialId } = useAuthContext();
-	const { data, isLoading, error } = useDebtKorzinka({ filial: selectedFilialId ?? undefined }, true);
+
+	// Applied filters (used for querying)
+	const [search, setSearch] = useState<string>('');
+	const [employee, setEmployee] = useState<number | null>(null);
+	const [clientId, setClientId] = useState<number | null>(null);
+	const [status, setStatus] = useState<string>('all'); // all | completed | not_completed
+	const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+	const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+
+	// Form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formEmployee, setFormEmployee] = useState<number | null>(null);
+	const [formClientId, setFormClientId] = useState<number | null>(null);
+	const [formClientSearch, setFormClientSearch] = useState('');
+	const [formStatus, setFormStatus] = useState<string>('all');
+	const [formDateFrom, setFormDateFrom] = useState<Date | undefined>(undefined);
+	const [formDateTo, setFormDateTo] = useState<Date | undefined>(undefined);
+
+	// Client autocomplete state
+	const [clientPage, setClientPage] = useState(1);
+	const [clientOptions, setClientOptions] = useState<Array<{ value: number; label: string }>>([]);
+
+	const { data: usersData } = useUsers({ limit: 1000, is_active: true });
+	const users = usersData?.results || [];
+	const userOptions = [{ value: 'all', label: 'Barchasi' }, ...users.map((u: any) => ({ value: u.id, label: u.full_name || u.username || `#${u.id}` }))];
+
+	const {
+		data: clientsData,
+		isLoading: isClientsLoading,
+		isFetching: isClientsFetching,
+	} = useClients({
+		page: clientPage,
+		perPage: 50,
+		search: formClientSearch || undefined,
+		filial: selectedFilialId ?? undefined,
+	});
+
+	const clientsResults = (clientsData as any)?.results || [];
+	const clientsPagination = (clientsData as any)?.pagination;
+	const clientsHasMore = !!clientsPagination && clientsPagination.lastPage > (clientsPagination.currentPage || 1);
+
+	useEffect(() => {
+		const results = (clientsData as any)?.results || [];
+		if (clientPage === 1) {
+			setClientOptions(
+				results.map((c: any) => ({ value: c.id, label: c.full_name || c.phone_number || `#${c.id}` })),
+			);
+		} else if (results.length > 0) {
+			setClientOptions((prev) => [
+				...prev,
+				...results.map((c: any) => ({
+					value: c.id,
+					label: c.full_name || c.phone_number || `#${c.id}`,
+				})),
+			]);
+		}
+	}, [clientsData, clientPage]);
+
+	useEffect(() => {
+		// reset pages/options when client search or filial changes
+		setClientPage(1);
+		setClientOptions([]);
+	}, [formClientSearch, selectedFilialId]);
+
+	const params: Record<string, unknown> = {
+		filial: selectedFilialId ?? undefined,
+	};
+	if (search) params.search = search;
+	if (employee) params.employee = employee;
+	if (clientId) params.client = clientId;
+	if (status === 'completed') params.status = true;
+	if (status === 'not_completed') params.status = false;
+	if (dateFrom) params.date_from = moment(dateFrom).format('YYYY-MM-DD');
+	if (dateTo) params.date_to = moment(dateTo).format('YYYY-MM-DD');
+
+	const { data, isLoading, error } = useDebtKorzinka(params, true);
 	const rawGroups = data?.results || data?.data || [];
 	const dateGroups = Array.isArray(rawGroups) ? rawGroups : [];
 	// Normalize: if API returned a flat results array (items) instead of grouped-by-date objects,
@@ -87,11 +167,104 @@ const DebtKorzinkaPage: React.FC = () => {
 		}
 	};
 
+	const handleFilter = () => {
+		setSearch(formSearch);
+		setEmployee(formEmployee);
+		setClientId(formClientId);
+		setStatus(formStatus);
+		setDateFrom(formDateFrom);
+		setDateTo(formDateTo);
+	};
+
+	const handleClear = () => {
+		setFormSearch('');
+		setFormEmployee(null);
+		setFormClientId(null);
+		setFormClientSearch('');
+		setFormStatus('all');
+		setFormDateFrom(undefined);
+		setFormDateTo(undefined);
+
+		setSearch('');
+		setEmployee(null);
+		setClientId(null);
+		setStatus('all');
+		setDateFrom(undefined);
+		setDateTo(undefined);
+	};
+
 	return (
 		<div className='space-y-6'>
 			<Card>
 				<CardHeader>
-					<CardTitle>Qarzlar - Korzinka</CardTitle>
+					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+						<CardTitle className='whitespace-nowrap'>Qarzlar - Korzinka</CardTitle>
+						<div className='flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2 w-full'>
+							<div className='w-full sm:w-[260px]'>
+								<Autocomplete
+									options={clientOptions}
+									value={formClientId ?? undefined}
+									onValueChange={(v) => setFormClientId(v ? Number(v) : null)}
+									placeholder='Mijozni tanlang'
+									searchPlaceholder='Mijoz qidirish...'
+									emptyText='Mijoz topilmadi'
+									onSearchChange={(q) => setFormClientSearch(q)}
+									onScrollToBottom={() => {
+										if (clientsHasMore) setClientPage(clientPage + 1);
+									}}
+									hasMore={clientsHasMore}
+									isLoading={isClientsLoading}
+									isLoadingMore={isClientsFetching}
+									className='h-8'
+								/>
+							</div>
+							<div className='w-full sm:w-auto'>
+								<Autocomplete
+									options={userOptions}
+									value={formEmployee ?? 'all'}
+									onValueChange={(v) => setFormEmployee(v === 'all' ? null : Number(v))}
+									placeholder='Xodim'
+									className='w-full sm:min-w-[180px] h-8'
+								/>
+							</div>
+							<div className='w-full sm:w-auto'>
+								<Autocomplete
+									options={[
+										{ value: 'all', label: 'Barcha holatlar' },
+										{ value: 'completed', label: 'Yakunlangan' },
+										{ value: 'not_completed', label: 'Yakunlanmagan' },
+									]}
+									value={formStatus}
+									onValueChange={(v) => setFormStatus(String(v))}
+									placeholder='Holat'
+									className='w-full sm:min-w-[160px] h-8'
+								/>
+							</div>
+							<div className='w-full sm:w-auto'>
+								<DateRangePicker
+									dateFrom={formDateFrom}
+									dateTo={formDateTo}
+									onDateFromChange={(d) => setFormDateFrom(d)}
+									onDateToChange={(d) => setFormDateTo(d)}
+									className='[&>div>button]:h-8'
+								/>
+							</div>
+							<div className='w-full sm:w-auto flex gap-2 items-center'>
+								<Button onClick={handleFilter} className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'>
+									<SearchIcon className='h-3.5 w-3.5 mr-1' />
+									Qidirish
+								</Button>
+								<Button
+									variant='outline'
+									onClick={handleClear}
+									className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
+								>
+									<X className='h-3.5 w-3.5 mr-1' />
+									Tozalash
+								</Button>
+							</div>
+						</div>
+					</div>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (

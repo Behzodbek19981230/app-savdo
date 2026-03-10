@@ -107,26 +107,37 @@ function OrderCard({
 							icon={<DollarSign className='h-3.5 w-3.5' />}
 							label="To'langan"
 							value={`$${fmt(order.summa_total_dollar)}`}
+							valueClass='text-gray-800'
+						/>
+						<PopupRow
+							icon={<DollarSign className='h-3.5 w-3.5' />}
+							label='Dollar'
+							value={`$${fmt(order.summa_dollar)}`}
+							valueClass='text-blue-600 dark:text-blue-400 font-semibold'
 						/>
 						<PopupRow
 							icon={<Banknote className='h-3.5 w-3.5' />}
 							label='Naqt'
 							value={`$${fmt(order.summa_naqt)}`}
+							valueClass='text-green-600 dark:text-green-400 font-semibold'
 						/>
 						<PopupRow
 							icon={<CardIcon className='h-3.5 w-3.5' />}
 							label='Kilik'
 							value={`$${fmt(order.summa_kilik)}`}
+							valueClass='text-purple-600 dark:text-purple-400 font-semibold'
 						/>
 						<PopupRow
 							icon={<CardIcon className='h-3.5 w-3.5' />}
 							label='Terminal'
 							value={`$${fmt(order.summa_terminal)}`}
+							valueClass='text-yellow-600 dark:text-yellow-400 font-semibold'
 						/>
 						<PopupRow
 							icon={<ArrowRightLeft className='h-3.5 w-3.5' />}
 							label='Transfer'
 							value={`$${fmt(order.summa_transfer)}`}
+							valueClass='text-indigo-600 dark:text-indigo-400 font-semibold'
 						/>
 						<div className='pt-1 border-t dark:border-gray-600'>
 							<PopupRow
@@ -164,19 +175,21 @@ function OrdersGrid({
 }
 
 function TotalsRow({ totals }: { totals: SoldProductsHistoryDetailTotals }) {
+	const totalItems = [
+		{ label: "To'langan ($)", value: totals.summa_total_dollar, color: 'text-gray-800 dark:text-gray-100' },
+		{ label: 'Dollar ($)', value: totals.summa_dollar, color: 'text-blue-600 dark:text-blue-400' },
+		{ label: 'Naqt ($)', value: totals.summa_naqt, color: 'text-green-600 dark:text-green-400' },
+		{ label: 'Kilik ($)', value: totals.summa_kilik, color: 'text-purple-600 dark:text-purple-400' },
+		{ label: 'Terminal ($)', value: totals.summa_terminal, color: 'text-yellow-600 dark:text-yellow-400' },
+		{ label: 'Transfer ($)', value: totals.summa_transfer, color: 'text-indigo-600 dark:text-indigo-400' },
+	];
+
 	return (
 		<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-4 border-t dark:border-gray-700 pt-4'>
-			{[
-				{ label: "To'langan ($)", value: totals.summa_total_dollar },
-				{ label: 'Dollar ($)', value: totals.summa_dollar },
-				{ label: 'Naqt ($)', value: totals.summa_naqt },
-				{ label: 'Kilik ($)', value: totals.summa_kilik },
-				{ label: 'Terminal ($)', value: totals.summa_terminal },
-				{ label: 'Transfer ($)', value: totals.summa_transfer },
-			].map(({ label, value }) => (
+			{totalItems.map(({ label, value, color }) => (
 				<div key={label} className='bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2'>
 					<p className='text-xs text-muted-foreground'>{label}</p>
-					<p className='text-sm font-semibold text-gray-800 dark:text-gray-100'>${fmt(value)}</p>
+					<p className={`text-sm font-semibold ${color}`}>${fmt(value)}</p>
 				</div>
 			))}
 		</div>

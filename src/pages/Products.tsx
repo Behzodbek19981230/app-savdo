@@ -1106,7 +1106,6 @@ export default function Products() {
 											<TableHead>Brend</TableHead>
 											<TableHead>Mahsulot</TableHead>
 											<TableHead>O'lcham</TableHead>
-											<TableHead>Filial</TableHead>
 											<TableHead className='text-right'>
 												<button
 													className='flex items-center hover:text-foreground transition-colors ml-auto'
@@ -1156,7 +1155,6 @@ export default function Products() {
 													{product.size_detail?.size ?? '-'}{' '}
 													{product.size_detail?.unit_code ?? ''}
 												</TableCell>
-												<TableCell>{product.filial_detail?.name || '-'}</TableCell>
 												<TableCell className='text-right'>
 													<Badge
 														variant='default'

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import apiClient from '@/lib/api/client';
 import {
 	Loader2,
 	Banknote,
@@ -15,22 +16,15 @@ import {
 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
 import { renderReceiptHtml } from '@/components/Receipt';
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogFooter,
-	DialogDescription,
-	DialogClose,
-	DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { OrderResponse, orderService } from '@/services';
 import { orderHistoryProductService } from '@/services/orderHistoryProduct.service';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useRole } from '@/hooks/useRole';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProductByModel {
 	model_id: number;
@@ -146,8 +140,25 @@ export function OrderShowPage() {
 	const [data, setData] = useState<OrderProductsByModelResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const printRef = useRef<HTMLDivElement | null>(null);
-
+	const roles = useRole();
 	const handleBack = () => window.history.back();
+	const [isPdfLoading, setIsPdfLoading] = useState<'client' | 'worker' | null>(null);
+
+	const handleDownloadPdf = async (type: 'client' | 'worker') => {
+		if (!id) return;
+		setIsPdfLoading(type);
+		try {
+			const endpoint = `/pdf/order-history/${id}/${type}`;
+			const response = await apiClient.get(endpoint, { responseType: 'blob' });
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+		} catch (e) {
+			console.error('PDF yuklab olishda xatolik:', e);
+		} finally {
+			setIsPdfLoading(null);
+		}
+	};
 
 	/** Update given_count locally after successful API call */
 	const handleGivenCountUpdated = (productId: number, newValue: number) => {
@@ -290,6 +301,15 @@ export function OrderShowPage() {
 	return (
 		<div ref={printRef} className='h-full overflow-y-auto p-4 sm:p-6'>
 			{/* Order History Ma'lumotlari */}
+			{/* Price Difference Alert */}
+			{(roles.isAdmin || roles.isSuperAdmin) && order_history.price_difference && (
+				<div className='bg-orange-100 border-2 border-orange-400 rounded-lg p-2 mb-3 flex items-center gap-3'>
+					<AlertTriangle className='h-6 w-6 text-orange-600 flex-shrink-0' />
+					<div>
+						<p className='font-bold text-orange-800 text-sm'>Mahsulot narxida tafovut aniqlandi!</p>
+					</div>
+				</div>
+			)}
 			<div className='bg-white dark:bg-card rounded-lg shadow-md dark:shadow-md border border-border p-3 sm:p-4 mb-4'>
 				<div className='flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 pb-2 border-b border-border'>
 					{/* Left: client name + phone */}
@@ -330,7 +350,7 @@ export function OrderShowPage() {
 							<span className='text-xs text-rose-700 dark:text-rose-300'>Orqaga</span>
 						</Button>
 
-						<Button
+						{/* <Button
 							variant='outline'
 							size='sm'
 							className='px-2 py-2 flex items-center gap-2'
@@ -338,9 +358,24 @@ export function OrderShowPage() {
 						>
 							<Printer className='h-4 w-4 text-indigo-600' />
 							<span className='text-xs text-indigo-700'>Hodim uchun</span>
-						</Button>
+						</Button> */}
 
 						<Button
+							variant='outline'
+							size='sm'
+							className='px-2 py-2 flex items-center gap-2'
+							onClick={() => handleDownloadPdf('worker')}
+							disabled={isPdfLoading === 'worker'}
+						>
+							{isPdfLoading === 'worker' ? (
+								<Loader2 className='h-4 w-4 animate-spin text-indigo-600' />
+							) : (
+								<Printer className='h-4 w-4 text-indigo-600' />
+							)}
+							<span className='text-xs text-indigo-700'>Hodim PDF</span>
+						</Button>
+
+						{/* <Button
 							variant='outline'
 							size='sm'
 							className='px-2 py-2 flex items-center gap-2'
@@ -348,6 +383,21 @@ export function OrderShowPage() {
 						>
 							<User className='h-4 w-4 text-emerald-600' />
 							<span className='text-xs text-emerald-700'>Mijoz uchun</span>
+						</Button> */}
+
+						<Button
+							variant='outline'
+							size='sm'
+							className='px-2 py-2 flex items-center gap-2'
+							onClick={() => handleDownloadPdf('client')}
+							disabled={isPdfLoading === 'client'}
+						>
+							{isPdfLoading === 'client' ? (
+								<Loader2 className='h-4 w-4 animate-spin text-emerald-600' />
+							) : (
+								<User className='h-4 w-4 text-emerald-600' />
+							)}
+							<span className='text-xs text-emerald-700'>Mijoz PDF</span>
 						</Button>
 					</div>
 				</div>
@@ -801,7 +851,22 @@ export function OrderShowPage() {
 													/>
 												</td>
 												<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
-													{priceDollar.toFixed(2)}
+													<span className='inline-flex items-center gap-1'>
+														{priceDollar.toFixed(2)}
+														{(roles.isAdmin || roles.isSuperAdmin) &&
+															product.price_difference && (
+																<Tooltip>
+																	<TooltipTrigger asChild>
+																		<span className='inline-flex items-center text-orange-500'>
+																			<AlertTriangle size={16} />
+																		</span>
+																	</TooltipTrigger>
+																	<TooltipContent className='!bg-orange-100 !text-orange-800 !border-orange-300'>
+																		Mahsulot narxida tafovut aniqlandi
+																	</TooltipContent>
+																</Tooltip>
+															)}
+													</span>
 												</td>
 												<td className='px-1.5 py-0 sm:px-1.5 sm:py-0 text-xs text-gray-800 dark:text-foreground text-right'>
 													{realPrice.toFixed(2)}

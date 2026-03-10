@@ -57,6 +57,7 @@ import {
 	Check,
 	ChevronsUpDown,
 	X,
+	SearchIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -71,9 +72,12 @@ import { useProductBranchCategories } from '@/hooks/api/useProductBranchCategori
 import { productModelSchema, type ProductModelFormData } from '@/lib/validations/productModel';
 import type { ProductModel } from '@/services/productModel.service';
 import { productModelService } from '@/services/productModel.service';
-import { useQueryClient } from '@tanstack/react-query';
+import { productCategoryService } from '@/services/productCategory.service';
+import { productBranchCategoryService } from '@/services/productBranchCategory.service';
+import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 
 const ITEMS_PER_PAGE = 10;
+const AUTOCOMPLETE_PAGE_SIZE = 20;
 
 type SortField = 'name' | 'sorting' | 'created_at' | null;
 type SortDirection = 'asc' | 'desc' | null;
@@ -81,10 +85,12 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function ProductModels() {
 	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
+	// Applied filters (used for querying)
 	const [searchQuery, setSearchQuery] = useState('');
 	const [branchCategoryId, setBranchCategoryId] = useState<number | null>(null);
-	const [draftSearch, setDraftSearch] = useState('');
-	const [draftBranchCategoryId, setDraftBranchCategoryId] = useState<number | null>(null);
+	// Form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formBranchCategoryId, setFormBranchCategoryId] = useState<number | null>(null);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -94,6 +100,10 @@ export default function ProductModels() {
 	const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
 	const [suggestedSorting, setSuggestedSorting] = useState<number | null>(null);
 	const [isLoadingSuggestedSorting, setIsLoadingSuggestedSorting] = useState(false);
+	// Autocomplete search states
+	const [categorySearch, setCategorySearch] = useState('');
+	const [branchCategorySearch, setBranchCategorySearch] = useState('');
+	const [filterBranchCategorySearch, setFilterBranchCategorySearch] = useState('');
 
 	// Form
 	const form = useForm<ProductModelFormData>({
@@ -119,29 +129,78 @@ export default function ProductModels() {
 		branch_category: branchCategoryId || undefined,
 	});
 
-	const { data: categoriesData } = useProductCategories({
-		limit: 1000,
-		is_delete: false,
-	});
-
 	const selectedBranch = form.watch('branch');
 
-	// Edit uchun barcha branch-category'larni olish
-	const { data: allBranchCategoriesData } = useProductBranchCategories({
-		limit: 1000,
-		is_delete: false,
+	// Infinite queries for Autocomplete
+	const categoriesInfinite = useInfiniteQuery({
+		queryKey: ['productCategories', 'list', { is_delete: false, search: categorySearch }],
+		queryFn: ({ pageParam }) =>
+			productCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: categorySearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
 	});
 
-	// Branch tanlanganda, shu branch bo'yicha branch-category listini olish
-	const { data: branchCategoriesData } = useProductBranchCategories(
-		selectedBranch && selectedBranch !== 0
-			? {
-					limit: 1000,
-					is_delete: false,
-					product_branch: selectedBranch,
-				}
-			: undefined,
-	);
+	const branchCategoriesInfinite = useInfiniteQuery({
+		queryKey: [
+			'productBranchCategories',
+			'list',
+			{ product_branch: selectedBranch, is_delete: false, search: branchCategorySearch },
+		],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				search: branchCategorySearch || undefined,
+				is_delete: false,
+				product_branch: selectedBranch,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+			} as Parameters<typeof productBranchCategoryService.getCategories>[0]),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+		enabled: !!selectedBranch && selectedBranch !== 0,
+	});
+
+	const allBranchCategoriesForFilterInfinite = useInfiniteQuery({
+		queryKey: ['productBranchCategories', 'filter', { is_delete: false, search: filterBranchCategorySearch }],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: filterBranchCategorySearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
+	// Edit uchun barcha branch-category'larni olish (search bo'lmasa)
+	const allBranchCategoriesForEditInfinite = useInfiniteQuery({
+		queryKey: ['productBranchCategories', 'edit', { is_delete: false }],
+		queryFn: ({ pageParam }) =>
+			productBranchCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
 
 	// Edit uchun model ma'lumotlarini olish
 	const { data: editingModelData, isLoading: isEditingModelLoading } = useProductModel(editingId || 0);
@@ -154,8 +213,18 @@ export default function ProductModels() {
 	const models = data?.results || [];
 	const pagination = data?.pagination;
 	const totalPages = pagination?.lastPage || 1;
-	const categories = useMemo(() => categoriesData?.results || [], [categoriesData?.results]);
-	const branchCategories = branchCategoriesData?.results || [];
+	const categories = useMemo(
+		() => categoriesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[categoriesInfinite.data?.pages],
+	);
+	const branchCategories = useMemo(
+		() => branchCategoriesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[branchCategoriesInfinite.data?.pages],
+	);
+	const allBranchCategoriesForFilter = useMemo(
+		() => allBranchCategoriesForFilterInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[allBranchCategoriesForFilterInfinite.data?.pages],
+	);
 
 	const isMutating = createModel.isPending || updateModel.isPending || deleteModel.isPending;
 
@@ -262,6 +331,20 @@ export default function ProductModels() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 
+	const handleFilter = () => {
+		setSearchQuery(formSearch);
+		setBranchCategoryId(formBranchCategoryId);
+		setCurrentPage(1);
+	};
+
+	const handleClear = () => {
+		setFormSearch('');
+		setFormBranchCategoryId(null);
+		setSearchQuery('');
+		setBranchCategoryId(null);
+		setCurrentPage(1);
+	};
+
 	// Close dialog after successful mutation
 	useEffect(() => {
 		if (createModel.isSuccess || updateModel.isSuccess) {
@@ -273,10 +356,13 @@ export default function ProductModels() {
 	}, [createModel.isSuccess, updateModel.isSuccess, form]);
 
 	// Edit qilganda getById orqali ma'lumotlarni olish va form'ni to'ldirish
+	const allBranchCategoriesForEdit = useMemo(
+		() => allBranchCategoriesForEditInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[allBranchCategoriesForEditInfinite.data?.pages],
+	);
 	useEffect(() => {
-		if (editingId && editingModelData && allBranchCategoriesData?.results) {
-			const allBranchCategories = allBranchCategoriesData.results;
-			const branchCategory = allBranchCategories.find((bc) => bc.id === editingModelData.branch_category);
+		if (editingId && editingModelData && allBranchCategoriesForEdit.length > 0) {
+			const branchCategory = allBranchCategoriesForEdit.find((bc) => bc.id === editingModelData.branch_category);
 			const branchId = branchCategory?.product_branch || categories[0]?.id || 0;
 			form.reset({
 				branch: branchId,
@@ -285,7 +371,7 @@ export default function ProductModels() {
 				sorting: editingModelData.sorting,
 			});
 		}
-	}, [editingId, editingModelData, allBranchCategoriesData, categories, form]);
+	}, [editingId, editingModelData, allBranchCategoriesForEdit, categories, form]);
 
 	// Branch o'zgarganda branch_category ni tozalash (faqat yangi qo'shishda)
 	const selectedBranchCategory = form.watch('branch_category');
@@ -382,59 +468,52 @@ export default function ProductModels() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
-						<div className='relative'>
-							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+					<div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+						<div className='w-full sm:w-auto'>
 							<Input
 								placeholder='Qidirish...'
-								value={draftSearch}
-								onChange={(e) => setDraftSearch(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										setSearchQuery(draftSearch);
-										setBranchCategoryId(draftBranchCategoryId);
-										setCurrentPage(1);
-									}
-								}}
-								className='pl-9'
+								value={formSearch}
+								onChange={(e) => setFormSearch(e.target.value)}
+								className='w-full sm:min-w-[220px]'
 							/>
 						</div>
-						<Autocomplete
-							options={[
-								{ value: 'all', label: 'Barcha filial kategoriyalari' },
-								...branchCategories.map((cat) => ({ value: cat.id, label: cat.name })),
-							]}
-							value={draftBranchCategoryId?.toString() ?? 'all'}
-							onValueChange={(v) => setDraftBranchCategoryId(v === 'all' ? null : Number(v))}
-							placeholder='Barcha filial kategoriyalari'
-							className='w-full sm:w-[220px]'
-						/>
-						<Button
-							className='bg-blue-600 hover:bg-blue-700 text-white'
-							onClick={() => {
-								setSearchQuery(draftSearch);
-								setBranchCategoryId(draftBranchCategoryId);
-								setCurrentPage(1);
-							}}
-						>
-							<Search className='mr-2 h-4 w-4' />
-							Qidirish
-						</Button>
-						{(searchQuery || branchCategoryId !== null) && (
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha filial kategoriyalari' },
+									...allBranchCategoriesForFilter.map((cat) => ({
+										value: String(cat.id),
+										label: cat.name,
+									})),
+								]}
+								value={formBranchCategoryId?.toString() ?? 'all'}
+								onValueChange={(v) => setFormBranchCategoryId(v === 'all' ? null : Number(v))}
+								placeholder='Barcha filial kategoriyalari'
+								className='w-full sm:w-[220px]'
+								onSearchChange={setFilterBranchCategorySearch}
+								onScrollToBottom={() => allBranchCategoriesForFilterInfinite.fetchNextPage()}
+								hasMore={!!allBranchCategoriesForFilterInfinite.hasNextPage}
+								isLoadingMore={allBranchCategoriesForFilterInfinite.isFetchingNextPage}
+								isLoading={allBranchCategoriesForFilterInfinite.isLoading}
+							/>
+						</div>
+						<div className='w-full sm:w-auto flex gap-2 items-center'>
 							<Button
-								className='bg-red-500 hover:bg-red-600 text-white'
-								onClick={() => {
-									setDraftSearch('');
-									setDraftBranchCategoryId(null);
-									setSearchQuery('');
-									setBranchCategoryId(null);
-									setCurrentPage(1);
-								}}
+								onClick={handleFilter}
+								className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'
 							>
-								<X className='mr-2 h-4 w-4' />
+								<SearchIcon className='h-3.5 w-3.5 mr-1' />
+								Qidirish
+							</Button>
+							<Button
+								onClick={handleClear}
+								variant='outline'
+								className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
+							>
+								<X className='h-3.5 w-3.5 mr-1' />
 								Tozalash
 							</Button>
-						)}
+						</div>
 					</div>
 
 					{/* Table */}
@@ -586,6 +665,12 @@ export default function ProductModels() {
 															setSuggestedSorting(null);
 														}}
 														placeholder="Bo'limni tanlang"
+														searchPlaceholder="Bo'lim qidirish..."
+														onSearchChange={setCategorySearch}
+														onScrollToBottom={() => categoriesInfinite.fetchNextPage()}
+														hasMore={!!categoriesInfinite.hasNextPage}
+														isLoadingMore={categoriesInfinite.isFetchingNextPage}
+														isLoading={categoriesInfinite.isLoading}
 													/>
 												</FormControl>
 												<FormMessage />
@@ -615,7 +700,15 @@ export default function ProductModels() {
 																? 'Kategoriya turini tanlang'
 																: "Avval bo'limni tanlang"
 														}
+														searchPlaceholder='Kategoriya qidirish...'
 														disabled={!selectedBranch || selectedBranch === 0}
+														onSearchChange={setBranchCategorySearch}
+														onScrollToBottom={() =>
+															branchCategoriesInfinite.fetchNextPage()
+														}
+														hasMore={!!branchCategoriesInfinite.hasNextPage}
+														isLoadingMore={branchCategoriesInfinite.isFetchingNextPage}
+														isLoading={branchCategoriesInfinite.isLoading}
 													/>
 												</FormControl>
 												<FormMessage />

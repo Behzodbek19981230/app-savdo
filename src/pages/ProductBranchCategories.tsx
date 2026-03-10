@@ -3,10 +3,10 @@
  * Mahsulot turlari kategoriyasi - product-branch-category API
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -52,6 +52,7 @@ import {
 	Search,
 	Trash2,
 	X,
+	SearchIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -67,8 +68,10 @@ import {
 } from '@/lib/validations/productBranchCategory';
 import type { ProductBranchCategory } from '@/services/productBranchCategory.service';
 import { productBranchCategoryService } from '@/services/productBranchCategory.service';
+import { productCategoryService } from '@/services/productCategory.service';
 
 const ITEMS_PER_PAGE = 10;
+const AUTOCOMPLETE_PAGE_SIZE = 20;
 
 type SortField = 'name' | 'sorting' | 'product_branch' | 'created_at' | null;
 type SortDirection = 'asc' | 'desc' | null;
@@ -76,10 +79,12 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function ProductBranchCategories() {
 	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
+	// Applied filters (used for querying)
 	const [searchQuery, setSearchQuery] = useState('');
 	const [filterBranchId, setFilterBranchId] = useState<number | undefined>(undefined);
-	const [draftSearch, setDraftSearch] = useState('');
-	const [draftBranchId, setDraftBranchId] = useState<number | undefined>(undefined);
+	// Form-level filters (user edits these but they won't apply until user clicks "Filter")
+	const [formSearch, setFormSearch] = useState<string>('');
+	const [formBranchId, setFormBranchId] = useState<number | undefined>(undefined);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,6 +93,9 @@ export default function ProductBranchCategories() {
 	const [deletingId, setDeletingId] = useState<number | null>(null);
 	const [suggestedSorting, setSuggestedSorting] = useState<number | null>(null);
 	const [isLoadingSuggestedSorting, setIsLoadingSuggestedSorting] = useState(false);
+	// Autocomplete search states
+	const [branchSearch, setBranchSearch] = useState('');
+	const [formBranchSearch, setFormBranchSearch] = useState('');
 
 	const form = useForm<ProductBranchCategoryFormData>({
 		resolver: zodResolver(productBranchCategorySchema),
@@ -109,9 +117,38 @@ export default function ProductBranchCategories() {
 		product_branch: filterBranchId,
 	});
 
-	const { data: branchesData } = useProductCategories({
-		limit: 500,
-		is_delete: false,
+	// Infinite query for branches (filter and form)
+	const branchesInfinite = useInfiniteQuery({
+		queryKey: ['productCategories', 'list', { is_delete: false, search: branchSearch }],
+		queryFn: ({ pageParam }) =>
+			productCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: branchSearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
+	});
+
+	// Form infinite query for branches
+	const formBranchesInfinite = useInfiniteQuery({
+		queryKey: ['productCategories', 'form', { is_delete: false, search: formBranchSearch }],
+		queryFn: ({ pageParam }) =>
+			productCategoryService.getCategories({
+				page: pageParam,
+				limit: AUTOCOMPLETE_PAGE_SIZE,
+				search: formBranchSearch || undefined,
+				is_delete: false,
+			}),
+		getNextPageParam: (lastPage) =>
+			lastPage.pagination.currentPage < lastPage.pagination.lastPage
+				? lastPage.pagination.currentPage + 1
+				: undefined,
+		initialPageParam: 1,
 	});
 
 	const createCategory = useCreateProductBranchCategory();
@@ -121,9 +158,19 @@ export default function ProductBranchCategories() {
 	const categories = data?.results || [];
 	const pagination = data?.pagination;
 	const totalPages = pagination?.lastPage || 1;
-	const branches = branchesData?.results || [];
+	const branches = useMemo(
+		() => branchesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[branchesInfinite.data?.pages],
+	);
+	const formBranches = useMemo(
+		() => formBranchesInfinite.data?.pages.flatMap((p) => p.results) ?? [],
+		[formBranchesInfinite.data?.pages],
+	);
 
-	const branchMap = Object.fromEntries(branches.map((b) => [b.id, b.name]));
+	const branchMap = useMemo(
+		() => Object.fromEntries(branches.map((b) => [b.id, b.name])),
+		[branches],
+	);
 
 	const isMutating = createCategory.isPending || updateCategory.isPending || deleteCategory.isPending;
 
@@ -268,6 +315,20 @@ export default function ProductBranchCategories() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 
+	const handleFilter = () => {
+		setSearchQuery(formSearch);
+		setFilterBranchId(formBranchId);
+		setCurrentPage(1);
+	};
+
+	const handleClear = () => {
+		setFormSearch('');
+		setFormBranchId(undefined);
+		setSearchQuery('');
+		setFilterBranchId(undefined);
+		setCurrentPage(1);
+	};
+
 	const renderPaginationItems = () => {
 		const items = [];
 		const maxVisible = 5;
@@ -334,60 +395,46 @@ export default function ProductBranchCategories() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className='mb-4 flex flex-col sm:flex-row gap-3 flex-wrap'>
-						<div className='relative'>
-							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+					<div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+						<div className='w-full sm:w-auto'>
 							<Input
 								placeholder='Qidirish...'
-								value={draftSearch}
-								onChange={(e) => setDraftSearch(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										setSearchQuery(draftSearch);
-										setFilterBranchId(draftBranchId);
-										setCurrentPage(1);
-									}
-								}}
-								className='pl-9'
+								value={formSearch}
+								onChange={(e) => setFormSearch(e.target.value)}
+								className='w-full sm:min-w-[220px]'
 							/>
 						</div>
-						<Autocomplete
-							options={[
-								{ value: 'all', label: 'Barcha turlar' },
-								...branches.map((b) => ({ value: b.id, label: b.name })),
-							]}
-							value={draftBranchId ?? 'all'}
-							onValueChange={(v) => setDraftBranchId(v === 'all' ? undefined : Number(v))}
-							placeholder="Bo'lim bo'yicha filtrlash"
-							className='w-full sm:w-[220px]'
-						/>
-						<Button
-							className='bg-blue-600 hover:bg-blue-700 text-white'
-							onClick={() => {
-								setSearchQuery(draftSearch);
-								setFilterBranchId(draftBranchId);
-								setCurrentPage(1);
-							}}
-						>
-							<Search className='mr-2 h-4 w-4' />
-							Qidirish
-						</Button>
-						{(searchQuery || filterBranchId !== undefined) && (
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha turlar' },
+									...branches.map((b) => ({ value: b.id, label: b.name })),
+								]}
+								value={formBranchId ?? 'all'}
+								onValueChange={(v) => setFormBranchId(v === 'all' ? undefined : Number(v))}
+								placeholder="Bo'lim bo'yicha filtrlash"
+								className='w-full sm:w-[220px]'
+								onSearchChange={setBranchSearch}
+								onScrollToBottom={() => branchesInfinite.fetchNextPage()}
+								hasMore={!!branchesInfinite.hasNextPage}
+								isLoadingMore={branchesInfinite.isFetchingNextPage}
+								isLoading={branchesInfinite.isLoading}
+							/>
+						</div>
+						<div className='w-full sm:w-auto flex gap-2 items-center'>
+							<Button onClick={handleFilter} className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'>
+								<SearchIcon className='h-3.5 w-3.5 mr-1' />
+								Qidirish
+							</Button>
 							<Button
-								onClick={() => {
-									setDraftSearch('');
-									setDraftBranchId(undefined);
-									setSearchQuery('');
-									setFilterBranchId(undefined);
-									setCurrentPage(1);
-								}}
+								onClick={handleClear}
 								variant='outline'
-								color='warning'
+								className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
 							>
-								<X className='mr-2 h-4 w-4' />
+								<X className='h-3.5 w-3.5 mr-1' />
 								Tozalash
 							</Button>
-						)}
+						</div>
 					</div>
 
 					{isLoading ? (
@@ -522,10 +569,16 @@ export default function ProductBranchCategories() {
 											<FormLabel>Bo&apos;lim (product branch) *</FormLabel>
 											<FormControl>
 												<Autocomplete
-													options={branches.map((b) => ({ value: b.id, label: b.name }))}
+													options={formBranches.map((b) => ({ value: b.id, label: b.name }))}
 													value={field.value || undefined}
 													onValueChange={(v) => field.onChange(Number(v))}
 													placeholder="Bo'limni tanlang"
+													searchPlaceholder="Bo'lim qidirish..."
+													onSearchChange={setFormBranchSearch}
+													onScrollToBottom={() => formBranchesInfinite.fetchNextPage()}
+													hasMore={!!formBranchesInfinite.hasNextPage}
+													isLoadingMore={formBranchesInfinite.isFetchingNextPage}
+													isLoading={formBranchesInfinite.isLoading}
 												/>
 											</FormControl>
 											<FormMessage />
