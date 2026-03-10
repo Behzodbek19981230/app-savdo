@@ -64,7 +64,19 @@ import {
 	toUserFormDefaults,
 } from '@/hooks/api/useUsers';
 import type { AppUser, CreateAppUserPayload, UpdateAppUserPayload } from '@/services/user.service';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Pencil, Plus, Search, Trash2, Upload, UserCog } from 'lucide-react';
+import {
+	ArrowDown,
+	ArrowUp,
+	ArrowUpDown,
+	Loader2,
+	Pencil,
+	Plus,
+	Search,
+	Trash2,
+	Upload,
+	UserCog,
+	X,
+} from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -74,6 +86,11 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function Users() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState('');
+	const [draftSearch, setDraftSearch] = useState('');
+	const [filterRoleId, setFilterRoleId] = useState<string[] | undefined>(undefined);
+	const [draftRoleId, setDraftRoleId] = useState<string>('');
+	const [filterIsActive, setFilterIsActive] = useState<boolean | undefined>(undefined);
+	const [draftIsActive, setDraftIsActive] = useState<string>('');
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -109,6 +126,8 @@ export default function Users() {
 		limit: ITEMS_PER_PAGE,
 		search: searchQuery || undefined,
 		ordering,
+		roles: filterRoleId,
+		is_active: filterIsActive,
 	});
 
 	const { data: rolesData } = useRoles({ perPage: 1000, is_delete: false });
@@ -412,18 +431,78 @@ export default function Users() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className='mb-4'>
-						<div className='relative'>
-							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+					{/* Search */}
+					<div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+						<div className='w-full sm:w-auto'>
 							<Input
 								placeholder='Qidirish...'
-								value={searchQuery}
-								onChange={(e) => {
-									setSearchQuery(e.target.value);
+								value={draftSearch}
+								onChange={(e) => setDraftSearch(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										setSearchQuery(draftSearch);
+										setFilterRoleId(draftRoleId ? [draftRoleId] : undefined);
+										setFilterIsActive(draftIsActive === '' ? undefined : draftIsActive === 'true');
+										setCurrentPage(1);
+									}
+								}}
+								className='w-full sm:min-w-[220px]'
+							/>
+						</div>
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha rollar' },
+									...roles.map((r) => ({ value: String(r.id), label: r.name })),
+								]}
+								value={draftRoleId || 'all'}
+								onValueChange={(v) => setDraftRoleId(v === 'all' ? '' : String(v))}
+								placeholder='Rol bo&#x27;yicha...'
+								className='w-full sm:w-[200px]'
+							/>
+						</div>
+						<div className='w-full sm:w-auto'>
+							<Autocomplete
+								options={[
+									{ value: 'all', label: 'Barcha holat' },
+									{ label: 'Faol', value: 'true' },
+									{ label: 'Nofaol', value: 'false' },
+								]}
+								value={draftIsActive || 'all'}
+								onValueChange={(v) => setDraftIsActive(v === 'all' ? '' : String(v))}
+								placeholder='Holati...'
+								className='w-full sm:w-[160px]'
+							/>
+						</div>
+						<div className='w-full sm:w-auto flex gap-2 items-center'>
+							<Button
+								className='bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs px-3'
+								onClick={() => {
+									setSearchQuery(draftSearch);
+									setFilterRoleId(draftRoleId ? [draftRoleId] : undefined);
+									setFilterIsActive(draftIsActive === '' ? undefined : draftIsActive === 'true');
 									setCurrentPage(1);
 								}}
-								className='pl-9'
-							/>
+							>
+								<Search className='h-3.5 w-3.5 mr-1' />
+								Qidirish
+							</Button>
+							<Button
+								variant='outline'
+								className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 h-8 text-xs px-3'
+								onClick={() => {
+									setDraftSearch('');
+									setDraftRoleId('');
+									setDraftIsActive('');
+									setSearchQuery('');
+									setFilterRoleId(undefined);
+									setFilterIsActive(undefined);
+									setCurrentPage(1);
+								}}
+							>
+								<X className='h-3.5 w-3.5 mr-1' />
+								Tozalash
+							</Button>
 						</div>
 					</div>
 

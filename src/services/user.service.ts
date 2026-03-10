@@ -50,7 +50,10 @@ const toUserFormData = (data: Partial<CreateAppUserPayload>) => {
 
 export const userService = {
 	getUsers: async (params?: AppUserQueryParams) => {
-		return api.get<AppUserListResponse>(API_ENDPOINTS.appUsers.list, { params });
+		return api.get<AppUserListResponse>(API_ENDPOINTS.appUsers.list, {
+			params,
+			paramsSerializer: { indexes: null },
+		});
 	},
 
 	getUserById: async (id: number) => {
