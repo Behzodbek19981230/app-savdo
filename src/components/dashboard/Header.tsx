@@ -501,8 +501,13 @@ export function Header({ onMenuClick }: HeaderProps) {
 											variant='ghost'
 											size='sm'
 											className='w-full justify-start text-xs h-8'
-											onClick={() => {
-												void markAllNotesAsRead.mutateAsync();
+											onClick={async () => {
+												try {
+													await markAllNotesAsRead.mutateAsync();
+													window.location.reload();
+												} catch {
+													// xato toast orqali ko‘rsatiladi
+												}
 											}}
 											disabled={markAllNotesAsRead.isPending}
 										>

@@ -24,9 +24,10 @@ import {
 import { usePurchaseInvoice, useDeletePurchaseInvoice } from '@/hooks/api/usePurchaseInvoice';
 import { PurchaseInvoiceType, PurchaseInvoiceTypeLabels } from '@/types/purchaseInvoice';
 import { useProductHistories } from '@/hooks/api/useProductHistory';
-import { ArrowLeft, Package, FileText, ShoppingCart, Trash2, Loader2, Pencil } from 'lucide-react';
+import { ArrowLeft, Package, FileText, ShoppingCart, Trash2, Loader2, Pencil, Printer } from 'lucide-react';
 import moment from 'moment';
 import { formatCurrency } from '@/lib/utils';
+import apiClient from '@/lib/api/client';
 // Dollar formatlagich
 const formatDollar = (value: number) => {
 	return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
@@ -36,6 +37,7 @@ export default function PurchaseInvoiceShow() {
 	const navigate = useNavigate();
 	const invoiceId = Number(id);
 	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+	const [isPdfLoading, setIsPdfLoading] = useState(false);
 
 	// Faktura ma'lumotlari
 	const { data: invoice, isLoading: isInvoiceLoading } = usePurchaseInvoice(invoiceId);
@@ -57,6 +59,20 @@ export default function PurchaseInvoiceShow() {
 			// xato toast hook orqali chiqadi
 		}
 		setIsCancelDialogOpen(false);
+	};
+
+	const handlePrintPdf = async () => {
+		setIsPdfLoading(true);
+		try {
+			const response = await apiClient.get(`/pdf/purchase-invoice/${invoiceId}/worker`, { responseType: 'blob' });
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+		} catch (e) {
+			console.error('PDF yuklab olishda xatolik:', e);
+		} finally {
+			setIsPdfLoading(false);
+		}
 	};
 
 	if (isInvoiceLoading) {
@@ -103,6 +119,20 @@ export default function PurchaseInvoiceShow() {
 						<Button variant='outline' onClick={() => navigate('/purchase-invoices')}>
 							<ArrowLeft className='h-4 w-4 mr-2' />
 							Orqaga
+						</Button>
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={handlePrintPdf}
+							disabled={isPdfLoading}
+							title='Chop etish (PDF)'
+						>
+							{isPdfLoading ? (
+								<Loader2 className='h-4 w-4 mr-2 animate-spin' />
+							) : (
+								<Printer className='h-4 w-4 mr-2' />
+							)}
+							Chop etish
 						</Button>
 						<Button
 							variant='outline'

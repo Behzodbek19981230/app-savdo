@@ -67,11 +67,13 @@ import {
 	Package,
 	ArrowDownCircle,
 	Pencil,
+	Printer,
 	ShoppingBag,
-    SearchIcon,
-    X,
+	SearchIcon,
+	X,
 } from 'lucide-react';
 import moment from 'moment';
+import apiClient from '@/lib/api/client';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -84,7 +86,7 @@ const newInvoiceSchema = z.object({
 	supplier: z.coerce.number().min(0).optional(),
 	sklad_outgoing: z.coerce.number().min(0).optional(),
 	sklad: z.coerce.number().min(0).optional(),
-    filial: z.coerce.number().min(0).optional(),
+	filial: z.coerce.number().min(0).optional(),
 });
 
 type NewInvoiceFormData = z.infer<typeof newInvoiceSchema>;
@@ -102,24 +104,25 @@ export default function PurchaseInvoices() {
 	const activeTab: InvoiceTabType =
 		typeParam === PurchaseInvoiceType.INTERNAL || typeParam === PurchaseInvoiceType.EXTERNAL
 			? typeParam
-			: PurchaseInvoiceType.EXTERNAL;
+			: PurchaseInvoiceType.INTERNAL;
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [printingId, setPrintingId] = useState<number | null>(null);
 	const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
 	const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
-    const [formDateFrom, setFormDateFrom] = useState<Date | undefined>(undefined);
-    const [formDateTo, setFormDateTo] = useState<Date | undefined>(undefined);
+	const [formDateFrom, setFormDateFrom] = useState<Date | undefined>(undefined);
+	const [formDateTo, setFormDateTo] = useState<Date | undefined>(undefined);
 	const [isNewInvoiceDialogOpen, setIsNewInvoiceDialogOpen] = useState(false);
 	const [supplierFilterId, setSupplierFilterId] = useState<number | undefined>(undefined);
 	const [skladOutgoingFilterId, setSkladOutgoingFilterId] = useState<number | undefined>(undefined);
-    const [skladFilterId, setSkladFilterId] = useState<number | undefined>(undefined);
-    const [formSupplierFilterId, setFormSupplierFilterId] = useState<number | undefined>(undefined);
-    const [formSkladOutgoingFilterId, setFormSkladOutgoingFilterId] = useState<number | undefined>(undefined);
-    const [formSkladFilterId, setFormSkladFilterId] = useState<number | undefined>(undefined);
+	const [skladFilterId, setSkladFilterId] = useState<number | undefined>(undefined);
+	const [formSupplierFilterId, setFormSupplierFilterId] = useState<number | undefined>(undefined);
+	const [formSkladOutgoingFilterId, setFormSkladOutgoingFilterId] = useState<number | undefined>(undefined);
+	const [formSkladFilterId, setFormSkladFilterId] = useState<number | undefined>(undefined);
 
 	// Supplier autocomplete state
 	const [supplierPage, setSupplierPage] = useState(1);
@@ -144,7 +147,7 @@ export default function PurchaseInvoices() {
 			supplier: 0,
 			sklad_outgoing: 0,
 			sklad: 0,
-            filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
+			filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 		},
 	});
 
@@ -275,7 +278,7 @@ export default function PurchaseInvoices() {
 		type: activeTab,
 		supplier: activeTab === PurchaseInvoiceType.EXTERNAL ? supplierFilterId : undefined,
 		sklad_outgoing: activeTab === PurchaseInvoiceType.INTERNAL ? skladOutgoingFilterId : undefined,
-        sklad: skladFilterId,
+		sklad: skladFilterId,
 		date_from: dateFrom ? moment(dateFrom).format('YYYY-MM-DD') : undefined,
 		date_to: dateTo ? moment(dateTo).format('YYYY-MM-DD') : undefined,
 		filial: selectedFilialId ?? undefined,
@@ -312,6 +315,20 @@ export default function PurchaseInvoices() {
 		setIsDeleteDialogOpen(true);
 	};
 
+	const handlePrintPdf = async (id: number) => {
+		setPrintingId(id);
+		try {
+			const response = await apiClient.get(`/pdf/purchase-invoice/${id}/worker`, { responseType: 'blob' });
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+		} catch (e) {
+			console.error('PDF yuklab olishda xatolik:', e);
+		} finally {
+			setPrintingId(null);
+		}
+	};
+
 	const handleDelete = async () => {
 		if (!deletingId) return;
 		try {
@@ -323,27 +340,8 @@ export default function PurchaseInvoices() {
 		}
 	};
 
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('uz-UZ').format(value);
-	};
-
 	const formatDollar = (value: number) => {
 		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-	};
-
-	const getInvoiceTypeBadge = (type: string) => {
-		if (type === PurchaseInvoiceType.EXTERNAL) {
-			return (
-				<Badge variant='default' className='bg-green-600'>
-					{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]}
-				</Badge>
-			);
-		}
-		return (
-			<Badge variant='default' className='bg-blue-600'>
-				{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
-			</Badge>
-		);
 	};
 
 	const handleTabChange = (value: string) => {
@@ -351,37 +349,37 @@ export default function PurchaseInvoices() {
 		setCurrentPage(1);
 		setSupplierFilterId(undefined);
 		setSkladOutgoingFilterId(undefined);
-        setSkladFilterId(undefined);
-        setFormSupplierFilterId(undefined);
-        setFormSkladOutgoingFilterId(undefined);
-        setFormSkladFilterId(undefined);
-        setFormDateFrom(undefined);
-        setFormDateTo(undefined);
-        setDateFrom(undefined);
-        setDateTo(undefined);
-    };
+		setSkladFilterId(undefined);
+		setFormSupplierFilterId(undefined);
+		setFormSkladOutgoingFilterId(undefined);
+		setFormSkladFilterId(undefined);
+		setFormDateFrom(undefined);
+		setFormDateTo(undefined);
+		setDateFrom(undefined);
+		setDateTo(undefined);
+	};
 
-    const handleFilter = () => {
-        setSupplierFilterId(formSupplierFilterId);
-        setSkladOutgoingFilterId(formSkladOutgoingFilterId);
-        setSkladFilterId(formSkladFilterId);
-        setDateFrom(formDateFrom);
-        setDateTo(formDateTo);
-        setCurrentPage(1);
-    };
+	const handleFilter = () => {
+		setSupplierFilterId(formSupplierFilterId);
+		setSkladOutgoingFilterId(formSkladOutgoingFilterId);
+		setSkladFilterId(formSkladFilterId);
+		setDateFrom(formDateFrom);
+		setDateTo(formDateTo);
+		setCurrentPage(1);
+	};
 
-    const handleClear = () => {
-        setFormSupplierFilterId(undefined);
-        setFormSkladOutgoingFilterId(undefined);
-        setFormSkladFilterId(undefined);
-        setFormDateFrom(undefined);
-        setFormDateTo(undefined);
-        setSupplierFilterId(undefined);
-        setSkladOutgoingFilterId(undefined);
-        setSkladFilterId(undefined);
-        setDateFrom(undefined);
-        setDateTo(undefined);
-        setCurrentPage(1);
+	const handleClear = () => {
+		setFormSupplierFilterId(undefined);
+		setFormSkladOutgoingFilterId(undefined);
+		setFormSkladFilterId(undefined);
+		setFormDateFrom(undefined);
+		setFormDateTo(undefined);
+		setSupplierFilterId(undefined);
+		setSkladOutgoingFilterId(undefined);
+		setSkladFilterId(undefined);
+		setDateFrom(undefined);
+		setDateTo(undefined);
+		setCurrentPage(1);
 	};
 
 	const openNewInvoiceDialog = () => {
@@ -390,7 +388,7 @@ export default function PurchaseInvoices() {
 			supplier: 0,
 			sklad_outgoing: 0,
 			sklad: 0,
-            filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
+			filial: selectedFilialId || user?.filials_detail?.[0]?.id || 0,
 		});
 		setSupplierSearch('');
 		setSkladSearch('');
@@ -411,103 +409,106 @@ export default function PurchaseInvoices() {
 							<div>
 								<CardTitle>Tovar kirimi</CardTitle>
 							</div>
-                            <div className='flex flex-col gap-3'>
-                                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
-								{/* Tab bo'yicha filter: Tashqi = Ta'minotchi, Ichki = Qaysi ombor */}
-								{activeTab === PurchaseInvoiceType.EXTERNAL && (
+							<div className='flex flex-col gap-3'>
+								<div className='flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 flex-wrap'>
+									{/* Tab bo'yicha filter: Tashqi = Ta'minotchi, Ichki = Qaysi ombor */}
+									{activeTab === PurchaseInvoiceType.EXTERNAL && (
+										<div className='flex flex-wrap items-center gap-2'>
+											<span className='text-xs text-muted-foreground'>Ta'minotchi:</span>
+											<Autocomplete
+												options={[
+													{ value: 'all', label: 'Barchasi' },
+													...filterSuppliers.map((s) => ({ value: s.id, label: s.name })),
+												]}
+												value={formSupplierFilterId ?? 'all'}
+												onValueChange={(v) => {
+													setFormSupplierFilterId(v === 'all' ? undefined : Number(v));
+												}}
+												placeholder="Ta'minotchini tanlang"
+												className='w-[220px]'
+											/>
+										</div>
+									)}
+									{activeTab === PurchaseInvoiceType.INTERNAL && (
+										<div className='flex flex-wrap items-center gap-2'>
+											<span className='text-xs text-muted-foreground'>Qaysi ombor:</span>
+											<Autocomplete
+												options={[
+													{ value: 'all', label: 'Barchasi' },
+													...filterSklads.map((s) => ({ value: s.id, label: s.name })),
+												]}
+												value={formSkladOutgoingFilterId ?? 'all'}
+												onValueChange={(v) => {
+													setFormSkladOutgoingFilterId(v === 'all' ? undefined : Number(v));
+												}}
+												placeholder='Omborni tanlang'
+												className='w-[220px]'
+											/>
+										</div>
+									)}
 									<div className='flex flex-wrap items-center gap-2'>
-										<span className='text-xs text-muted-foreground'>Ta'minotchi:</span>
-										<Autocomplete
-											options={[
-												{ value: 'all', label: 'Barchasi' },
-												...filterSuppliers.map((s) => ({ value: s.id, label: s.name })),
-											]}
-                                                value={formSupplierFilterId ?? 'all'}
-											onValueChange={(v) => {
-                                                    setFormSupplierFilterId(v === 'all' ? undefined : Number(v));
-											}}
-											placeholder="Ta'minotchini tanlang"
-											className='w-[220px]'
-										/>
-									</div>
-								)}
-								{activeTab === PurchaseInvoiceType.INTERNAL && (
-									<div className='flex flex-wrap items-center gap-2'>
-										<span className='text-xs text-muted-foreground'>Qaysi ombor:</span>
+										<span className='text-xs text-muted-foreground'>Ombor:</span>
 										<Autocomplete
 											options={[
 												{ value: 'all', label: 'Barchasi' },
 												...filterSklads.map((s) => ({ value: s.id, label: s.name })),
 											]}
-                                                value={formSkladOutgoingFilterId ?? 'all'}
+											value={formSkladFilterId ?? 'all'}
 											onValueChange={(v) => {
-                                                    setFormSkladOutgoingFilterId(v === 'all' ? undefined : Number(v));
+												setFormSkladFilterId(v === 'all' ? undefined : Number(v));
 											}}
 											placeholder='Omborni tanlang'
 											className='w-[220px]'
 										/>
 									</div>
-								)}
-                                    <div className='flex flex-wrap items-center gap-2'>
-                                        <span className='text-xs text-muted-foreground'>Ombor:</span>
-                                        <Autocomplete
-                                            options={[
-                                                { value: 'all', label: 'Barchasi' },
-                                                ...filterSklads.map((s) => ({ value: s.id, label: s.name })),
-                                            ]}
-                                            value={formSkladFilterId ?? 'all'}
-                                            onValueChange={(v) => {
-                                                setFormSkladFilterId(v === 'all' ? undefined : Number(v));
-                                            }}
-                                            placeholder='Omborni tanlang'
-                                            className='w-[220px]'
-                                        />
-                                    </div>
-								<DateRangePicker
-                                        dateFrom={formDateFrom}
-                                        dateTo={formDateTo}
-									onDateFromChange={(date) => {
-                                            setFormDateFrom(date);
-									}}
-									onDateToChange={(date) => {
-                                            setFormDateTo(date);
-                                        }}
-                                    />
-                                    <div className='flex gap-2'>
-                                        <Button onClick={handleFilter} className='bg-blue-600 hover:bg-blue-700 text-white'>
-                                            <SearchIcon className='h-4 w-4' />
-                                            Qidirish
-                                        </Button>
-                                        <Button
-                                            variant='outline'
-                                            onClick={handleClear}
-                                            className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
-                                        >
-                                            <X className='h-4 w-4' />
-                                            Tozalash
-                                        </Button>
-								<Button onClick={openNewInvoiceDialog} className='gap-2'>
-									<Plus className='h-4 w-4' />
-									Qo'shish
-								</Button>
-                                    </div>
-                                </div>
+									<DateRangePicker
+										dateFrom={formDateFrom}
+										dateTo={formDateTo}
+										onDateFromChange={(date) => {
+											setFormDateFrom(date);
+										}}
+										onDateToChange={(date) => {
+											setFormDateTo(date);
+										}}
+									/>
+									<div className='flex gap-2'>
+										<Button
+											onClick={handleFilter}
+											className='bg-blue-600 hover:bg-blue-700 text-white'
+										>
+											<SearchIcon className='h-4 w-4' />
+											Qidirish
+										</Button>
+										<Button
+											variant='outline'
+											onClick={handleClear}
+											className='border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700'
+										>
+											<X className='h-4 w-4' />
+											Tozalash
+										</Button>
+										<Button onClick={openNewInvoiceDialog} className='gap-2'>
+											<Plus className='h-4 w-4' />
+											Qo'shish
+										</Button>
+									</div>
+								</div>
 							</div>
 						</div>
 
 						<Tabs value={activeTab} onValueChange={handleTabChange}>
 							<TabsList className='grid w-full grid-cols-2 h-9 bg-muted dark:bg-muted/80 p-1'>
 								<TabsTrigger
-									value={PurchaseInvoiceType.EXTERNAL}
-									className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
-								>
-									{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]}
-								</TabsTrigger>
-								<TabsTrigger
 									value={PurchaseInvoiceType.INTERNAL}
 									className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
 								>
 									{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.INTERNAL]}
+								</TabsTrigger>
+								<TabsTrigger
+									value={PurchaseInvoiceType.EXTERNAL}
+									className='data-[state=active]:bg-primary dark:data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-colors hover:text-foreground dark:hover:text-foreground'
+								>
+									{PurchaseInvoiceTypeLabels[PurchaseInvoiceType.EXTERNAL]}
 								</TabsTrigger>
 							</TabsList>
 						</Tabs>
@@ -599,6 +600,20 @@ export default function PurchaseInvoices() {
 												</TableCell>
 												<TableCell className='text-right'>
 													<div className='flex items-center justify-end '>
+														<Button
+															variant='ghost'
+															size='icon'
+															className=' text-muted-foreground hover:text-foreground'
+															onClick={() => handlePrintPdf(invoice.id)}
+															disabled={printingId === invoice.id}
+															title='Chop etish (PDF)'
+														>
+															{printingId === invoice.id ? (
+																<Loader2 className='h-4 w-4 animate-spin' />
+															) : (
+																<Printer className='h-4 w-4' />
+															)}
+														</Button>
 														<Button
 															variant='ghost'
 															size='icon'
