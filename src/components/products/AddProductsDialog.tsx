@@ -83,12 +83,17 @@ export function AddProductsDialog({ open, onOpenChange }: AddProductsDialogProps
 		is_delete: false,
 	});
 
-	// Fetch products filtered by category
-	const { data: existingProductsData, isLoading: isLoadingProducts } = useProducts({
-		category: selectedCategory || undefined,
-		perPage: 1000,
-		is_delete: false,
-	});
+	// Fetch products filtered by category - only when dialog is open
+	const { data: existingProductsData, isLoading: isLoadingProducts } = useProducts(
+		{
+			category: selectedCategory || undefined,
+			limit: 1000,
+			is_delete: false,
+		},
+		{
+			enabled: open && !!selectedCategory,
+		},
+	);
 
 	const createProduct = useCreateProduct();
 

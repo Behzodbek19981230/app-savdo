@@ -3,12 +3,13 @@
  * Mahsulotlar uchun React Query hooks
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   productService,
   type Product,
   type ProductQueryParams,
+  type ProductListResponse,
 } from '@/services/product.service';
 
 // Helper function to format error messages
@@ -59,10 +60,14 @@ export const productKeys = {
 };
 
 // Hooks
-export const useProducts = (params?: ProductQueryParams) => {
+export const useProducts = (
+  params?: ProductQueryParams,
+  options?: Omit<UseQueryOptions<ProductListResponse, unknown, ProductListResponse, ReturnType<typeof productKeys.list>>, 'queryKey' | 'queryFn'>
+) => {
   return useQuery({
     queryKey: productKeys.list(params),
     queryFn: () => productService.getProducts(params),
+    ...options,
   });
 };
 
