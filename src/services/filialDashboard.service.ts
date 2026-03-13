@@ -11,7 +11,7 @@ export interface FilialDashboardMonthlyItem {
     month: string;
     order_sum_usd: string;
     debt_sum_usd: string;
-    total_sum_usd: string;
+    profit_sum_usd: string;
 }
 
 export interface FilialDashboardResponse {
