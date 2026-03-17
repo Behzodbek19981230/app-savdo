@@ -57,6 +57,7 @@ const adminSection: NavSection[] = [
 			{ icon: Package, label: 'Mahsulotlar', path: '/products' },
 			{ icon: ShoppingCart, label: 'Buyurtmalar', path: '/order-history' },
 			{ icon: FileText, label: 'Buyurtmalar va qarzlar', path: '/reports/orders-and-debts' },
+			{ icon: ArrowDownCircle, label: "To'langan qarzlar", path: '/debt-repayment' },
 			{ icon: Star, label: 'Xarajatlar', path: '/expenses' },
 
 			// { icon: ShoppingCart, label: 'Buyurtmalar', path: '/orders', badge: '4' },
@@ -298,7 +299,8 @@ function SidebarContent() {
 								{section.items.map((item) => {
 									const isActive =
 										item.path &&
-										(location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
+										(location.pathname === item.path ||
+											location.pathname.startsWith(item.path + '/'));
 									const hasChildren = !!item.children && item.children.length > 0;
 									const itemKey = `${section.title}::${item.label}`;
 
@@ -338,19 +340,19 @@ function SidebarContent() {
 															(location.pathname === child.path ||
 																location.pathname.startsWith(child.path + '/'));
 														return (
-														<Link
-															key={child.label}
-															to={child.path ?? '#'}
-															className={cn(
-																'flex items-center gap-2.5 rounded-md px-2 py-1 text-xs transition-colors',
+															<Link
+																key={child.label}
+																to={child.path ?? '#'}
+																className={cn(
+																	'flex items-center gap-2.5 rounded-md px-2 py-1 text-xs transition-colors',
 																	isChildActive
-																	? 'text-primary font-semibold'
-																	: 'text-sidebar-foreground hover:text-primary',
-															)}
-														>
-															<child.icon className='h-4 w-4 opacity-80' />
-															<span className='truncate'>{child.label}</span>
-														</Link>
+																		? 'text-primary font-semibold'
+																		: 'text-sidebar-foreground hover:text-primary',
+																)}
+															>
+																<child.icon className='h-4 w-4 opacity-80' />
+																<span className='truncate'>{child.label}</span>
+															</Link>
 														);
 													})}
 												</div>

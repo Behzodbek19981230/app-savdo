@@ -85,6 +85,7 @@ export default function CustomersAdmin() {
 			phone_number: '+998',
 			region: 0,
 			district: 0,
+			filial: selectedFilialId ?? 0,
 			total_debt: 0,
 			keshbek: 0,
 			type: 'dona',
@@ -129,7 +130,6 @@ export default function CustomersAdmin() {
 		form.setValue('district', 0);
 	}, [selectedRegion, editingId]);
 
-
 	useEffect(() => {
 		if (editingId && clientDetailData && isDialogOpen) {
 			form.reset(toClientFormDefaults(clientDetailData));
@@ -170,6 +170,7 @@ export default function CustomersAdmin() {
 				phone_number: '+998',
 				region: 0,
 				district: 0,
+				filial: selectedFilialId ?? 0,
 				total_debt: 0,
 				keshbek: 0,
 				type: 'dona',
@@ -195,7 +196,7 @@ export default function CustomersAdmin() {
 				phone_number: values.phone_number || '',
 				region: values.region,
 				district: values.district,
-				filial: values.filial,
+				filial: values.filial ?? selectedFilialId,
 				total_debt: Number(values.total_debt || 0),
 				keshbek: Number(values.keshbek || 0),
 				type: values.type,
