@@ -67,16 +67,8 @@ function DateGroupRow({
 }) {
 	return (
 		<>
-			{/* Date header row */}
-			<TableRow className='bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-50 dark:hover:bg-blue-950/40'>
-				<TableCell colSpan={11} className='py-1.5 px-4'>
-					<span className='text-xs font-bold text-blue-700 dark:text-blue-300'>{group.date_label}</span>
-				</TableCell>
-			</TableRow>
-
-			{/* Item rows */}
 			{group.items.map((item, idx) => (
-				<ItemRow key={item.id} item={item} idx={idx} navigate={navigate} />
+				<ItemRow key={item.id} item={item} idx={idx} navigate={navigate} group={group} />
 			))}
 
 			{/* Totals row */}
@@ -89,10 +81,12 @@ function ItemRow({
 	item,
 	idx,
 	navigate,
+	group,
 }: {
 	item: OrdersAndDebtsReportItem;
 	idx: number;
 	navigate: ReturnType<typeof useNavigate>;
+	group?: OrdersAndDebtsReportGroup;
 }) {
 	const isOrder = item.type === 'order';
 	const [isPrinting, setIsPrinting] = useState(false);
@@ -115,6 +109,13 @@ function ItemRow({
 	return (
 		<TableRow className='hover:bg-muted/50 text-sm'>
 			<TableCell className='px-3 py-2 text-muted-foreground'>{idx + 1}</TableCell>
+			{idx === 0 && group ? (
+				<TableCell rowSpan={group.items.length} className='font-medium align-top px-3 py-2'>
+					<div>
+						<div className='text-sm font-bold text-blue-700 dark:text-blue-300'>{group.date_label}</div>
+					</div>
+				</TableCell>
+			) : null}
 			<TableCell className='px-3 py-2 font-medium'>{item.client_name || '—'}</TableCell>
 			<TableCell className='px-3 py-2 text-muted-foreground'>{item.employee_name}</TableCell>
 			<TableCell className='px-3 py-2 text-right text-blue-600 dark:text-blue-400'>
@@ -364,6 +365,7 @@ export default function OrdersAndDebtsReportPage() {
 									<TableHeader>
 										<TableRow className='bg-muted/50'>
 											<TableHead className='px-3 py-2 w-8'>#</TableHead>
+											<TableHead className='px-3 py-2 w-32'>Sana</TableHead>
 											<TableHead className='px-3 py-2'>Mijoz</TableHead>
 											<TableHead className='px-3 py-2'>Hodim</TableHead>
 											<TableHead className='px-3 py-2 text-right whitespace-nowrap'>
